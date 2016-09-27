@@ -465,7 +465,7 @@ uint16_t GetGwIdent(uint8_t* data)
     //7. - IQRF module OS version e.g. : „3.06D“
     //8. - Public IP address e.g. : „213.214.215.120“
   uint16_t retval = sprintf(data,
-    "GW-RPI\x0D\x0A"
+    "udp-daemon-01\x0D\x0A"
     "2.50\x0D\x0A"
     "00 11 22 33 44 55\x0D\x0A"
     "5.42\x0D\x0A"

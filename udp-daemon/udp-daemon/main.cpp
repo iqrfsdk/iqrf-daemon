@@ -1,6 +1,7 @@
 #include "IQRF_UDP.h"
-#include "CdcInterface.h"
-#include "CDCImpl.h"
+#include "IqrfCdcChannel.h"
+#include "UdpChannel.h"
+#include "MessageQueue.h"
 #include <string>
 #include <sstream>
 
@@ -13,22 +14,18 @@
 #define PAR(par)
 #endif
 
-void receiveData(unsigned char* data, unsigned int length);
+typedef std::basic_string<unsigned char> ustring;
 
 class MessageHandler
 {
 public:
   MessageHandler(T_IQRF_UDP* iqrfUDP, const std::string& portIqrf);
-
-  virtual ~MessageHandler()
-  {
-    delete m_cdc;
-  }
+  virtual ~MessageHandler();
 
   void handle(int msglen);
-  void sendMsg(int cmd, const std::string& data = std::string());
-  void sendMsgReply(const std::string& data = std::string());
-  std::string getGwIdent();
+  void sendMsg(int cmd, const ustring& data = ustring());
+  void sendMsgReply(const ustring& data = ustring());
+  ustring getGwIdent();
 
   unsigned char* getRawRecData() {
     return iqrfUDP.rxtx.data.pdata.buffer;
@@ -39,40 +36,47 @@ public:
     return dlenRecv;
   }
 
-private:
-  T_IQRF_UDP* m_iqrfUDP;
-  CDCImpl* m_cdc;
-  bool m_cdc_valid;
+  void receiveData(unsigned char* data, unsigned int length);
 
+  void startThreads();
+
+private:
+  Channel *m_iqrfChannel;
+  Channel *m_udpChannel;
+
+  MessageQueue *m_toUdpMessageQueue;
+  MessageQueue *m_toIqrfMessageQueue;
+
+  T_IQRF_UDP* m_iqrfUDP;
 };
 
 MessageHandler::MessageHandler(T_IQRF_UDP* iqrfUDP, const std::string& portIqrf)
   :m_iqrfUDP(iqrfUDP)
-  ,m_cdc(nullptr)
-  ,m_cdc_valid(false)
 {
-  try {
-    m_cdc = new CDCImpl(portIqrf.c_str());
-
-    bool test = m_cdc->test();
-
-    if (test) {
-      std::cout << "Test OK\n";
-    }
-    else {
-      std::cout << "Test FAILED\n";
-      //delete testImp;
-    }
-    m_cdc_valid = true;
+  //TODO catch CDCImplException
+  m_iqrfChannel = new IqrfCdcChannel(portIqrf);
   
-    // register to receiving asynchronous messages
-    AsyncMsgListenerF aml = &receiveData;
-    m_cdc->registerAsyncMsgListener(&receiveData);
+  //TODO ports to param
+  m_udpChannel = new UdpChannel(portIqrf);
 
-  }
-  catch (CDCImplException& e) {
-    std::cout << e.getDescr() << "\n";
-  }
+  //Messages from IQRF are sent via MessageQueue to UDP channel
+  m_toUdpMessageQueue = new MessageQueue(m_udpChannel);
+
+  //Messages from UDP are sent via MessageQueue to IQRF channel
+  m_toIqrfMessageQueue = new MessageQueue(m_iqrfChannel);
+
+  //Received messages from IQRF channel are pushed to UDP MessageQueue
+  m_iqrfChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) {
+    m_toUdpMessageQueue->pushToQueue(msg); });
+
+  //Received messages from IQRF channel are pushed to IQRF MessageQueue
+  m_udpChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) {
+    m_toIqrfMessageQueue->pushToQueue(msg); });
+
+}
+
+MessageHandler::~MessageHandler()
+{
 }
 
 void MessageHandler::handle(int msglen)
@@ -94,12 +98,7 @@ void MessageHandler::handle(int msglen)
 
 
     try {
-      // sending read temperature request and checking response of the device
-      DSResponse dsResponse = m_cdc->sendData(getRawRecData(), getRawRecLen());
-      if (dsResponse != OK) {
-        // bad response processing...
-        std::cout << "Response not OK: " << dsResponse << "\n";
-      }
+      m_toIqrfMessageQueue->pushToQueue(ustring(getRawRecData(), getRawRecLen()));
     }
     catch (CDCSendException& ex) {
       std::cout << ex.getDescr() << "\n";
@@ -123,18 +122,18 @@ void MessageHandler::handle(int msglen)
 
 }
 
-void MessageHandler::sendMsg(int cmd, const std::string& data)
+void MessageHandler::sendMsg(int cmd, const ustring& data)
 {
 }
 
-void MessageHandler::sendMsgReply(const std::string& data)
+void MessageHandler::sendMsgReply(const ustring& data)
 {
   iqrfUDP.rxtx.data.header.cmd |= 0x80;
   memcpy(iqrfUDP.rxtx.data.pdata.buffer, data.c_str(), data.size());
   IqrfUdpSendPacket(data.size());
 }
 
-std::string MessageHandler::getGwIdent()
+ustring MessageHandler::getGwIdent()
 {
   //1. - GW type e.g.: „GW - ETH - 02A“
   //2. - FW version e.g. : „2.50“
@@ -144,7 +143,7 @@ std::string MessageHandler::getGwIdent()
   //6. - Net BIOS Name e.g. : „iqrf_xxxx “ 15 characters
   //7. - IQRF module OS version e.g. : „3.06D“
   //8. - Public IP address e.g. : „213.214.215.120“
-  std::ostringstream os;
+  std::basic_ostringstream<unsigned char> os;
   os <<
     "udp-daemon-01" << "\x0D\x0A" <<
     "2.50" << "\x0D\x0A" <<
@@ -170,48 +169,6 @@ void printDataInHex(unsigned char* data, unsigned int length) {
   }
   std::cout << std::dec << "\n";
 }
-
-void receiveData(unsigned char* data, unsigned int length) {
-  if (data == NULL || length == 0) {
-    std::cout << "No data received\n";
-    return;
-  }
-
-  printDataInHex(data, length);
-  return;
-  //std::string recdata((char*)data, length);
-
-
-  /*
-  if (length < HEADER_LENGTH) {
-    std::cout << "Unknown data: ";
-    printDataInHex(data, length);
-    return;
-  }
-
-  unsigned char* msgHeader = new unsigned char[HEADER_LENGTH];
-  memcpy(msgHeader, data, HEADER_LENGTH);
-
-  if (isConfirmation(msgHeader)) {
-    std::cout << "Confirmation received: ";
-    printDataInHex(data, length);
-    delete[] msgHeader;
-    return;
-  }
-
-  if (isResponse(msgHeader)) {
-    std::cout << "Response received: \n";
-    printResponse(data, length);
-    delete[] msgHeader;
-    return;
-  }
-
-  std::cout << "Unknown type of message. Data: ";
-  printDataInHex(data, length);
-  delete[] msgHeader;
-  */
-}
-
 
 int main(int argc, char** argv)
 {

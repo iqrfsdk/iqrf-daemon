@@ -137,12 +137,13 @@ int main()
         DEBUG_TRC("Write data to TR module ...");
         unsigned char temperatureRequest[] = { 0x01, 0x00, 0x0A, 0x00, 0xFF, 0xFF };
         std::string data((char*)temperatureRequest, 6);
-        msgHndl.sendMsg(3, 0, data);
+        for (int i = 10; i > 0; i--)
+          msgHndl.sendMsg(3, 0, data);
         //20 03 00 00 00 00 06 00 00 52 8f
       }
-      DEBUG_TRC("is going to listen ...");
-      int reclen = IqrfUdpListen();
-      msgHndl.handle(reclen);
+      //DEBUG_TRC("is going to listen ...");
+      //int reclen = IqrfUdpListen();
+      //msgHndl.handle(reclen);
       break;
     }
     default:
