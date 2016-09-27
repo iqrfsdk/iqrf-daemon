@@ -1,4 +1,4 @@
-#include "IQRF_UDP.h"
+//#include "IQRF_UDP.h"
 #include "IqrfCdcChannel.h"
 #include "UdpChannel.h"
 #include "MessageQueue.h"
@@ -19,7 +19,7 @@ typedef std::basic_string<unsigned char> ustring;
 class MessageHandler
 {
 public:
-  MessageHandler(T_IQRF_UDP* iqrfUDP, const std::string& portIqrf);
+  MessageHandler(const std::string& portIqrf);
   virtual ~MessageHandler();
 
   void handle(int msglen);
@@ -27,18 +27,8 @@ public:
   void sendMsgReply(const ustring& data = ustring());
   ustring getGwIdent();
 
-  unsigned char* getRawRecData() {
-    return iqrfUDP.rxtx.data.pdata.buffer;
-  }
-
-  unsigned short getRawRecLen() {
-    unsigned short dlenRecv = (iqrfUDP.rxtx.data.header.dlen_H << 8) + iqrfUDP.rxtx.data.header.dlen_L;
-    return dlenRecv;
-  }
-
   void receiveData(unsigned char* data, unsigned int length);
 
-  void startThreads();
 
 private:
   Channel *m_iqrfChannel;
@@ -47,11 +37,10 @@ private:
   MessageQueue *m_toUdpMessageQueue;
   MessageQueue *m_toIqrfMessageQueue;
 
-  T_IQRF_UDP* m_iqrfUDP;
+  //T_IQRF_UDP* m_iqrfUDP;
 };
 
-MessageHandler::MessageHandler(T_IQRF_UDP* iqrfUDP, const std::string& portIqrf)
-  :m_iqrfUDP(iqrfUDP)
+MessageHandler::MessageHandler(const std::string& portIqrf)
 {
   //TODO catch CDCImplException
   m_iqrfChannel = new IqrfCdcChannel(portIqrf);
@@ -79,6 +68,7 @@ MessageHandler::~MessageHandler()
 {
 }
 
+#if 0
 void MessageHandler::handle(int msglen)
 {
   DEBUG_TRC(PAR(msglen));
@@ -121,6 +111,7 @@ void MessageHandler::handle(int msglen)
   }
 
 }
+
 
 void MessageHandler::sendMsg(int cmd, const ustring& data)
 {
@@ -169,6 +160,7 @@ void printDataInHex(unsigned char* data, unsigned int length) {
   }
   std::cout << std::dec << "\n";
 }
+#endif
 
 int main(int argc, char** argv)
 {
@@ -191,17 +183,18 @@ int main(int argc, char** argv)
 
   //init UDP
   //TODO get port from cmdl
-  IqrfUdpInit(55300, 55000);
-  IqrfUdpOpen();            // Open IQRF UDP socket
+  //IqrfUdpInit(55300, 55000);
+  //IqrfUdpOpen();            // Open IQRF UDP socket
 
-  MessageHandler msgHndl(&iqrfUDP, port_name);
+  MessageHandler msgHndl(port_name);
 
-  DEBUG_TRC("iqrf_gw is going to listen ...");
-  while (iqrfUDP.flag.enabled)
+  DEBUG_TRC("iqrf_gw main is going to sleep ...");
+  while (true)
   {
-    int reclen = IqrfUdpListen();
-    msgHndl.handle(reclen);
+    //int reclen = IqrfUdpListen();
+    //msgHndl.handle(reclen);
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
   }
 
-  IqrfUdpClose();            // Open IQRF UDP socket
+  //IqrfUdpClose();            // Open IQRF UDP socket
 }
