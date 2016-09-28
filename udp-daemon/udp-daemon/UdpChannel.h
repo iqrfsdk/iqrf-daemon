@@ -106,9 +106,6 @@ private:
   std::thread m_listenThread;
   void listen();
 
-  void sendMsgReply(const std::basic_string<unsigned char>& data = std::basic_string<unsigned char>());
-  std::basic_string<unsigned char> getGwIdent();
-
   SOCKET iqrfUdpSocket;
   sockaddr_in iqrfUdpListener;
   sockaddr_in iqrfUdpTalker;

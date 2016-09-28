@@ -142,74 +142,19 @@ void UdpChannel::listen()
   uint16_t tmp, dlenRecv, dlenToSend;
   while (m_runListenThread)
   {
-    while (true)
-    {
+    n = recvfrom(iqrfUdpSocket, (char*)m_rx.allbuffer, IQRF_UDP_BUFFER_SIZE, 0, (struct sockaddr *)&iqrfUdpListener, &iqrfUdpServerLength);
 
-      n = recvfrom(iqrfUdpSocket, (char*)m_rx.allbuffer, IQRF_UDP_BUFFER_SIZE, 0, (struct sockaddr *)&iqrfUdpListener, &iqrfUdpServerLength);
+    if (n == SOCKET_ERROR) {
+      THROW_EX(std::exception, "rcvfrom failed" << WSAGetLastError());
+    }
 
-      if (n == SOCKET_ERROR) {
-        THROW_EX(std::exception, "rcvfrom failed" << WSAGetLastError());
+    if (n > 0) {
+      std::basic_string<unsigned char> message(m_rx.allbuffer, n);
+      if (0 == m_receiveFromFunc(message)) {
+        iqrfUdpTalker.sin_addr.s_addr = iqrfUdpListener.sin_addr.s_addr;    // Change the destination to the address of the last received packet
       }
-
-      std::cout << "Received from UDP: " << std::endl;
-      for (int i = 0; i < n; i++) {
-        std::cout << "0x" << std::hex << (int)m_rx.allbuffer[i] << " ";
-      }
-      std::cout << std::endl;
-
-      if (n <= 0)
-        break;
-
-      // Some data received
-      // --- Packet validation ---------------------------------------
-      //iqrfUDP.error.receivePacket = TRUE;                     // Error
-      // GW_ADR check
-      if (m_rx.data.header.gwAddr != IQRF_UDP_GW_ADR)
-        break;
-      // Min. packet length check
-      if (n < (sizeof(T_IQRF_UDP_HEADER) + IQRF_UDP_CRC_SIZE))
-        break;
-      // DLEN backup
-      dlenRecv = (m_rx.data.header.dlen_H << 8) + m_rx.data.header.dlen_L;
-      // Max. packet length check
-      if ((dlenRecv + sizeof(T_IQRF_UDP_HEADER) + IQRF_UDP_CRC_SIZE) > IQRF_UDP_BUFFER_SIZE)
-        break;
-      // CRC check
-      tmp = (m_rx.data.buffer[dlenRecv] << 8) + m_rx.data.buffer[dlenRecv + 1];
-
-      if (tmp != GetCRC_CCITT(m_rx.allbuffer, dlenRecv + sizeof(T_IQRF_UDP_HEADER)))
-        break;
-
-      // --- Packet is valid -----------------------------------------
-      //iqrfUDP.error.receivePacket = FALSE;                                // Ok
-      iqrfUdpTalker.sin_addr.s_addr = iqrfUdpListener.sin_addr.s_addr;    // Change the destination to the address of the last received packet
-
-      /////////////////////////////////////////
-      int msglen = n;
-      DEBUG_TRC(PAR(msglen));
-      if (msglen <= 0) {
-        DEBUG_TRC("receive error: " << PAR(msglen));
-        return;
-      }
-
-      switch (m_rx.data.header.cmd)
-      {
-      case IQRF_UDP_GET_GW_INFO:          // --- Returns GW identification ---
-        sendMsgReply(getGwIdent());
-        break;
-
-      case IQRF_UDP_WRITE_IQRF_SPI:       // --- Writes data to the TR module's SPI ---
-        m_rx.data.header.subcmd = IQRF_UDP_NAK;
-        m_receiveFromFunc(std::basic_string<unsigned char>(m_rx.data.buffer, dlenRecv));
-        break;
-
-      default:
-        break;
-      }
-      /////////////////////////////////////////
     }
   }
-
 }
 
 void UdpChannel::sendTo(const std::basic_string<unsigned char>& message)
@@ -242,8 +187,8 @@ void UdpChannel::sendTo(const std::basic_string<unsigned char>& message)
   m_tx.data.header.dlen_L = dlen & 0xFF;
 
   uint16_t crc = GetCRC_CCITT(m_tx.allbuffer, dlen + sizeof(T_IQRF_UDP_HEADER));
-  m_tx.data.buffer[dlen + sizeof(T_IQRF_UDP_HEADER)] = (crc >> 8) & 0xFF;
-  m_tx.data.buffer[dlen + sizeof(T_IQRF_UDP_HEADER) + 1] = crc & 0xFF;
+  m_tx.allbuffer[dlen + sizeof(T_IQRF_UDP_HEADER)] = (crc >> 8) & 0xFF;
+  m_tx.allbuffer[dlen + sizeof(T_IQRF_UDP_HEADER) + 1] = crc & 0xFF;
 
   int tosend = dlen + sizeof(T_IQRF_UDP_HEADER) + IQRF_UDP_CRC_SIZE;
 
@@ -271,36 +216,4 @@ void UdpChannel::sendTo(const std::basic_string<unsigned char>& message)
 void UdpChannel::registerReceiveFromHandler(ReceiveFromFunc receiveFromFunc)
 {
   m_receiveFromFunc = receiveFromFunc;
-}
-
-void UdpChannel::sendMsgReply(const std::basic_string<unsigned char>& data)
-{
-  m_rx.data.header.cmd |= 0x80;
-  memcpy(m_rx.data.buffer, data.c_str(), data.size());
-  //TODO GW status
-  //IqrfUdpSendPacket(data.size());
-}
-
-std::basic_string<unsigned char> UdpChannel::getGwIdent()
-{
-  //1. - GW type e.g.: „GW - ETH - 02A“
-  //2. - FW version e.g. : „2.50“
-  //3. - MAC address e.g. : „00 11 22 33 44 55“
-  //4. - TCP / IP Stack version e.g. : „5.42“
-  //5. - IP address of GW e.g. : „192.168.2.100“
-  //6. - Net BIOS Name e.g. : „iqrf_xxxx “ 15 characters
-  //7. - IQRF module OS version e.g. : „3.06D“
-  //8. - Public IP address e.g. : „213.214.215.120“
-  std::basic_ostringstream<unsigned char> os;
-  os <<
-    "udp-daemon-01" << "\x0D\x0A" <<
-    "2.50" << "\x0D\x0A" <<
-    "00 11 22 33 44 55" << "\x0D\x0A" <<
-    "5.42" << "\x0D\x0A" <<
-    "192.168.1.11" << "\x0D\x0A" <<
-    "iqrf_xxxx" << "\x0D\x0A" <<
-    "3.06D" << "\x0D\x0A" <<
-    "192.168.1.11" << "\x0D\x0A";
-
-  return os.str();
 }

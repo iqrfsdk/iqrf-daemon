@@ -1,6 +1,6 @@
-//#include "IQRF_UDP.h"
 #include "IqrfCdcChannel.h"
 #include "UdpChannel.h"
+#include "helpers.h"
 #include "MessageQueue.h"
 #include <string>
 #include <sstream>
@@ -29,6 +29,8 @@ public:
 
   void receiveData(unsigned char* data, unsigned int length);
 
+  int handleMessageFromUdp(const ustring& udpMessage);
+  int handleMessageFromIqrf(const ustring& iqrfMessage);
 
 private:
   Channel *m_iqrfChannel;
@@ -36,9 +38,90 @@ private:
 
   MessageQueue *m_toUdpMessageQueue;
   MessageQueue *m_toIqrfMessageQueue;
-
-  //T_IQRF_UDP* m_iqrfUDP;
 };
+
+#define IQRF_UDP_GW_ADR			        0x20    // 3rd party or user device
+#define IQRF_UDP_HEADER_SIZE        9 //header length
+#define IQRF_UDP_CRC_SIZE           2 // CRC has 2 bytes
+
+//--- IQRF UDP header ---
+enum UdpHeader
+{
+  gwAddr,
+  cmd,
+  subcmd,
+  res0,
+  res1,
+  pacid_H,
+  pacid_L,
+  dlen_H,
+  dlen_L
+};
+
+int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
+{
+  size_t msgSize = udpMessage.size();
+  std::cout << "Received from UDP: " << std::endl;
+  for (size_t i = 0; i < msgSize; i++) {
+    std::cout << "0x" << std::hex << (int)udpMessage[i] << " ";
+  }
+  std::cout << std::endl;
+
+  // --- message validation ---------------------------------------
+  unsigned short dlen = 0;
+  bool valid = false;
+  while (true) {
+    
+    // GW_ADR check
+    if (udpMessage[gwAddr] != IQRF_UDP_GW_ADR)
+      break;
+
+    // Min. packet length check
+    if (msgSize < IQRF_UDP_HEADER_SIZE + IQRF_UDP_CRC_SIZE)
+      break;
+
+    //iqrf data length
+    dlen = (udpMessage[dlen_H] << 8) + udpMessage[dlen_L];
+
+    // Max. packet length check
+    if ((dlen + IQRF_UDP_HEADER_SIZE + IQRF_UDP_CRC_SIZE) > IQRF_UDP_BUFFER_SIZE)
+      break;
+
+    // CRC check
+    unsigned short crc = (udpMessage[IQRF_UDP_HEADER_SIZE + dlen] << 8) + udpMessage[IQRF_UDP_HEADER_SIZE + dlen + 1];
+    if (crc != GetCRC_CCITT((unsigned char*)udpMessage.data(), dlen + IQRF_UDP_HEADER_SIZE))
+      break;
+    
+    valid = true;
+    break;
+  }
+  if (!valid) {
+    return -1;
+  }
+
+  switch (udpMessage[cmd])
+  {
+  case IQRF_UDP_GET_GW_INFO:          // --- Returns GW identification ---
+    //m_toIqrfMessageQueue->pushToQueue(getGwIdent());
+    m_toUdpMessageQueue->pushToQueue(getGwIdent());
+    break;
+
+  case IQRF_UDP_WRITE_IQRF_SPI:       // --- Writes data to the TR module's SPI ---
+    //udpMessage[subcmd] = IQRF_UDP_NAK;
+    m_toIqrfMessageQueue->pushToQueue(udpMessage.substr(IQRF_UDP_HEADER_SIZE, dlen));
+    return 0;
+
+  default:
+    break;
+  }
+  return -1;
+}
+
+int MessageHandler::handleMessageFromIqrf(const ustring& iqrfMessage)
+{
+  m_toUdpMessageQueue->pushToQueue(iqrfMessage);
+  return 0;
+}
 
 MessageHandler::MessageHandler(const std::string& portIqrf)
 {
@@ -55,12 +138,12 @@ MessageHandler::MessageHandler(const std::string& portIqrf)
   m_toIqrfMessageQueue = new MessageQueue(m_iqrfChannel);
 
   //Received messages from IQRF channel are pushed to UDP MessageQueue
-  m_iqrfChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) {
-    m_toUdpMessageQueue->pushToQueue(msg); });
+  m_iqrfChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) -> int {
+    return handleMessageFromIqrf(msg); });
 
   //Received messages from IQRF channel are pushed to IQRF MessageQueue
-  m_udpChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) {
-    m_toIqrfMessageQueue->pushToQueue(msg); });
+  m_udpChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) -> int {
+    return handleMessageFromUdp(msg); });
 
 }
 
@@ -68,63 +151,7 @@ MessageHandler::~MessageHandler()
 {
 }
 
-#if 0
-void MessageHandler::handle(int msglen)
-{
-  DEBUG_TRC(PAR(msglen));
-  if (msglen <= 0) {
-    DEBUG_TRC("receive error: " << PAR(msglen));
-    return;
-  }
-
-  switch (m_iqrfUDP->rxtx.data.header.cmd)
-  {
-  case IQRF_UDP_GET_GW_INFO:          // --- Returns GW identification ---
-    sendMsgReply(getGwIdent());
-    break;
-
-  case IQRF_UDP_WRITE_IQRF_SPI:       // --- Writes data to the TR module's SPI ---
-    iqrfUDP.rxtx.data.header.subcmd = IQRF_UDP_NAK;
-
-
-    try {
-      m_toIqrfMessageQueue->pushToQueue(ustring(getRawRecData(), getRawRecLen()));
-    }
-    catch (CDCSendException& ex) {
-      std::cout << ex.getDescr() << "\n";
-      // send exception processing...
-    }
-    catch (CDCReceiveException& ex) {
-      std::cout << ex.getDescr() << "\n";
-      // receive exception processing...
-    }
-
-    // TODO
-    /*
-    if ((appData.operationMode != APP_OPERATION_MODE_SERVICE) || (iqrfSPI.trState != TR_STATE_COMM_MODE))
-    break;
-
-    if (IqrfSpiDataWrite(iqrfUDP.rxtx.data.pdata.buffer, dlenRecv, TR_CMD_DATA_WRITE_READ))
-    iqrfUDP.rxtx.data.header.subcmd = IQRF_UDP_ACK;
-    */
-    break;
-  }
-
-}
-
-
-void MessageHandler::sendMsg(int cmd, const ustring& data)
-{
-}
-
-void MessageHandler::sendMsgReply(const ustring& data)
-{
-  iqrfUDP.rxtx.data.header.cmd |= 0x80;
-  memcpy(iqrfUDP.rxtx.data.pdata.buffer, data.c_str(), data.size());
-  IqrfUdpSendPacket(data.size());
-}
-
-ustring MessageHandler::getGwIdent()
+std::basic_string<unsigned char> MessageHandler::getGwIdent()
 {
   //1. - GW type e.g.: „GW - ETH - 02A“
   //2. - FW version e.g. : „2.50“
@@ -147,20 +174,6 @@ ustring MessageHandler::getGwIdent()
 
   return os.str();
 }
-
-
-// prints specified data onto standard output in hex format
-void printDataInHex(unsigned char* data, unsigned int length) {
-  for (int i = 0; i < length; i++) {
-    std::cout << "0x" << std::hex << (int)*data;
-    data++;
-    if (i != (length - 1)) {
-      std::cout << " ";
-    }
-  }
-  std::cout << std::dec << "\n";
-}
-#endif
 
 int main(int argc, char** argv)
 {
