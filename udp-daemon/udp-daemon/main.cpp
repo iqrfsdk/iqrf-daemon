@@ -2,10 +2,9 @@
 #include "UdpChannel.h"
 #include "helpers.h"
 #include "MessageQueue.h"
-#include <string>
-#include <sstream>
 
-#include <iostream>
+#include "IqrfLogging.h"
+
 #ifdef _DEBUG
 #define DEBUG_TRC(msg) std::cout << __FUNCTION__ << ":  " << msg << std::endl;
 #define PAR(par)                #par "=\"" << par << "\" "
@@ -13,6 +12,8 @@
 #define DEBUG_TRC(msg)
 #define PAR(par)
 #endif
+
+TRC_INIT("");
 
 typedef std::basic_string<unsigned char> ustring;
 
@@ -58,11 +59,7 @@ enum UdpHeader
 int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
 {
   size_t msgSize = udpMessage.size();
-  std::cout << "Received from UDP: " << std::endl;
-  for (size_t i = 0; i < msgSize; i++) {
-    std::cout << "0x" << std::hex << (int)udpMessage[i] << " ";
-  }
-  std::cout << std::endl;
+  TRC_DBG("Received from UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
 
   std::basic_string<unsigned char> message;
   decodeMessageUdp(udpMessage, message);
@@ -90,20 +87,12 @@ int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
 
 int MessageHandler::handleMessageFromIqrf(const ustring& iqrfMessage)
 {
-  std::cout << "Sending to UDP: " << std::endl;
-  for (int i = 0; i < iqrfMessage.size(); i++) {
-    std::cout << "0x" << std::hex << (int)iqrfMessage[i] << " ";
-  }
-  std::cout << std::endl;
+  TRC_DBG("Sending to UDP: " << std::endl << FORM_HEX(iqrfMessage.data(), iqrfMessage.size()));
 
   std::basic_string<unsigned char> udpMessage;
   encodeMessageUdp(iqrfMessage, udpMessage);
 
-  std::cout << "Transmitt to UDP: " << std::endl;
-  for (int i = 0; i < udpMessage.size(); i++) {
-    std::cout << "0x" << std::hex << (int)udpMessage[i] << " ";
-  }
-  std::cout << std::endl;
+  TRC_DBG("Transmitt to UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
 
   m_toUdpMessageQueue->pushToQueue(udpMessage);
   return 0;
@@ -111,7 +100,7 @@ int MessageHandler::handleMessageFromIqrf(const ustring& iqrfMessage)
 
 void MessageHandler::encodeMessageUdp(const ustring& message, ustring& udpMessage)
 {
-  unsigned short dlen = message.size();
+  unsigned short dlen = (unsigned short)message.size();
   udpMessage.resize(IQRF_UDP_HEADER_SIZE + IQRF_UDP_CRC_SIZE, '\0');
   udpMessage[gwAddr] = IQRF_UDP_GW_ADR;
   udpMessage[dlen_H] = (unsigned char)((dlen >> 8) & 0xFF);
@@ -211,6 +200,7 @@ std::basic_string<unsigned char> MessageHandler::getGwIdent()
 
 int main(int argc, char** argv)
 {
+  TRC_ENTER("started")
   std::string port_name;
 
   if (argc < 2) {
@@ -244,4 +234,5 @@ int main(int argc, char** argv)
   }
 
   //IqrfUdpClose();            // Open IQRF UDP socket
+  TRC_ENTER("finished")
 }
