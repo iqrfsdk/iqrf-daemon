@@ -22,15 +22,12 @@ public:
   MessageHandler(const std::string& portIqrf);
   virtual ~MessageHandler();
 
-  void handle(int msglen);
-  void sendMsg(int cmd, const ustring& data = ustring());
-  void sendMsgReply(const ustring& data = ustring());
   ustring getGwIdent();
-
-  void receiveData(unsigned char* data, unsigned int length);
 
   int handleMessageFromUdp(const ustring& udpMessage);
   int handleMessageFromIqrf(const ustring& iqrfMessage);
+  void encodeMessageUdp(const ustring& message, ustring& udpMessage);
+  void decodeMessageUdp(const ustring& udpMessage, ustring& message);
 
 private:
   Channel *m_iqrfChannel;
@@ -67,17 +64,78 @@ int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
   }
   std::cout << std::endl;
 
-  // --- message validation ---------------------------------------
-  unsigned short dlen = 0;
+  std::basic_string<unsigned char> message;
+  decodeMessageUdp(udpMessage, message);
+
+  switch (udpMessage[cmd])
+  {
+  case IQRF_UDP_GET_GW_INFO:          // --- Returns GW identification ---
+  {
+    std::basic_string<unsigned char> udpMessage;
+    encodeMessageUdp(getGwIdent(), udpMessage);
+    m_toUdpMessageQueue->pushToQueue(udpMessage);
+  }
+    break;
+
+  case IQRF_UDP_WRITE_IQRF_SPI:       // --- Writes data to the TR module's SPI ---
+    //udpMessage[subcmd] = IQRF_UDP_NAK;
+    m_toIqrfMessageQueue->pushToQueue(message);
+    return 0;
+
+  default:
+    break;
+  }
+  return -1;
+}
+
+int MessageHandler::handleMessageFromIqrf(const ustring& iqrfMessage)
+{
+  std::cout << "Sending to UDP: " << std::endl;
+  for (int i = 0; i < iqrfMessage.size(); i++) {
+    std::cout << "0x" << std::hex << (int)iqrfMessage[i] << " ";
+  }
+  std::cout << std::endl;
+
+  std::basic_string<unsigned char> udpMessage;
+  encodeMessageUdp(iqrfMessage, udpMessage);
+
+  std::cout << "Transmitt to UDP: " << std::endl;
+  for (int i = 0; i < udpMessage.size(); i++) {
+    std::cout << "0x" << std::hex << (int)udpMessage[i] << " ";
+  }
+  std::cout << std::endl;
+
+  m_toUdpMessageQueue->pushToQueue(udpMessage);
+  return 0;
+}
+
+void MessageHandler::encodeMessageUdp(const ustring& message, ustring& udpMessage)
+{
+  unsigned short dlen = message.size();
+  udpMessage.resize(IQRF_UDP_HEADER_SIZE + IQRF_UDP_CRC_SIZE, '\0');
+  udpMessage[gwAddr] = IQRF_UDP_GW_ADR;
+  udpMessage[dlen_H] = (unsigned char)((dlen >> 8) & 0xFF);
+  udpMessage[dlen_L] = (unsigned char)(dlen & 0xFF);
+
+  udpMessage.insert(IQRF_UDP_HEADER_SIZE, message);
+
+  uint16_t crc = GetCRC_CCITT((unsigned char*)udpMessage.data(), dlen + IQRF_UDP_HEADER_SIZE);
+  udpMessage[dlen + IQRF_UDP_HEADER_SIZE] = (unsigned char)((crc >> 8) & 0xFF);
+  udpMessage[dlen + IQRF_UDP_HEADER_SIZE + 1] = (unsigned char)(crc & 0xFF);
+}
+
+void MessageHandler::decodeMessageUdp(const ustring& udpMessage, ustring& message)
+{
   bool valid = false;
+  unsigned short dlen = 0;
   while (true) {
-    
-    // GW_ADR check
-    if (udpMessage[gwAddr] != IQRF_UDP_GW_ADR)
-      break;
 
     // Min. packet length check
-    if (msgSize < IQRF_UDP_HEADER_SIZE + IQRF_UDP_CRC_SIZE)
+    if (udpMessage.size() < IQRF_UDP_HEADER_SIZE + IQRF_UDP_CRC_SIZE)
+      break;
+
+    // GW_ADR check
+    if (udpMessage[gwAddr] != IQRF_UDP_GW_ADR)
       break;
 
     //iqrf data length
@@ -91,36 +149,12 @@ int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
     unsigned short crc = (udpMessage[IQRF_UDP_HEADER_SIZE + dlen] << 8) + udpMessage[IQRF_UDP_HEADER_SIZE + dlen + 1];
     if (crc != GetCRC_CCITT((unsigned char*)udpMessage.data(), dlen + IQRF_UDP_HEADER_SIZE))
       break;
-    
+
     valid = true;
     break;
   }
-  if (!valid) {
-    return -1;
-  }
 
-  switch (udpMessage[cmd])
-  {
-  case IQRF_UDP_GET_GW_INFO:          // --- Returns GW identification ---
-    //m_toIqrfMessageQueue->pushToQueue(getGwIdent());
-    m_toUdpMessageQueue->pushToQueue(getGwIdent());
-    break;
-
-  case IQRF_UDP_WRITE_IQRF_SPI:       // --- Writes data to the TR module's SPI ---
-    //udpMessage[subcmd] = IQRF_UDP_NAK;
-    m_toIqrfMessageQueue->pushToQueue(udpMessage.substr(IQRF_UDP_HEADER_SIZE, dlen));
-    return 0;
-
-  default:
-    break;
-  }
-  return -1;
-}
-
-int MessageHandler::handleMessageFromIqrf(const ustring& iqrfMessage)
-{
-  m_toUdpMessageQueue->pushToQueue(iqrfMessage);
-  return 0;
+  message = udpMessage.substr(IQRF_UDP_HEADER_SIZE, dlen);
 }
 
 MessageHandler::MessageHandler(const std::string& portIqrf)

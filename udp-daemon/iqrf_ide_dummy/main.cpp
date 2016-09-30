@@ -64,8 +64,12 @@ void MessageHandler::handle(int msglen)
     break;
 
   case IQRF_UDP_WRITE_IQRF_SPI:       // --- Writes data to the TR module's SPI ---
-    iqrfUDP.rxtx.data.header.subcmd = IQRF_UDP_NAK;
+  {
+    std::string ident((char*)getRawRecData(), getRawRecLen());
+    std::cout << "Rec data:" << std::endl;
+    std::cout << ident << std::endl;
 
+  }
     // TODO
     /*
     if ((appData.operationMode != APP_OPERATION_MODE_SERVICE) || (iqrfSPI.trState != TR_STATE_COMM_MODE))
@@ -141,9 +145,9 @@ int main()
           msgHndl.sendMsg(3, 0, data);
         //20 03 00 00 00 00 06 00 00 52 8f
       }
-      //DEBUG_TRC("is going to listen ...");
-      //int reclen = IqrfUdpListen();
-      //msgHndl.handle(reclen);
+      DEBUG_TRC("is going to listen ...");
+      int reclen = IqrfUdpListen();
+      msgHndl.handle(reclen);
       break;
     }
     default:
