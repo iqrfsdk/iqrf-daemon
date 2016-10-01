@@ -58,9 +58,9 @@ enum UdpHeader
 
 int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
 {
-  size_t msgSize = udpMessage.size();
   TRC_DBG("Received from UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
 
+  size_t msgSize = udpMessage.size();
   std::basic_string<unsigned char> message;
   decodeMessageUdp(udpMessage, message);
 
@@ -87,13 +87,9 @@ int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
 
 int MessageHandler::handleMessageFromIqrf(const ustring& iqrfMessage)
 {
-  TRC_DBG("Sending to UDP: " << std::endl << FORM_HEX(iqrfMessage.data(), iqrfMessage.size()));
-
+  TRC_DBG("Received from to IQRF: " << std::endl << FORM_HEX(iqrfMessage.data(), iqrfMessage.size()));
   std::basic_string<unsigned char> udpMessage;
   encodeMessageUdp(iqrfMessage, udpMessage);
-
-  TRC_DBG("Transmitt to UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
-
   m_toUdpMessageQueue->pushToQueue(udpMessage);
   return 0;
 }

@@ -1,22 +1,15 @@
 #include "UdpChannel.h"
+#include "IqrfLogging.h"
 #include "helpers.h"
-#include <sstream>
-#include <iostream>
 #include <exception>
 
 #ifdef _DEBUG
-#define DEBUG_TRC(msg) std::cout << __FUNCTION__ << ":  " << msg << std::endl;
-#define PAR(par)                #par "=\"" << par << "\" "
-
 #define THROW_EX(extype, msg) { \
   std::ostringstream ostr; ostr << __FILE__ << " " << __LINE__ << msg; \
-  DEBUG_TRC(ostr.str()); \
+  TRC_ERR(ostr.str()); \
   extype ex(ostr.str().c_str()); throw ex; }
 
 #else
-#define DEBUG_TRC(msg)
-#define PAR(par)
-
 #define THROW_EX(extype, msg) { \
   std::ostringstream ostr; ostr << msg; \
   extype ex(ostr.str().c_str()); throw ex; }
@@ -95,7 +88,7 @@ UdpChannel::~UdpChannel()
 
     int iResult = closesocket(iqrfUdpSocket);
     if (iResult == SOCKET_ERROR) {
-      DEBUG_TRC("closesocket failed: " << GetLastError());
+      TRC_DBG("closesocket failed: " << GetLastError());
     }
   }
 
@@ -159,46 +152,8 @@ void UdpChannel::listen()
 
 void UdpChannel::sendTo(const std::basic_string<unsigned char>& message)
 {
-  //std::cout << "Sending to UDP: " << std::endl;
-  //for (int i = 0; i < message.size(); i++) {
-  //  std::cout << "0x" << std::hex << (int)message[i] << " ";
-  //}
-  //std::cout << std::endl;
+  TRC_DBG("Send to UDP: " << std::endl << FORM_HEX(message.data(), message.size()));
 
-  ////iqrfUDP.error.sendPacket = TRUE;
-
-  ////if (iqrfUDP.taskState != IQRF_UDP_LISTEN)               // Socket must be listening
-  ////{
-  ////  LogError("IqrfUdpSendPacket: socket is not listening");
-  ////  return 0;
-  ////}
-
-  //unsigned short dlen = message.size();
-  //memcpy(m_tx.data.buffer, message.data(), dlen);
-  //// Is there a space for CRC?
-  //if (message.size() > (sizeof(m_tx.data.buffer) - 2))
-  //{
-  //  LogError("IqrfUdpSendPacket: too many bytes");
-  //  return;
-  //}
-
-  //m_tx.data.header.gwAddr = IQRF_UDP_GW_ADR;
-  //m_tx.data.header.dlen_H = (dlen >> 8) & 0xFF;
-  //m_tx.data.header.dlen_L = dlen & 0xFF;
-
-  //uint16_t crc = GetCRC_CCITT(m_tx.allbuffer, dlen + sizeof(T_IQRF_UDP_HEADER));
-  //m_tx.allbuffer[dlen + sizeof(T_IQRF_UDP_HEADER)] = (crc >> 8) & 0xFF;
-  //m_tx.allbuffer[dlen + sizeof(T_IQRF_UDP_HEADER) + 1] = crc & 0xFF;
-
-  //int tosend = dlen + sizeof(T_IQRF_UDP_HEADER) + IQRF_UDP_CRC_SIZE;
-
-  //std::cout << "Transmitt to UDP: " << std::endl;
-  //for (int i = 0; i < tosend; i++) {
-  //  std::cout << "0x" << std::hex << (int)m_tx.allbuffer[i] << " ";
-  //}
-  //std::cout << std::endl;
-
-  //int n = sendto(iqrfUdpSocket, (const char*)m_tx.allbuffer, tosend, 0, (struct sockaddr *)&iqrfUdpTalker, sizeof(iqrfUdpTalker));
   int n = sendto(iqrfUdpSocket, (const char*)message.data(), message.size(), 0, (struct sockaddr *)&iqrfUdpTalker, sizeof(iqrfUdpTalker));
 
   if (n != -1)
