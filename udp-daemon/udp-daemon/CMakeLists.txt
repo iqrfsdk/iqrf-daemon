@@ -5,12 +5,14 @@ FIND_PACKAGE(clibcdc REQUIRED)
 set(udp-daemon_SRC_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/MessageQueue.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/MessageHandler.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/IqrfCdcChannel.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/UdpChannel.cpp
 )
 
 set(udp-daemon_INC_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/MessageQueue.h
+	${CMAKE_CURRENT_SOURCE_DIR}/MessageHandler.h
 	${CMAKE_CURRENT_SOURCE_DIR}/Channel.h
 	${CMAKE_CURRENT_SOURCE_DIR}/IqrfCdcChannel.h
 	${CMAKE_CURRENT_SOURCE_DIR}/UdpChannel.h

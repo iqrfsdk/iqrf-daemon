@@ -124,6 +124,7 @@ void UdpChannel::listen()
   }
   catch (UdpChannelException& e) {
     CATCH_EX("listening thread error", UdpChannelException, e);
+    m_runListenThread = false;
   }
 }
 

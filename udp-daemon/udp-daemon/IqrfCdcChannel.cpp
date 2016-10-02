@@ -7,7 +7,7 @@ IqrfCdcChannel::IqrfCdcChannel(const std::string& portIqrf)
   : m_cdc(portIqrf.c_str())
 {
   if (!m_cdc.test()) {
-    throw CDCImplException("CDC Test Failed");
+    THROW_EX(CDCImplException, "CDC Test failed");
   }
 }
 
@@ -34,8 +34,7 @@ void IqrfCdcChannel::sendTo(const std::basic_string<unsigned char>& message)
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
   if (dsResponse != DSResponse::OK) {
-    // TODO bad response processing...
-    TRC_DBG("Response not OK: " << PAR(dsResponse));
+    THROW_EX(CDCImplException, "CDC send failed" << PAR(dsResponse));
   }
 }
 
