@@ -38,9 +38,22 @@ private:
   MessageQueue *m_toIqrfMessageQueue;
 };
 
-#define IQRF_UDP_GW_ADR			        0x20    // 3rd party or user device
-#define IQRF_UDP_HEADER_SIZE        9 //header length
-#define IQRF_UDP_CRC_SIZE           2 // CRC has 2 bytes
+const unsigned char IQRF_UDP_GW_ADR = 0x20;    // 3rd party or user device
+unsigned char IQRF_UDP_HEADER_SIZE = 9; //header length
+unsigned char IQRF_UDP_CRC_SIZE = 2; // CRC has 2 bytes
+
+unsigned IQRF_UDP_BUFFER_SIZE = 1024;
+
+//--- IQRF UDP commands (CMD) ---
+const unsigned char IQRF_UDP_GET_GW_INFO = 0x01;	// Returns GW identification
+const unsigned char IQRF_UDP_GET_GW_STATUS = 0x02;	// Returns GW status
+const unsigned char IQRF_UDP_WRITE_IQRF_SPI = 0x03;	// Writes data to the TR module's SPI
+const unsigned char IQRF_UDP_IQRF_SPI_DATA = 0x04;	// Data from TR module's SPI (async)
+
+//--- IQRF UDP subcommands (SUBCMD) ---
+const unsigned char IQRF_UDP_ACK = 0x50;	// Positive answer
+const unsigned char IQRF_UDP_NAK = 0x60;	// Negative answer
+const unsigned char IQRF_UDP_BUS_BUSY = 0x61;	// Communication channel (IQRF SPI or RS485) is busy
 
 //--- IQRF UDP header ---
 enum UdpHeader
@@ -148,7 +161,9 @@ MessageHandler::MessageHandler(const std::string& portIqrf)
   m_iqrfChannel = new IqrfCdcChannel(portIqrf);
   
   //TODO ports to param
-  m_udpChannel = new UdpChannel(portIqrf);
+  unsigned short remotePort = 55000;
+  unsigned short localPort = 55300;
+  m_udpChannel = new UdpChannel(remotePort, localPort);
 
   //Messages from IQRF are sent via MessageQueue to UDP channel
   m_toUdpMessageQueue = new MessageQueue(m_udpChannel);

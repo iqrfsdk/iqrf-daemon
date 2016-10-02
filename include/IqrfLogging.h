@@ -44,15 +44,25 @@ namespace iqrf { \
 // It is developer's responsibility to passed proper len of "owned" data. Uprintable characters are replaced by '.' 
 #define FORM_HEX(ptr, len)      iqrf::TracerHexString((unsigned char*)ptr, len)
 
+//exceptions tracing
+#define THROW_EX(extype, exmsg) { \
+  std::ostringstream ostr; ostr << exmsg; \
+  TRC_WAR("Throwing " << #extype << ": " << ostr.str()); \
+  extype ex(ostr.str().c_str()); throw ex; }
+
+#define CATCH_EX(msg, extype, ex) { \
+  TRC_WAR("Caught " << msg << ": " << #extype << ": " << ex.what()); }
+
 //auxiliary macro
 #ifdef _DEBUG
-#define TRC(level, msg) std::cout << \
-levelToChar(level) << iqrf::TracerNiceFileName(__FILE__) << " ln:" << \
-__LINE__ << iqrf::TracerNiceFuncName(__FUNCTION__) << "()" << std::endl << msg << std::endl;
+#define FLF iqrf::TracerNiceFileName(__FILE__) << " ln:" << \
+__LINE__ << iqrf::TracerNiceFuncName(__FUNCTION__)
 #else
-#define TRC(level, msg) std::cout << \
-levelToChar(level) << iqrf::TracerNiceFuncName(__FUNCTION__) << "()" << std::endl << msg;
+#define FLF iqrf::TracerNiceFuncName(__FUNCTION__)
 #endif
+
+#define TRC(level, msg) iqrf::Tracer::getTracer().getStream() << \
+levelToChar(level) << FLF << std::endl << msg << std::endl;
 
 namespace iqrf {
 
@@ -82,6 +92,7 @@ namespace iqrf {
     std::string file_name;
   };
 
+  //TODO check conversion of lambdas
   class TracerNiceFuncName {
   public:
     TracerNiceFuncName(const std::string& fname)
@@ -101,7 +112,7 @@ namespace iqrf {
         fn.func_name = fn.func_name.substr(beg, fn.func_name.size() - 1);
       }
 
-      o << " " << fn.func_name;
+      o << " " << fn.func_name << "()";
       return o;
     }
   private:
@@ -126,15 +137,29 @@ namespace iqrf {
 
   class Tracer {
   public:
-    void trace(const std::string& trc) {
-      std::lock_guard<std::recursive_mutex> guard(m_mtx);
-      if (m_ofstream.is_open())
-        m_ofstream << trc;
-      else
-        std::cout << trc;
-    }
+    //void trace(const std::string& trc) {
+    //  std::lock_guard<std::recursive_mutex> guard(m_mtx);
+    //  if (m_ofstream.is_open())
+    //    m_ofstream << trc;
+    //  else
+    //    std::cout << trc;
+    //}
+
+    //friend std::ostream& operator << (std::ostream& o, Tracer& t) {
+    //  std::lock_guard<std::recursive_mutex> guard(t.m_mtx);
+    //  if (t.m_ofstream.is_open())
+    //    return t.m_ofstream;
+    //  else
+    //    return std::cout;
+    //}
 
     static Tracer& getTracer();
+    std::ostream& getStream() {
+      if (m_ofstream.is_open())
+        return m_ofstream;
+      else
+        return std::cout;
+    }
 
   private:
     Tracer(const std::string& fname)
