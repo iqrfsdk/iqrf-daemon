@@ -2,6 +2,8 @@
 #include "IqrfLogging.h"
 #include "helpers.h"
 
+#include "PlatformDep.h"
+
 const unsigned IQRF_UDP_BUFFER_SIZE = 1024;
 
 UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort)
@@ -9,7 +11,7 @@ UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort)
   ,m_remotePort(remotePort)
   ,m_localPort(localPort)
 {
-  m_rx = new unsigned char[IQRF_UDP_BUFFER_SIZE];
+  m_rx = ant_new unsigned char[IQRF_UDP_BUFFER_SIZE];
   memset(m_rx, 0, IQRF_UDP_BUFFER_SIZE);
   
   // Initialize Winsock
@@ -71,36 +73,7 @@ UdpChannel::~UdpChannel()
 
 void UdpChannel::listen()
 {
-  /*
-  fd_set fds;
-  int n;
-  struct timeval tv;
-
-  // Set up the file descriptor set.
-  FD_ZERO(&fds);
-  FD_SET(iqrfUdpSocket, &fds);
-
-  // Set up the struct timeval for the timeout.
-  tv.tv_sec = 10;
-  tv.tv_usec = 0;
-
-  // Wait until timeout or data received.
-  n = select(iqrfUdpSocket, &fds, NULL, NULL, &tv);
-  if (n == 0)
-  {
-  printf("Timeout..\n");
-  return 0;
-  }
-  else if (n == -1)
-  {
-  printf("Error..\n");
-  return 1;
-  }
-
-  int length = sizeof(remoteAddr);
-
-  recvfrom(mHandle, buffer, 1024, 0, (SOCKADDR*)&remoteAddr, &length);
-  */
+  TRC_ENTER("thread starts");
 
   int recn = -1;
   socklen_t iqrfUdpServerLength = sizeof(iqrfUdpListener);
@@ -111,7 +84,7 @@ void UdpChannel::listen()
       recn = recvfrom(iqrfUdpSocket, (char*)m_rx, IQRF_UDP_BUFFER_SIZE, 0, (struct sockaddr *)&iqrfUdpListener, &iqrfUdpServerLength);
 
       if (recn == SOCKET_ERROR) {
-        THROW_EX(UdpChannelException, "rcvfrom failed: " << WSAGetLastError());
+        THROW_EX(UdpChannelException, "recvfrom failed: " << WSAGetLastError());
       }
 
       if (recn > 0) {
@@ -126,6 +99,7 @@ void UdpChannel::listen()
     CATCH_EX("listening thread error", UdpChannelException, e);
     m_runListenThread = false;
   }
+  TRC_ENTER("thread stopped");
 }
 
 void UdpChannel::sendTo(const std::basic_string<unsigned char>& message)

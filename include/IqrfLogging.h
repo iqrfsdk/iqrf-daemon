@@ -61,8 +61,10 @@ __LINE__ << iqrf::TracerNiceFuncName(__FUNCTION__)
 #define FLF iqrf::TracerNiceFuncName(__FUNCTION__)
 #endif
 
-#define TRC(level, msg) iqrf::Tracer::getTracer().getStream() << \
-levelToChar(level) << FLF << std::endl << msg << std::endl;
+#define TRC(level, msg) { \
+  std::ostringstream ostr; \
+  ostr << levelToChar(level) << FLF << std::endl << msg << std::endl; \
+  iqrf::Tracer::getTracer().write(ostr.str()); }
 
 namespace iqrf {
 
@@ -137,29 +139,16 @@ namespace iqrf {
 
   class Tracer {
   public:
-    //void trace(const std::string& trc) {
-    //  std::lock_guard<std::recursive_mutex> guard(m_mtx);
-    //  if (m_ofstream.is_open())
-    //    m_ofstream << trc;
-    //  else
-    //    std::cout << trc;
-    //}
-
-    //friend std::ostream& operator << (std::ostream& o, Tracer& t) {
-    //  std::lock_guard<std::recursive_mutex> guard(t.m_mtx);
-    //  if (t.m_ofstream.is_open())
-    //    return t.m_ofstream;
-    //  else
-    //    return std::cout;
-    //}
+    void write(const std::string& msg)
+    {
+      std::lock_guard<std::recursive_mutex> lck(m_mtx);
+      if (m_ofstream.is_open())
+        m_ofstream << msg;
+      else
+        std::cout << msg;
+    }
 
     static Tracer& getTracer();
-    std::ostream& getStream() {
-      if (m_ofstream.is_open())
-        return m_ofstream;
-      else
-        return std::cout;
-    }
 
   private:
     Tracer(const std::string& fname)

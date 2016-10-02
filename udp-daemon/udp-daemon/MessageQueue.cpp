@@ -11,13 +11,16 @@ MessageQueue::MessageQueue(Channel *channel)
 
 MessageQueue::~MessageQueue()
 {
-  m_runSenderThread = false;
-  std::unique_lock<std::mutex> lck(m_conditionVariableMutex);
-  m_messagePushed = true;
-  m_conditionVariable.notify_one();
+  {
+    m_runSenderThread = false;
+    std::unique_lock<std::mutex> lck(m_conditionVariableMutex);
+    m_messagePushed = true;
+    m_conditionVariable.notify_one();
+  }
 
   if (m_senderThread.joinable())
     m_senderThread.join();
+  TRC_DBG("thread stopped");
 }
 
 void MessageQueue::pushToQueue(const std::basic_string<unsigned char>& message)
@@ -26,13 +29,16 @@ void MessageQueue::pushToQueue(const std::basic_string<unsigned char>& message)
     std::lock_guard<std::mutex> lck(m_messageQueueMutex);
     m_messageQueue.push(message);
   }
-  std::unique_lock<std::mutex> lck(m_conditionVariableMutex);
-  m_messagePushed = true;
-  m_conditionVariable.notify_one();
+  {
+    std::unique_lock<std::mutex> lck(m_conditionVariableMutex);
+    m_messagePushed = true;
+    m_conditionVariable.notify_one();
+  }
 }
 
 void MessageQueue::sender()
 {
+  TRC_ENTER("thread starts");
   try {
     while (m_runSenderThread) {
 
@@ -58,4 +64,5 @@ void MessageQueue::sender()
     CATCH_EX("Sender thread error", std::exception, e);
     m_runSenderThread = false;
   }
+  TRC_ENTER("thread stopped");
 }
