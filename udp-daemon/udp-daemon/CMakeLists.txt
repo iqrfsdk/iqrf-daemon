@@ -16,6 +16,7 @@ set(udp-daemon_INC_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/Channel.h
 	${CMAKE_CURRENT_SOURCE_DIR}/IqrfCdcChannel.h
 	${CMAKE_CURRENT_SOURCE_DIR}/UdpChannel.h
+	${CMAKE_CURRENT_SOURCE_DIR}/UdpMessage.h
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/udp)

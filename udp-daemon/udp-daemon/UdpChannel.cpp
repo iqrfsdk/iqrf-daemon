@@ -4,15 +4,14 @@
 
 #include "PlatformDep.h"
 
-const unsigned IQRF_UDP_BUFFER_SIZE = 1024;
-
-UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort)
+UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort, unsigned bufsize)
   :m_runListenThread(true)
   ,m_remotePort(remotePort)
   ,m_localPort(localPort)
+  ,m_bufsize(bufsize)
 {
-  m_rx = ant_new unsigned char[IQRF_UDP_BUFFER_SIZE];
-  memset(m_rx, 0, IQRF_UDP_BUFFER_SIZE);
+  m_rx = ant_new unsigned char[m_bufsize];
+  memset(m_rx, 0, m_bufsize);
   
   // Initialize Winsock
   WSADATA wsaData = { 0 };
@@ -81,7 +80,7 @@ void UdpChannel::listen()
   try {
     while (m_runListenThread)
     {
-      recn = recvfrom(iqrfUdpSocket, (char*)m_rx, IQRF_UDP_BUFFER_SIZE, 0, (struct sockaddr *)&iqrfUdpListener, &iqrfUdpServerLength);
+      recn = recvfrom(iqrfUdpSocket, (char*)m_rx, m_bufsize, 0, (struct sockaddr *)&iqrfUdpListener, &iqrfUdpServerLength);
 
       if (recn == SOCKET_ERROR) {
         THROW_EX(UdpChannelException, "recvfrom failed: " << WSAGetLastError());

@@ -29,7 +29,7 @@ typedef size_t clientlen_t;
 class UdpChannel : public Channel
 {
 public:
-  UdpChannel(unsigned short remotePort, unsigned short localPort);
+  UdpChannel(unsigned short remotePort, unsigned short localPort, unsigned bufsize);
   virtual ~UdpChannel();
   virtual void sendTo(const std::basic_string<unsigned char>& message);
   virtual void registerReceiveFromHandler(ReceiveFromFunc receiveFromFunc);
@@ -50,6 +50,7 @@ private:
   unsigned short m_localPort;
 
   unsigned char* m_rx;
+  unsigned m_bufsize;
 };
 
 class UdpChannelException : public std::exception {
