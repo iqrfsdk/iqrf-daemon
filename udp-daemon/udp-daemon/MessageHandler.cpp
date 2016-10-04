@@ -6,6 +6,7 @@
 #include "MessageQueue.h"
 #include "IqrfLogging.h"
 #include "PlatformDep.h"
+#include <climits>
 
 int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
 {
@@ -115,14 +116,14 @@ MessageHandler::~MessageHandler()
 
 std::basic_string<unsigned char> MessageHandler::getGwIdent()
 {
-  //1. - GW type e.g.: „GW - ETH - 02A“
-  //2. - FW version e.g. : „2.50“
-  //3. - MAC address e.g. : „00 11 22 33 44 55“
-  //4. - TCP / IP Stack version e.g. : „5.42“
-  //5. - IP address of GW e.g. : „192.168.2.100“
-  //6. - Net BIOS Name e.g. : „iqrf_xxxx “ 15 characters
-  //7. - IQRF module OS version e.g. : „3.06D“
-  //8. - Public IP address e.g. : „213.214.215.120“
+  //1. - GW type e.g.: ï¿½GW - ETH - 02Aï¿½
+  //2. - FW version e.g. : ï¿½2.50ï¿½
+  //3. - MAC address e.g. : ï¿½00 11 22 33 44 55ï¿½
+  //4. - TCP / IP Stack version e.g. : ï¿½5.42ï¿½
+  //5. - IP address of GW e.g. : ï¿½192.168.2.100ï¿½
+  //6. - Net BIOS Name e.g. : ï¿½iqrf_xxxx ï¿½ 15 characters
+  //7. - IQRF module OS version e.g. : ï¿½3.06Dï¿½
+  //8. - Public IP address e.g. : ï¿½213.214.215.120ï¿½
   std::basic_ostringstream<unsigned char> os;
   os <<
     "udp-daemon-01" << "\x0D\x0A" <<

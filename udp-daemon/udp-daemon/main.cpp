@@ -13,6 +13,24 @@
 #include <dlfcn.h>
 #endif
 
+class MainException : public std::exception {
+public:
+  MainException(const std::string& cause)
+    :m_cause(cause)
+  {}
+
+  virtual const char* what() const noexcept(true)
+  {
+    return m_cause.c_str();
+  }
+
+  virtual ~MainException()
+  {}
+
+protected:
+  std::string m_cause;
+};
+
 TRC_INIT("");
 
 MessageHandler* msgHndl(nullptr);
@@ -73,25 +91,25 @@ int main(int argc, char** argv)
 
   try {
     if (SIG_ERR == signal(SIGINT, SignalHandler)) {
-      THROW_EX(std::exception, "ERROR: Could not set control handler for SIGINT");
+      THROW_EX(MainException, "ERROR: Could not set control handler for SIGINT");
     }
 
     if (SIG_ERR == signal(SIGTERM, SignalHandler)) {
-      THROW_EX(std::exception, "ERROR: Could not set control handler for SIGTERM");
+      THROW_EX(MainException, "ERROR: Could not set control handler for SIGTERM");
       return -1;
     }
 #ifndef WIN
     if (SIG_ERR == signal(SIGQUIT, SignalHandler)) {
-      THROW_EX(std::exception, "ERROR: Could not set control handler for SIGQUIT");
+      THROW_EX(MainException, "ERROR: Could not set control handler for SIGQUIT");
     }
 #endif
     if (SIG_ERR == signal(SIGABRT, SignalHandler)) {
-      THROW_EX(std::exception, "ERROR: Could not set control handler for SIGABRT");
+      THROW_EX(MainException, "ERROR: Could not set control handler for SIGABRT");
     }
 
 #ifdef WIN
     if (SetConsoleCtrlHandler(ConsoleHandlerRoutine, TRUE) == 0) {
-      THROW_EX(std::exception, "SetConsoleCtrlHandler failed: GetLastError: " << GetLastError());
+      THROW_EX(MainException, "SetConsoleCtrlHandler failed: GetLastError: " << GetLastError());
     }
 #endif
 
@@ -127,6 +145,7 @@ int main(int argc, char** argv)
     CATCH_EX("error", std::exception, e);
   }
 
+  TRC_DBG("deleting msgHndl");
   delete msgHndl;
 
   TRC_ENTER("finished");

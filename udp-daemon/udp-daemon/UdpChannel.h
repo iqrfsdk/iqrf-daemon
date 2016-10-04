@@ -1,6 +1,5 @@
 #pragma once
 
-//#include <arpa/inet.h>
 #ifdef WIN32
 
 #ifndef WIN32_LEAN_AND_MEAN
@@ -13,9 +12,11 @@
 typedef int clientlen_t;
 #else
 
+//#include <arpa/inet.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+//#include <sys/socket.h>
+#include <netinet/ip.h>
+#include <unistd.h>
 typedef int SOCKET;
 typedef void * SOCKADDR_STORAGE;
 typedef size_t clientlen_t;
@@ -23,6 +24,7 @@ typedef size_t clientlen_t;
 #endif
 
 #include "Channel.h"
+#include <stdint.h>
 #include <exception>
 #include <thread>
 
@@ -59,7 +61,7 @@ public:
     :m_cause(cause)
   {}
 
-  virtual const char* what() const
+  virtual const char* what() const noexcept(true)
   {
     return m_cause.c_str();
   }

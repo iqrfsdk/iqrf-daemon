@@ -4,6 +4,12 @@
 
 #include "PlatformDep.h"
 
+#ifndef WIN
+#define WSAGetLastError() errno
+#define SOCKET_ERROR -1
+int closesocket (int filedes) { close(filedes); }
+#endif
+
 UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort, unsigned bufsize)
   :m_runListenThread(true)
   ,m_remotePort(remotePort)
@@ -13,6 +19,7 @@ UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort, unsi
   m_rx = ant_new unsigned char[m_bufsize];
   memset(m_rx, 0, m_bufsize);
   
+#ifdef WIN
   // Initialize Winsock
   WSADATA wsaData = { 0 };
   int iResult = 0;
@@ -21,16 +28,17 @@ UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort, unsi
   if (iResult != 0) {
     THROW_EX(UdpChannelException, "WSAStartup failed: " << GetLastError());
   }
+#endif
 
   //iqrfUdpSocket = socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK, 0);
   iqrfUdpSocket = socket(AF_INET, SOCK_DGRAM, 0);
   if (iqrfUdpSocket == -1)
     THROW_EX(UdpChannelException, "socket failed: " << GetLastError());
 
-  char broadcastEnable = 1;                                // Enable sending broadcast packets
+  int broadcastEnable = 1;                                // Enable sending broadcast packets
   if (0 != setsockopt(iqrfUdpSocket, SOL_SOCKET, SO_BROADCAST, &broadcastEnable, sizeof(broadcastEnable)))
   {
-    closesocket(iqrfUdpSocket);
+	closesocket(iqrfUdpSocket);
     THROW_EX(UdpChannelException, "setsockopt failed: " << GetLastError());
   }
 
@@ -48,7 +56,7 @@ UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort, unsi
 
   if (-1 == bind(iqrfUdpSocket, (struct sockaddr *)&iqrfUdpListener, sizeof(iqrfUdpListener)))
   {
-    closesocket(iqrfUdpSocket);
+	closesocket(iqrfUdpSocket);
     THROW_EX(UdpChannelException, "bind failed: " << GetLastError());
   }
 
@@ -57,15 +65,16 @@ UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort, unsi
 
 UdpChannel::~UdpChannel()
 {
-  int iResult = closesocket(iqrfUdpSocket);
-  if (iResult == SOCKET_ERROR) {
-    TRC_WAR("closesocket failed: " << GetLastError());
-  }
+  closesocket(iqrfUdpSocket);
 
+  TRC_DBG("joining udp listening thread");
   if (m_listenThread.joinable())
     m_listenThread.join();
+  TRC_DBG("listening thread joined");
 
+#ifdef WIN
   WSACleanup();
+#endif
 
   delete[] m_rx;
 }

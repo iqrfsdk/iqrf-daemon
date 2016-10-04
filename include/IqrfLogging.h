@@ -14,7 +14,6 @@ namespace iqrf { \
   Tracer& Tracer::getTracer() { static Tracer tracer(stream); return tracer; }\
   static Tracer& iqrfTracer(Tracer::getTracer()); }
 
-
 //convenient trace macros
 #ifdef _DEBUG
 #define TRC_ERR(trc)  TRC(iqrf::Level::err, trc)
@@ -46,9 +45,9 @@ namespace iqrf { \
 
 //exceptions tracing
 #define THROW_EX(extype, exmsg) { \
-  std::ostringstream ostr; ostr << exmsg; \
-  TRC_WAR("Throwing " << #extype << ": " << ostr.str()); \
-  extype ex(ostr.str().c_str()); throw ex; }
+  std::ostringstream ostrex; ostrex << exmsg; \
+  TRC_WAR("Throwing " << #extype << ": " << ostrex.str()); \
+  extype ex(ostrex.str().c_str()); throw ex; }
 
 #define CATCH_EX(msg, extype, ex) { \
   TRC_WAR("Caught " << msg << ": " << #extype << ": " << ex.what()); }
@@ -81,13 +80,14 @@ namespace iqrf {
       :file_name(fname)
     {}
 
-    friend std::ostream& operator << (std::ostream& o, TracerNiceFileName& fn)
+    friend std::ostream& operator << (std::ostream& o, const TracerNiceFileName& fn)
     {
-      size_t found = fn.file_name.find_last_of("/\\");
+      std::string niceName = fn.file_name;
+      size_t found = niceName.find_last_of("/\\");
       if (std::string::npos != found)
-        fn.file_name = fn.file_name.substr(found + 1);
+        niceName = niceName.substr(found + 1);
 
-      o << " \"" << fn.file_name << "\"";
+      o << " \"" << niceName << "\"";
       return o;
     }
   private:
@@ -101,20 +101,21 @@ namespace iqrf {
       :func_name(fname)
     {}
 
-    friend std::ostream& operator << (std::ostream& o, TracerNiceFuncName& fn)
+    friend std::ostream& operator << (std::ostream& o, const TracerNiceFuncName& fn)
     {
-      size_t end = fn.func_name.find('(');
+      std::string niceName = fn.func_name;
+      size_t end = niceName.find('(');
       if (std::string::npos != end)
-        fn.func_name = fn.func_name.substr(0, end);
+    	  niceName = niceName.substr(0, end);
 
-      size_t beg = fn.func_name.rfind(' ');
+      size_t beg = niceName.rfind(' ');
 
       if (std::string::npos != beg) {
         beg++;
-        fn.func_name = fn.func_name.substr(beg, fn.func_name.size() - 1);
+        niceName = niceName.substr(beg, niceName.size() - 1);
       }
 
-      o << " " << fn.func_name << "()";
+      o << " " << niceName << "()";
       return o;
     }
   private:

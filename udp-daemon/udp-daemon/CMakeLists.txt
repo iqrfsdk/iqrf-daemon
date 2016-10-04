@@ -27,7 +27,7 @@ add_executable(${PROJECT_NAME} ${udp-daemon_SRC_FILES} ${udp-daemon_INC_FILES})
 if (WIN32) 
 	target_link_libraries(${PROJECT_NAME} cdc udp Ws2_32)
 else()
-	target_link_libraries(${PROJECT_NAME} udp pthread)
+	target_link_libraries(${PROJECT_NAME} cdc udp pthread)
 endif()
 
 #install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/sbin)

@@ -15,3 +15,8 @@
 #else
 #define ant_new new
 #endif
+
+#ifdef WIN
+#else
+#define GetLastError() errno
+#endif
