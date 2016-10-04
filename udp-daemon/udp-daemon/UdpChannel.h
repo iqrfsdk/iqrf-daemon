@@ -61,7 +61,12 @@ public:
     :m_cause(cause)
   {}
 
+//TODO ?
+#ifndef WIN32
   virtual const char* what() const noexcept(true)
+#else
+  virtual const char* what() const
+#endif
   {
     return m_cause.c_str();
   }
