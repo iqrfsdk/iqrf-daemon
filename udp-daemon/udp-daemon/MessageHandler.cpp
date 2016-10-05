@@ -124,8 +124,9 @@ std::basic_string<unsigned char> MessageHandler::getGwIdent()
   //6. - Net BIOS Name e.g. : �iqrf_xxxx � 15 characters
   //7. - IQRF module OS version e.g. : �3.06D�
   //8. - Public IP address e.g. : �213.214.215.120�
-  std::basic_ostringstream<unsigned char> os;
-  os <<
+  //std::basic_ostringstream<unsigned char> os;
+  std::basic_ostringstream<char> ostring;
+  ostring <<
     "udp-daemon-01" << "\x0D\x0A" <<
     "2.50" << "\x0D\x0A" <<
     "00 11 22 33 44 55" << "\x0D\x0A" <<
@@ -135,20 +136,28 @@ std::basic_string<unsigned char> MessageHandler::getGwIdent()
     "3.06D" << "\x0D\x0A" <<
     "192.168.1.11" << "\x0D\x0A";
 
-  return os.str();
+  ustring res((unsigned char*)ostring.str().data(),ostring.str().size());
+  TRC_DBG("retval:" << PAR(res.size()) << std::endl << FORM_HEX(res.data(),res.size()));
+  return res;
 }
 
 void MessageHandler::watchDog()
 {
   TRC_ENTER("");
   m_running = true;
-  start();
-  while (m_running)
-  {
-    //TODO
-    //watch worker threads
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+  try {
+	  start();
+	  while (m_running)
+	  {
+		//TODO
+		//watch worker threads
+		std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+	  }
   }
+  catch (std::exception& e) {
+    CATCH_EX("error", std::exception, e);
+  }
+
   stop();
   TRC_LEAVE("");
 }
@@ -156,7 +165,6 @@ void MessageHandler::watchDog()
 void MessageHandler::start()
 {
   TRC_ENTER("");
-  std::cout << "udp-daemon starts" << std::endl;
   m_iqrfChannel = ant_new IqrfCdcChannel(m_iqrfPortName);
 
   m_udpChannel = ant_new UdpChannel((unsigned short)m_remotePort, (unsigned short)m_localPort, IQRF_UDP_BUFFER_SIZE);
@@ -175,6 +183,7 @@ void MessageHandler::start()
   m_udpChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) -> int {
     return handleMessageFromUdp(msg); });
 
+  std::cout << "udp-daemon started" << std::endl;
   TRC_LEAVE("");
 }
 

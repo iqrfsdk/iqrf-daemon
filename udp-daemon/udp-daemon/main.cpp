@@ -133,17 +133,13 @@ int main(int argc, char** argv)
   }
   catch (std::exception& e) {
     CATCH_EX("error", std::exception, e);
+    return -1;
   }
 
   TRC_ENTER(PAR(iqrf_port_name) << PAR(remote_ip_port) << PAR(local_ip_port));
 
-  try {
-    msgHndl = ant_new MessageHandler(iqrf_port_name, remote_ip_port, local_ip_port);
-    msgHndl->watchDog();
-  }
-  catch (std::exception& e) {
-    CATCH_EX("error", std::exception, e);
-  }
+  msgHndl = ant_new MessageHandler(iqrf_port_name, remote_ip_port, local_ip_port);
+  msgHndl->watchDog();
 
   TRC_DBG("deleting msgHndl");
   delete msgHndl;

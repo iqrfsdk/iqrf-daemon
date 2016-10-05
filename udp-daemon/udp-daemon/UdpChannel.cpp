@@ -65,6 +65,7 @@ UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort, unsi
 
 UdpChannel::~UdpChannel()
 {
+  shutdown(iqrfUdpSocket, SHUT_RD);
   closesocket(iqrfUdpSocket);
 
   TRC_DBG("joining udp listening thread");
