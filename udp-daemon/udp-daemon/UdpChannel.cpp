@@ -8,6 +8,10 @@
 #define WSAGetLastError() errno
 #define SOCKET_ERROR -1
 int closesocket (int filedes) { close(filedes); }
+typedef int opttype;
+#else
+#define SHUT_RD SD_RECEIVE
+typedef char opttype;
 #endif
 
 UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort, unsigned bufsize)
@@ -35,11 +39,7 @@ UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort, unsi
   if (iqrfUdpSocket == -1)
     THROW_EX(UdpChannelException, "socket failed: " << GetLastError());
 
-#ifdef WIN
-  char broadcastEnable = 1;                                // Enable sending broadcast packets
-#else
-  int broadcastEnable = 1;                                // Enable sending broadcast packets
-#endif
+  opttype broadcastEnable = 1;                                // Enable sending broadcast packets
   if (0 != setsockopt(iqrfUdpSocket, SOL_SOCKET, SO_BROADCAST, &broadcastEnable, sizeof(broadcastEnable)))
   {
 	closesocket(iqrfUdpSocket);
