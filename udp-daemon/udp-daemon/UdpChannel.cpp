@@ -35,7 +35,11 @@ UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort, unsi
   if (iqrfUdpSocket == -1)
     THROW_EX(UdpChannelException, "socket failed: " << GetLastError());
 
+#ifdef WIN
+  char broadcastEnable = 1;                                // Enable sending broadcast packets
+#else
   int broadcastEnable = 1;                                // Enable sending broadcast packets
+#endif
   if (0 != setsockopt(iqrfUdpSocket, SOL_SOCKET, SO_BROADCAST, &broadcastEnable, sizeof(broadcastEnable)))
   {
 	closesocket(iqrfUdpSocket);
