@@ -1,5 +1,5 @@
 #static udp library
-project(udp LANGUAGES C)
+project(udp)
 
 #declaration of the private implementation ${CMAKE_SOURCE_DIR}/src/CDCImplPri.h
 #is intentionally kept outside of interface declarations
