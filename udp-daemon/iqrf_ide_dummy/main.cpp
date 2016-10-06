@@ -28,7 +28,7 @@ void encodeMessageUdp(unsigned char command, unsigned char subcommand, const ust
 
 int handleMessageFromUdp(const ustring& udpMessage)
 {
-  TRC_DBG("Received from UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
+  TRC_WAR("Received from UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
   return 0;
 }
 
