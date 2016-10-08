@@ -14,10 +14,16 @@ pushd ${clibcdc}
 clibcdc=$PWD
 popd
 
+#get path to clibspi libs
+set clibspi=../../clibspi/${buildexp}
+pushd ${clibspi}
+set clibspi=$PWD
+popd
+
 #launch cmake to generate build environment
 pushd ${builddir}
 pwd
-cmake -G "Eclipse CDT4 - Unix Makefiles" -Dclibcdc_DIR:PATH=${clibcdc} ${currentdir}
+cmake -G "Eclipse CDT4 - Unix Makefiles" -Dclibcdc_DIR:PATH=${clibcdc} -Dclibspi_DIR:PATH=${clibspi} ${currentdir}
 popd
 
 #build from generated build environment
