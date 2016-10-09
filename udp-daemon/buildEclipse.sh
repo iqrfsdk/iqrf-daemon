@@ -15,9 +15,9 @@ clibcdc=$PWD
 popd
 
 #get path to clibspi libs
-set clibspi=../../clibspi/${buildexp}
+clibspi=../../clibspi/${buildexp}
 pushd ${clibspi}
-set clibspi=$PWD
+clibspi=$PWD
 popd
 
 #launch cmake to generate build environment
