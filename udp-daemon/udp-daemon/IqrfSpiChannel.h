@@ -21,11 +21,6 @@ public:
 private:
   IqrfSpiChannel();
   ReceiveFromFunc m_receiveFromFunc;
-  //void readFrom(void* readBuffer, unsigned dataLength);
-  //void setCommunicationMode(_spi_iqrf_CommunicationMode mode) const;
-  //_spi_iqrf_CommunicationMode getCommunicationMode() const;
-
-  //spi_iqrf_SPIStatus getCommunicationStatus() const;
 
   bool m_runListenThread;
   std::thread m_listenThread;

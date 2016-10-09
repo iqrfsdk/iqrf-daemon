@@ -1,5 +1,6 @@
 #include "MessageHandler.h"
 #include "IqrfCdcChannel.h"
+#include "IqrfSpiChannel.h"
 #include "UdpChannel.h"
 #include "UdpMessage.h"
 #include "helpers.h"
@@ -165,7 +166,11 @@ void MessageHandler::watchDog()
 void MessageHandler::start()
 {
   TRC_ENTER("");
-  m_iqrfChannel = ant_new IqrfCdcChannel(m_iqrfPortName);
+  size_t found = m_iqrfPortName.find("spi");
+  if (found != std::string::npos)
+    m_iqrfChannel = ant_new IqrfSpiChannel(m_iqrfPortName);
+  else
+    m_iqrfChannel = ant_new IqrfCdcChannel(m_iqrfPortName);
 
   m_udpChannel = ant_new UdpChannel((unsigned short)m_remotePort, (unsigned short)m_localPort, IQRF_UDP_BUFFER_SIZE);
 
