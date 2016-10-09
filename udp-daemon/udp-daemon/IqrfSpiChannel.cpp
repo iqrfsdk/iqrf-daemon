@@ -1,6 +1,7 @@
 #include "IqrfSpiChannel.h"
 #include "IqrfLogging.h"
 #include "PlatformDep.h"
+#include <string.h>
 #include <thread>
 #include <chrono>
 
