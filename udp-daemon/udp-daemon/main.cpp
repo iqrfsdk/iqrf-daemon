@@ -120,10 +120,11 @@ int main(int argc, char** argv)
 
     if (argc < 2) {
       std::cerr << "Usage" << std::endl;
-      std::cerr << "  cdc_example <iqrf_port_name> [remote_ip_port] [local_ip_port]" << std::endl << std::endl;
+      std::cerr << "  udp-daemon <iqrf_port_name> [remote_ip_port] [local_ip_port]" << std::endl << std::endl;
       std::cerr << "Example" << std::endl;
-      std::cerr << "  cdc_example COM5" << std::endl;
-      std::cerr << "  cdc_example /dev/ttyACM0 55000 55300" << std::endl;
+      std::cerr << "  udp-daemon COM5" << std::endl;
+      std::cerr << "  udp-daemon /dev/ttyACM0 55000 55300" << std::endl;
+      std::cerr << "  udp-daemon /dev/spidev0.0" << std::endl;
       return (-1);
     }
     else {

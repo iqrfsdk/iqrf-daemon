@@ -9,7 +9,7 @@ const unsigned SPI_REC_BUFFER_SIZE = 1024;
 
 IqrfSpiChannel::IqrfSpiChannel(const std::string& portIqrf)
   :m_port(portIqrf)
-  , m_bufsize(SPI_REC_BUFFER_SIZE)
+  ,m_bufsize(SPI_REC_BUFFER_SIZE)
 {
   m_rx = ant_new unsigned char[m_bufsize];
   memset(m_rx, 0, m_bufsize);
@@ -19,6 +19,7 @@ IqrfSpiChannel::IqrfSpiChannel(const std::string& portIqrf)
     THROW_EX(SpiChannelException, "Communication interface has not been open.");
   }
 
+  m_runListenThread = true;
   m_listenThread = std::thread(&IqrfSpiChannel::listen, this);
 }
 
@@ -60,13 +61,44 @@ void IqrfSpiChannel::listen()
   TRC_ENTER("thread starts");
 
   try {
+
+    //wait for SPI ready
+//    while (m_runListenThread)
+//    {
+//      int recData = 0;
+//
+//      //lock scope
+//      {
+//        std::lock_guard<std::mutex> lck(m_commMutex);
+//
+//        //get status
+//        spi_iqrf_SPIStatus status;
+//        int retval = spi_iqrf_getSPIStatus(&status);
+//        if (BASE_TYPES_OPER_OK != retval) {
+//          THROW_EX(SpiChannelException, "spi_iqrf_getSPIStatus() failed: " << PAR(retval));
+//        }
+//
+//        if (status.dataNotReadyStatus == SPI_IQRF_SPI_READY_COMM) {
+//          break;
+//        }
+//        else {
+//          TRC_DBG(PAR_HEX(status.isDataReady) << PAR_HEX(status.dataNotReadyStatus));
+//
+//        }
+//        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+//
+//      }
+//    }
+
+    TRC_INF("SPI is ready");
+
     while (m_runListenThread)
     {
       int recData = 0;
       
       //lock scope
       {
-        std::lock_guard<std::mutex> lck(m_commMutex);
+    	std::lock_guard<std::mutex> lck(m_commMutex);
         
         //get status
         spi_iqrf_SPIStatus status;
@@ -77,8 +109,8 @@ void IqrfSpiChannel::listen()
         
         if (status.isDataReady) {
 
-          if (status.isDataReady > m_bufsize) {
-            THROW_EX(SpiChannelException, "Received data too long: " << NAME_PAR(len, status.isDataReady) << PAR(m_bufsize));
+          if (status.dataReady > m_bufsize) {
+            THROW_EX(SpiChannelException, "Received data too long: " << NAME_PAR(len, status.dataReady) << PAR(m_bufsize));
           }
 
           //reading 
@@ -97,20 +129,19 @@ void IqrfSpiChannel::listen()
       }
 
       //TODO some conditional wait for condition from SPI?
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
   }
   catch (SpiChannelException& e) {
     CATCH_EX("listening thread error", SpiChannelException, e);
     m_runListenThread = false;
   }
-  TRC_ENTER("thread stopped");
+  TRC_WAR("thread stopped");
 }
 
 void IqrfSpiChannel::sendTo(const std::basic_string<unsigned char>& message)
 {
   static int counter = 0;
-  //DSResponse dsResponse = DSResponse::BUSY;
   int attempt = 0;
   counter++;
 
@@ -135,6 +166,9 @@ void IqrfSpiChannel::sendTo(const std::basic_string<unsigned char>& message)
           THROW_EX(SpiChannelException, "spi_iqrf_write()() failed: " << PAR(retval));
         }
         break;
+      }
+      else {
+   	TRC_DBG(PAR_HEX(status.isDataReady) << PAR_HEX(status.dataNotReadyStatus));
       }
     }
     //wait for next attempt

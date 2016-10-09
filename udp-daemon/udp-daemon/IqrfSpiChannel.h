@@ -22,7 +22,7 @@ private:
   IqrfSpiChannel();
   ReceiveFromFunc m_receiveFromFunc;
 
-  bool m_runListenThread;
+  std::atomic_bool m_runListenThread;
   std::thread m_listenThread;
   void listen();
 

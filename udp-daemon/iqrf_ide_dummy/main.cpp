@@ -78,6 +78,18 @@ int main()
         m_udpChannel->sendTo(udpMessage);
       break;
     }
+    case 3:
+    {
+      TRC_DBG("Write data to TR module ...");
+      ustring udpMessage;
+      //reset coordinator
+      ustring message = { 0x00, 0x00, 0x02, 0x01, 0xFF, 0xFF };
+      encodeMessageUdp(3, 0, message, udpMessage);
+
+      for (int i = 1; i > 0; i--)
+        m_udpChannel->sendTo(udpMessage);
+      break;
+    }
     default:
       break;
     }
