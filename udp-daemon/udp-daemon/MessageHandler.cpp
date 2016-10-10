@@ -28,9 +28,10 @@ int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
   {
   case IQRF_UDP_GET_GW_INFO:          // --- Returns GW identification ---
   {
-    std::basic_string<unsigned char> udpMessage;
-    encodeMessageUdp(getGwIdent(), udpMessage);
-    m_toUdpMessageQueue->pushToQueue(udpMessage);
+    std::basic_string<unsigned char> udpResponse(udpMessage);
+    encodeMessageUdp(getGwIdent(), udpResponse);
+    udpResponse[cmd] = IQRF_UDP_GET_GW_INFO | 0x80;
+    m_toUdpMessageQueue->pushToQueue(udpResponse);
   }
   break;
 
@@ -138,7 +139,7 @@ std::basic_string<unsigned char> MessageHandler::getGwIdent()
     "192.168.1.11" << "\x0D\x0A";
 
   ustring res((unsigned char*)ostring.str().data(),ostring.str().size());
-  TRC_DBG("retval:" << PAR(res.size()) << std::endl << FORM_HEX(res.data(),res.size()));
+  //TRC_DBG("retval:" << PAR(res.size()) << std::endl << FORM_HEX(res.data(),res.size()));
   return res;
 }
 
