@@ -9,13 +9,20 @@
 #include "PlatformDep.h"
 #include <climits>
 
+enum IqrfWriteResults {
+  wr_OK = 0x50,
+  wr_Error_Len = 0x60, //(number of data = 0 or more than TR buffer COM length)
+  wr_Error_SPI = 0x61, //(SPI bus busy)
+  wr_Error_IQRF = 0x62 //(IQRF - CRCM Error)
+};
+
 int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
 {
   TRC_DBG("Received from UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
 
   size_t msgSize = udpMessage.size();
   std::basic_string<unsigned char> message;
-  
+
   try {
     decodeMessageUdp(udpMessage, message);
   }
@@ -30,15 +37,25 @@ int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
   {
     std::basic_string<unsigned char> udpResponse(udpMessage);
     encodeMessageUdp(getGwIdent(), udpResponse);
-    udpResponse[cmd] = IQRF_UDP_GET_GW_INFO | 0x80;
+    udpResponse[cmd] = (unsigned char)IQRF_UDP_GET_GW_INFO | 0x80;
     m_toUdpMessageQueue->pushToQueue(udpResponse);
   }
-  break;
+  return 0;
 
   case IQRF_UDP_WRITE_IQRF:       // --- Writes data to the TR module ---
-    //udpMessage[subcmd] = IQRF_UDP_NAK;
+  {
     m_toIqrfMessageQueue->pushToQueue(message);
-    return 0;
+
+    //send response
+    std::basic_string<unsigned char> udpResponse(udpMessage.substr(0, IQRF_UDP_HEADER_SIZE));
+    std::basic_string<unsigned char> message;
+    encodeMessageUdp(message, udpResponse);
+    udpResponse[cmd] = (unsigned char)IQRF_UDP_WRITE_IQRF | 0x80;
+    //TODO it is required to send back via subcmd write result - implement sync write with appropriate ret code
+    udpResponse[subcmd] = (unsigned char)IQRF_UDP_ACK;
+    m_toUdpMessageQueue->pushToQueue(udpResponse);
+  }
+  return 0;
 
   default:
     break;
@@ -49,9 +66,16 @@ int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
 int MessageHandler::handleMessageFromIqrf(const ustring& iqrfMessage)
 {
   TRC_DBG("Received from to IQRF: " << std::endl << FORM_HEX(iqrfMessage.data(), iqrfMessage.size()));
+  
   std::basic_string<unsigned char> udpMessage;
-  encodeMessageUdp(iqrfMessage, udpMessage);
+  std::basic_string<unsigned char> message(iqrfMessage);
+  encodeMessageUdp(message, udpMessage);
+  udpMessage[cmd] = (unsigned char)IQRF_UDP_IQRF_SPI_DATA;
   m_toUdpMessageQueue->pushToQueue(udpMessage);
+  
+  //std::basic_string<unsigned char> udpMessage;
+  //encodeMessageUdp(iqrfMessage, udpMessage);
+  //m_toUdpMessageQueue->pushToQueue(udpMessage);
   return 0;
 }
 
@@ -109,7 +133,7 @@ MessageHandler::MessageHandler(const std::string& iqrf_port_name, const std::str
     m_remotePort = 55000;
   m_localPort = strtoul(local_ip_port.c_str(), nullptr, 0);
   if (0 == m_localPort || ULONG_MAX == m_localPort)
-    m_localPort = 55000;
+    m_localPort = 55300;
 }
 
 MessageHandler::~MessageHandler()
@@ -138,7 +162,7 @@ std::basic_string<unsigned char> MessageHandler::getGwIdent()
     "3.06D" << "\x0D\x0A" <<
     "192.168.1.11" << "\x0D\x0A";
 
-  ustring res((unsigned char*)ostring.str().data(),ostring.str().size());
+  ustring res((unsigned char*)ostring.str().data(), ostring.str().size());
   //TRC_DBG("retval:" << PAR(res.size()) << std::endl << FORM_HEX(res.data(),res.size()));
   return res;
 }
@@ -148,13 +172,13 @@ void MessageHandler::watchDog()
   TRC_ENTER("");
   m_running = true;
   try {
-	  start();
-	  while (m_running)
-	  {
-		//TODO
-		//watch worker threads
-		std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-	  }
+    start();
+    while (m_running)
+    {
+      //TODO
+      //watch worker threads
+      std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+    }
   }
   catch (std::exception& e) {
     CATCH_EX("error", std::exception, e);

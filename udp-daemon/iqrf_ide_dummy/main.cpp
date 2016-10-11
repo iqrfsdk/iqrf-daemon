@@ -11,11 +11,15 @@ TRC_INIT("");
 
 void encodeMessageUdp(unsigned char command, unsigned char subcommand, const ustring& message, ustring& udpMessage)
 {
+  static unsigned short pacid = 0;
+  pacid++;
   unsigned short dlen = (unsigned short)message.size();
   udpMessage.resize(IQRF_UDP_HEADER_SIZE + IQRF_UDP_CRC_SIZE, '\0');
   udpMessage[gwAddr] = IQRF_UDP_GW_ADR;
   udpMessage[cmd] = command;
   udpMessage[subcmd] = subcommand;
+  udpMessage[pacid_H] = (unsigned char)((pacid >> 8) & 0xFF);
+  udpMessage[pacid_L] = (unsigned char)(pacid & 0xFF);
   udpMessage[dlen_H] = (unsigned char)((dlen >> 8) & 0xFF);
   udpMessage[dlen_L] = (unsigned char)(dlen & 0xFF);
 
