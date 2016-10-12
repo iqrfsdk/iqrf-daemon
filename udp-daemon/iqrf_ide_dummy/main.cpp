@@ -11,11 +11,15 @@ TRC_INIT("");
 
 void encodeMessageUdp(unsigned char command, unsigned char subcommand, const ustring& message, ustring& udpMessage)
 {
+  static unsigned short pacid = 0;
+  pacid++;
   unsigned short dlen = (unsigned short)message.size();
   udpMessage.resize(IQRF_UDP_HEADER_SIZE + IQRF_UDP_CRC_SIZE, '\0');
   udpMessage[gwAddr] = IQRF_UDP_GW_ADR;
   udpMessage[cmd] = command;
   udpMessage[subcmd] = subcommand;
+  udpMessage[pacid_H] = (unsigned char)((pacid >> 8) & 0xFF);
+  udpMessage[pacid_L] = (unsigned char)(pacid & 0xFF);
   udpMessage[dlen_H] = (unsigned char)((dlen >> 8) & 0xFF);
   udpMessage[dlen_L] = (unsigned char)(dlen & 0xFF);
 
@@ -72,6 +76,18 @@ int main()
       ustring udpMessage;
       //temperatureRequest
       ustring message = { 0x01, 0x00, 0x0A, 0x00, 0xFF, 0xFF };
+      encodeMessageUdp(3, 0, message, udpMessage);
+
+      for (int i = 1; i > 0; i--)
+        m_udpChannel->sendTo(udpMessage);
+      break;
+    }
+    case 3:
+    {
+      TRC_DBG("Write data to TR module ...");
+      ustring udpMessage;
+      //reset coordinator
+      ustring message = { 0x00, 0x00, 0x02, 0x01, 0xFF, 0xFF };
       encodeMessageUdp(3, 0, message, udpMessage);
 
       for (int i = 1; i > 0; i--)
