@@ -153,7 +153,7 @@ std::basic_string<unsigned char> MessageHandler::getGwIdent()
   //std::basic_ostringstream<unsigned char> os;
   std::basic_ostringstream<char> ostring;
   ostring <<
-    "udp-daemon-01" << "\x0D\x0A" <<
+    "\x0D\x0A" << "udp-daemon-01" << "\x0D\x0A" <<
     "2.50" << "\x0D\x0A" <<
     "00 11 22 33 44 55" << "\x0D\x0A" <<
     "5.42" << "\x0D\x0A" <<
