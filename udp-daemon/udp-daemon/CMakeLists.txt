@@ -31,9 +31,9 @@ message("clibspi_INCLUDE_DIRS: ${clibspi_INCLUDE_DIRS}")
 add_executable(${PROJECT_NAME} ${udp-daemon_SRC_FILES} ${udp-daemon_INC_FILES})
 
 if (WIN32) 
-	target_link_libraries(${PROJECT_NAME} cdc sysfs_gpio spi_iqrf udp Ws2_32)
+	target_link_libraries(${PROJECT_NAME} cdc spi_iqrf sysfs_gpio udp Ws2_32)
 else()
-	target_link_libraries(${PROJECT_NAME} cdc sysfs_gpio spi_iqrf udp pthread)
+	target_link_libraries(${PROJECT_NAME} cdc spi_iqrf sysfs_gpio udp pthread)
 endif()
 
 #install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/sbin)
