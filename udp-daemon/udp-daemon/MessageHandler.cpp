@@ -50,9 +50,9 @@ int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
     std::basic_string<unsigned char> udpResponse(udpMessage.substr(0, IQRF_UDP_HEADER_SIZE));
     std::basic_string<unsigned char> message;
     udpResponse[cmd] = (unsigned char)IQRF_UDP_WRITE_IQRF | 0x80;
+    udpResponse[subcmd] = (unsigned char)IQRF_UDP_ACK;
     encodeMessageUdp(message, udpResponse);
     //TODO it is required to send back via subcmd write result - implement sync write with appropriate ret code
-    udpResponse[subcmd] = (unsigned char)IQRF_UDP_ACK;
     m_toUdpMessageQueue->pushToQueue(udpResponse);
   }
   return 0;
