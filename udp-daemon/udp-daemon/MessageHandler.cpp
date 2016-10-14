@@ -36,8 +36,8 @@ int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
   case IQRF_UDP_GET_GW_INFO:          // --- Returns GW identification ---
   {
     std::basic_string<unsigned char> udpResponse(udpMessage);
-    encodeMessageUdp(getGwIdent(), udpResponse);
     udpResponse[cmd] = (unsigned char)IQRF_UDP_GET_GW_INFO | 0x80;
+    encodeMessageUdp(getGwIdent(), udpResponse);
     m_toUdpMessageQueue->pushToQueue(udpResponse);
   }
   return 0;
@@ -49,8 +49,8 @@ int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
     //send response
     std::basic_string<unsigned char> udpResponse(udpMessage.substr(0, IQRF_UDP_HEADER_SIZE));
     std::basic_string<unsigned char> message;
-    encodeMessageUdp(message, udpResponse);
     udpResponse[cmd] = (unsigned char)IQRF_UDP_WRITE_IQRF | 0x80;
+    encodeMessageUdp(message, udpResponse);
     //TODO it is required to send back via subcmd write result - implement sync write with appropriate ret code
     udpResponse[subcmd] = (unsigned char)IQRF_UDP_ACK;
     m_toUdpMessageQueue->pushToQueue(udpResponse);
