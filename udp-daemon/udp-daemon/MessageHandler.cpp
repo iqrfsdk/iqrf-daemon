@@ -163,20 +163,27 @@ void MessageHandler::getGwIdent(ustring& message)
   //7. - IQRF module OS version e.g. : �3.06D�
   //8. - Public IP address e.g. : �213.214.215.120�
 
+  const char* crlf = "\x0D\x0A";
+  const std::string& hname = m_udpChannel->getMyHostName();
+  const std::vector<std::string> ipAddrs = m_udpChannel->getMyIpAdresses();
+  std::string ipAddr = "255.255.255.255";
+  if (ipAddrs.size() > 0) {
+    ipAddr = ipAddrs[0];
+  }
+
+  //TODO set correct IP adresses, MAC, OS ver, etc
   std::basic_ostringstream<char> ostring;
-  //TODO set correct IP adresses
-  ostring <<
-    "\x0D\x0A" << "udp-daemon-01" << "\x0D\x0A" <<
-    "2.50" << "\x0D\x0A" <<
-    "00 11 22 33 44 55" << "\x0D\x0A" <<
-    "5.42" << "\x0D\x0A" <<
-    "192.168.1.11" << "\x0D\x0A" <<
-    "iqrf_xxxx" << "\x0D\x0A" <<
-    "3.06D" << "\x0D\x0A" <<
-    "192.168.1.11" << "\x0D\x0A";
+  ostring << crlf <<
+    "udp-dmn-01" << crlf <<
+    "1.00" << crlf <<
+    "00 00 00 00 00 00" << crlf <<
+    "5.42" << crlf <<
+    ipAddr << crlf <<
+    "iqrf_xxxx" << crlf <<
+    "3.06D" << crlf <<
+    ipAddr << crlf;
 
   ustring res((unsigned char*)ostring.str().data(), ostring.str().size());
-  //TRC_DBG("retval:" << PAR(res.size()) << std::endl << FORM_HEX(res.data(),res.size()));
   message = res;
 }
 
@@ -246,6 +253,11 @@ void MessageHandler::start()
     return handleMessageFromUdp(msg); });
 
   std::cout << "udp-daemon started" << std::endl;
+  std::cout << "hostName: " << m_udpChannel->getMyHostName() << std::endl;
+  std::cout << "IP addresses: " << std::endl;
+  for (auto & it : m_udpChannel->getMyIpAdresses())
+    std::cout << it << std::endl;
+
   TRC_LEAVE("");
 }
 

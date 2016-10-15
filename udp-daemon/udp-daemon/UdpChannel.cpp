@@ -64,8 +64,7 @@ UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort, unsi
     THROW_EX(UdpChannelException, "bind failed: " << GetLastError());
   }
 
-  using namespace std;
-  char ac[80];
+  //TODO gethostname obsolete for IPV6
   if (SOCKET_ERROR == gethostname((char*)m_rx, m_bufsize)) {
     closesocket(iqrfUdpSocket);
     THROW_EX(UdpChannelException, "gethostname failed: " << GetLastError());

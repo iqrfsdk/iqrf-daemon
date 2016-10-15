@@ -6,6 +6,7 @@
 typedef std::basic_string<unsigned char> ustring;
 
 class Channel;
+class UdpChannel;
 class MessageQueue;
 
 class MessageHandler
@@ -30,7 +31,7 @@ private:
   void stop();
 
   Channel *m_iqrfChannel;
-  Channel *m_udpChannel;
+  UdpChannel *m_udpChannel;
 
   MessageQueue *m_toUdpMessageQueue;
   MessageQueue *m_toIqrfMessageQueue;

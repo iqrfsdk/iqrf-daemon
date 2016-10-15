@@ -38,6 +38,9 @@ public:
   virtual void sendTo(const std::basic_string<unsigned char>& message);
   virtual void registerReceiveFromHandler(ReceiveFromFunc receiveFromFunc);
 
+  const std::string& getMyHostName() { return m_myHostName; }
+  const std::vector<std::string> getMyIpAdresses() { return m_myIpAdresses; }
+
 private:
   UdpChannel();
   ReceiveFromFunc m_receiveFromFunc;
@@ -55,6 +58,7 @@ private:
 
   unsigned char* m_rx;
   unsigned m_bufsize;
+
   std::string m_myHostName;
   std::vector<std::string> m_myIpAdresses;
 };
