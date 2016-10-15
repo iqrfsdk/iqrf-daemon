@@ -14,11 +14,12 @@ public:
   MessageHandler(const std::string& iqrf_port_name, const std::string& remote_ip_port, const std::string& local_ip_port);
   virtual ~MessageHandler();
 
-  ustring getGwIdent();
+  void getGwIdent(ustring& message);
+  void getGwStatus(ustring& message);
 
   int handleMessageFromUdp(const ustring& udpMessage);
   int handleMessageFromIqrf(const ustring& iqrfMessage);
-  void encodeMessageUdp(const ustring& message, ustring& udpMessage);
+  void encodeMessageUdp(ustring& udpMessage, const ustring& message = ustring());
   void decodeMessageUdp(const ustring& udpMessage, ustring& message);
 
   void watchDog();

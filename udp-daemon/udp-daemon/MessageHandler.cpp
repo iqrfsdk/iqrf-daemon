@@ -8,13 +8,9 @@
 #include "IqrfLogging.h"
 #include "PlatformDep.h"
 #include <climits>
-
-enum IqrfWriteResults {
-  wr_OK = 0x50,
-  wr_Error_Len = 0x60, //(number of data = 0 or more than TR buffer COM length)
-  wr_Error_SPI = 0x61, //(SPI bus busy)
-  wr_Error_IQRF = 0x62 //(IQRF - CRCM Error)
-};
+#include <ctime>
+#include <ratio>
+#include <chrono>
 
 int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
 {
@@ -35,9 +31,22 @@ int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
   {
   case IQRF_UDP_GET_GW_INFO:          // --- Returns GW identification ---
   {
-    std::basic_string<unsigned char> udpResponse(udpMessage);
-    udpResponse[cmd] = (unsigned char)IQRF_UDP_GET_GW_INFO | 0x80;
-    encodeMessageUdp(getGwIdent(), udpResponse);
+    ustring udpResponse(udpMessage);
+    udpResponse[cmd] = udpResponse[cmd] | 0x80;
+    ustring msg;
+    getGwIdent(msg);
+    encodeMessageUdp(udpResponse, msg);
+    m_toUdpMessageQueue->pushToQueue(udpResponse);
+  }
+  return 0;
+
+  case IQRF_UDP_GET_GW_STATUS:          // --- Returns GW status ---
+  {
+    ustring udpResponse(udpMessage);
+    udpResponse[cmd] = udpResponse[cmd] | 0x80;
+    ustring msg;
+    getGwStatus(msg);
+    encodeMessageUdp(udpResponse, msg);
     m_toUdpMessageQueue->pushToQueue(udpResponse);
   }
   return 0;
@@ -47,17 +56,22 @@ int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
     m_toIqrfMessageQueue->pushToQueue(message);
 
     //send response
-    std::basic_string<unsigned char> udpResponse(udpMessage.substr(0, IQRF_UDP_HEADER_SIZE));
-    std::basic_string<unsigned char> message;
-    udpResponse[cmd] = (unsigned char)IQRF_UDP_WRITE_IQRF | 0x80;
+    ustring udpResponse(udpMessage.substr(0, IQRF_UDP_HEADER_SIZE));
+    udpResponse[cmd] = udpResponse[cmd] | 0x80;
     udpResponse[subcmd] = (unsigned char)IQRF_UDP_ACK;
-    encodeMessageUdp(message, udpResponse);
+    encodeMessageUdp(udpResponse);
     //TODO it is required to send back via subcmd write result - implement sync write with appropriate ret code
     m_toUdpMessageQueue->pushToQueue(udpResponse);
   }
   return 0;
 
   default:
+    //not implemented command
+    std::basic_string<unsigned char> udpResponse(udpMessage);
+    udpResponse[cmd] = udpResponse[cmd] | 0x80;
+    udpResponse[subcmd] = (unsigned char)IQRF_UDP_NAK;
+    encodeMessageUdp(udpResponse);
+    m_toUdpMessageQueue->pushToQueue(udpResponse);
     break;
   }
   return -1;
@@ -66,28 +80,26 @@ int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
 int MessageHandler::handleMessageFromIqrf(const ustring& iqrfMessage)
 {
   TRC_DBG("Received from to IQRF: " << std::endl << FORM_HEX(iqrfMessage.data(), iqrfMessage.size()));
-  
+
   std::basic_string<unsigned char> udpMessage;
   std::basic_string<unsigned char> message(iqrfMessage);
-  encodeMessageUdp(message, udpMessage);
+  encodeMessageUdp(udpMessage, message);
   udpMessage[cmd] = (unsigned char)IQRF_UDP_IQRF_SPI_DATA;
   m_toUdpMessageQueue->pushToQueue(udpMessage);
-  
-  //std::basic_string<unsigned char> udpMessage;
-  //encodeMessageUdp(iqrfMessage, udpMessage);
-  //m_toUdpMessageQueue->pushToQueue(udpMessage);
   return 0;
 }
 
-void MessageHandler::encodeMessageUdp(const ustring& message, ustring& udpMessage)
+void MessageHandler::encodeMessageUdp(ustring& udpMessage, const ustring& message)
 {
   unsigned short dlen = (unsigned short)message.size();
+
   udpMessage.resize(IQRF_UDP_HEADER_SIZE + IQRF_UDP_CRC_SIZE, '\0');
   udpMessage[gwAddr] = IQRF_UDP_GW_ADR;
   udpMessage[dlen_H] = (unsigned char)((dlen >> 8) & 0xFF);
   udpMessage[dlen_L] = (unsigned char)(dlen & 0xFF);
 
-  udpMessage.insert(IQRF_UDP_HEADER_SIZE, message);
+  if (0 < dlen)
+    udpMessage.insert(IQRF_UDP_HEADER_SIZE, message);
 
   uint16_t crc = GetCRC_CCITT((unsigned char*)udpMessage.data(), dlen + IQRF_UDP_HEADER_SIZE);
   udpMessage[dlen + IQRF_UDP_HEADER_SIZE] = (unsigned char)((crc >> 8) & 0xFF);
@@ -140,7 +152,7 @@ MessageHandler::~MessageHandler()
 {
 }
 
-std::basic_string<unsigned char> MessageHandler::getGwIdent()
+void MessageHandler::getGwIdent(ustring& message)
 {
   //1. - GW type e.g.: �GW - ETH - 02A�
   //2. - FW version e.g. : �2.50�
@@ -150,8 +162,9 @@ std::basic_string<unsigned char> MessageHandler::getGwIdent()
   //6. - Net BIOS Name e.g. : �iqrf_xxxx � 15 characters
   //7. - IQRF module OS version e.g. : �3.06D�
   //8. - Public IP address e.g. : �213.214.215.120�
-  //std::basic_ostringstream<unsigned char> os;
+
   std::basic_ostringstream<char> ostring;
+  //TODO set correct IP adresses
   ostring <<
     "\x0D\x0A" << "udp-daemon-01" << "\x0D\x0A" <<
     "2.50" << "\x0D\x0A" <<
@@ -164,7 +177,26 @@ std::basic_string<unsigned char> MessageHandler::getGwIdent()
 
   ustring res((unsigned char*)ostring.str().data(), ostring.str().size());
   //TRC_DBG("retval:" << PAR(res.size()) << std::endl << FORM_HEX(res.data(),res.size()));
-  return res;
+  message = res;
+}
+
+void MessageHandler::getGwStatus(ustring& message)
+{
+  // current date/time based on current system
+  time_t now = time(0);
+  tm *ltm = localtime(&now);
+
+  message.resize(UdpGwStatus::unused12 + 1, '\0');
+  //TODO get channel status to Channel iface
+  message[trStatus] = 0x80;   //SPI_IQRF_SPI_READY_COMM = 0x80, see spi_iqrf.h
+  message[supplyExt] = 0x01;  //DB3 0x01 supplied from external source
+  message[timeSec] = (unsigned char)ltm->tm_sec;    //DB4 GW time – seconds(see Time and date coding)
+  message[timeMin] = (unsigned char)ltm->tm_min;    //DB5 GW time – minutes
+  message[timeHour] = (unsigned char)ltm->tm_hour;    //DB6 GW time – hours
+  message[timeWday] = (unsigned char)ltm->tm_wday;    //DB7 GW date – day of the week
+  message[timeMday] = (unsigned char)ltm->tm_mday;    //DB8 GW date – day
+  message[timeMon] = (unsigned char)ltm->tm_mon;    //DB9 GW date – month
+  message[timeYear] = (unsigned char)(ltm->tm_year % 100);   //DB10 GW date – year
 }
 
 void MessageHandler::watchDog()

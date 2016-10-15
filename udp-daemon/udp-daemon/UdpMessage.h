@@ -21,6 +21,14 @@ const unsigned char IQRF_UDP_ACK = 0x50;	// Positive answer
 const unsigned char IQRF_UDP_NAK = 0x60;	// Negative answer
 const unsigned char IQRF_UDP_BUS_BUSY = 0x61;	// Communication channel (IQRF SPI or RS485) is busy
 
+//TODO
+enum IqrfWriteResults {
+  wr_OK = 0x50,
+  wr_Error_Len = 0x60, //(number of data = 0 or more than TR buffer COM length)
+  wr_Error_SPI = 0x61, //(SPI bus busy)
+  wr_Error_IQRF = 0x62 //(IQRF - CRCM Error)
+};
+
 //--- IQRF UDP header ---
 enum UdpHeader
 {
@@ -33,4 +41,21 @@ enum UdpHeader
   pacid_L,
   dlen_H,
   dlen_L
+};
+
+//--- IQRF UDP GW status ---
+enum UdpGwStatus
+{
+  trStatus,   //DB1 TR module status(see the IQRF SPI protocol)
+  unused2,    //DB2 no used
+  supplyExt,  //DB3 0x01 supplied from external source
+  timeSec,    //DB4 GW time – seconds(see Time and date coding)
+  timeMin,    //DB5 GW time – minutes
+  timeHour,    //DB6 GW time – hours
+  timeWday,    //DB7 GW date – day of the week
+  timeMday,    //DB8 GW date – day
+  timeMon,    //DB9 GW date – month
+  timeYear,   //DB10 GW date – year
+  unused11,   //DB11 no used
+  unused12,   //DB12 no used
 };
