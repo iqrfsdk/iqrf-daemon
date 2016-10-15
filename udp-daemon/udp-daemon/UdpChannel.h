@@ -12,10 +12,11 @@
 typedef int clientlen_t;
 #else
 
-//#include <arpa/inet.h>
 #include <sys/types.h>
-//#include <sys/socket.h>
-#include <netinet/ip.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 #include <unistd.h>
 typedef int SOCKET;
 typedef void * SOCKADDR_STORAGE;
