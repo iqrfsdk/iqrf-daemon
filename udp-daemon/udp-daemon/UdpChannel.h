@@ -27,6 +27,7 @@ typedef size_t clientlen_t;
 #include <stdint.h>
 #include <exception>
 #include <thread>
+#include <vector>
 
 class UdpChannel : public Channel
 {
@@ -53,6 +54,8 @@ private:
 
   unsigned char* m_rx;
   unsigned m_bufsize;
+  std::string m_myHostName;
+  std::vector<std::string> m_myIpAdresses;
 };
 
 class UdpChannelException : public std::exception {

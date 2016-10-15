@@ -16,13 +16,13 @@ typedef char opttype;
 
 UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort, unsigned bufsize)
   :m_runListenThread(true)
-  ,m_remotePort(remotePort)
-  ,m_localPort(localPort)
-  ,m_bufsize(bufsize)
+  , m_remotePort(remotePort)
+  , m_localPort(localPort)
+  , m_bufsize(bufsize)
 {
   m_rx = ant_new unsigned char[m_bufsize];
   memset(m_rx, 0, m_bufsize);
-  
+
 #ifdef WIN
   // Initialize Winsock
   WSADATA wsaData = { 0 };
@@ -42,7 +42,7 @@ UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort, unsi
   opttype broadcastEnable = 1;                                // Enable sending broadcast packets
   if (0 != setsockopt(iqrfUdpSocket, SOL_SOCKET, SO_BROADCAST, &broadcastEnable, sizeof(broadcastEnable)))
   {
-	closesocket(iqrfUdpSocket);
+    closesocket(iqrfUdpSocket);
     THROW_EX(UdpChannelException, "setsockopt failed: " << GetLastError());
   }
 
@@ -58,10 +58,31 @@ UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort, unsi
   iqrfUdpListener.sin_port = htons(m_localPort);
   iqrfUdpListener.sin_addr.s_addr = htonl(INADDR_ANY);
 
-  if (-1 == bind(iqrfUdpSocket, (struct sockaddr *)&iqrfUdpListener, sizeof(iqrfUdpListener)))
+  if (SOCKET_ERROR == bind(iqrfUdpSocket, (struct sockaddr *)&iqrfUdpListener, sizeof(iqrfUdpListener)))
   {
-	closesocket(iqrfUdpSocket);
+    closesocket(iqrfUdpSocket);
     THROW_EX(UdpChannelException, "bind failed: " << GetLastError());
+  }
+
+  using namespace std;
+  char ac[80];
+  if (SOCKET_ERROR == gethostname((char*)m_rx, m_bufsize)) {
+    closesocket(iqrfUdpSocket);
+    THROW_EX(UdpChannelException, "gethostname failed: " << GetLastError());
+  }
+
+  m_myHostName = std::string((char*)m_rx);
+
+  struct hostent *phe = gethostbyname((const char*)m_rx);
+  if (phe == 0) {
+    closesocket(iqrfUdpSocket);
+    THROW_EX(UdpChannelException, "gethostbyname failed");
+  }
+
+  for (int i = 0; phe->h_addr_list[i] != 0; ++i) {
+    struct in_addr addr;
+    memcpy(&addr, phe->h_addr_list[i], sizeof(struct in_addr));
+    m_myIpAdresses.push_back(inet_ntoa(addr));
   }
 
   m_listenThread = std::thread(&UdpChannel::listen, this);
@@ -90,7 +111,7 @@ void UdpChannel::listen()
 
   int recn = -1;
   socklen_t iqrfUdpServerLength = sizeof(iqrfUdpListener);
-  
+
   try {
     while (m_runListenThread)
     {
