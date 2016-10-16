@@ -79,12 +79,12 @@ int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
 
 int MessageHandler::handleMessageFromIqrf(const ustring& iqrfMessage)
 {
-  TRC_DBG("Received from to IQRF: " << std::endl << FORM_HEX(iqrfMessage.data(), iqrfMessage.size()));
+  TRC_DBG("Received from IQRF: " << std::endl << FORM_HEX(iqrfMessage.data(), iqrfMessage.size()));
 
-  std::basic_string<unsigned char> udpMessage;
+  std::basic_string<unsigned char> udpMessage(IQRF_UDP_HEADER_SIZE + IQRF_UDP_CRC_SIZE, '\0');
   std::basic_string<unsigned char> message(iqrfMessage);
-  encodeMessageUdp(udpMessage, message);
   udpMessage[cmd] = (unsigned char)IQRF_UDP_IQRF_SPI_DATA;
+  encodeMessageUdp(udpMessage, message);
   m_toUdpMessageQueue->pushToQueue(udpMessage);
   return 0;
 }
@@ -154,22 +154,17 @@ MessageHandler::~MessageHandler()
 
 void MessageHandler::getGwIdent(ustring& message)
 {
-  //1. - GW type e.g.: �GW - ETH - 02A�
-  //2. - FW version e.g. : �2.50�
-  //3. - MAC address e.g. : �00 11 22 33 44 55�
-  //4. - TCP / IP Stack version e.g. : �5.42�
-  //5. - IP address of GW e.g. : �192.168.2.100�
-  //6. - Net BIOS Name e.g. : �iqrf_xxxx � 15 characters
-  //7. - IQRF module OS version e.g. : �3.06D�
-  //8. - Public IP address e.g. : �213.214.215.120�
+  //1. - GW type e.g.: GW - ETH - 02A
+  //2. - FW version e.g. : 2.50
+  //3. - MAC address e.g. : 00 11 22 33 44 55
+  //4. - TCP / IP Stack version e.g. : 5.42
+  //5. - IP address of GW e.g. : 192.168.2.100
+  //6. - Net BIOS Name e.g. : iqrf_xxxx (15 characters)
+  //7. - IQRF module OS version e.g. : 3.06D
+  //8. - Public IP address e.g. : 213.214.215.120
 
   const char* crlf = "\x0D\x0A";
-  const std::string& hname = m_udpChannel->getMyHostName();
-  const std::vector<std::string> ipAddrs = m_udpChannel->getMyIpAdresses();
-  std::string ipAddr = "255.255.255.255";
-  if (ipAddrs.size() > 0) {
-    ipAddr = ipAddrs[0];
-  }
+  const std::string& ipAddr = m_udpChannel->getListeningIpAdress();
 
   //TODO set correct IP adresses, MAC, OS ver, etc
   std::basic_ostringstream<char> ostring;
@@ -210,13 +205,20 @@ void MessageHandler::watchDog()
 {
   TRC_ENTER("");
   m_running = true;
+  bool m_cout_IP = false;
   try {
     start();
     while (m_running)
     {
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
       //TODO
-      //watch worker threads
-      std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+      //watch worker threads and possibly restart
+      if (m_udpChannel->isListening()) {
+        if (!m_cout_IP) {
+          std::cout << "Listening on: " << m_udpChannel->getListeningIpAdress() << ":" << m_udpChannel->getListeningIpPort() << std::endl;
+          m_cout_IP = true;
+        }
+      }
     }
   }
   catch (std::exception& e) {
@@ -253,10 +255,6 @@ void MessageHandler::start()
     return handleMessageFromUdp(msg); });
 
   std::cout << "udp-daemon started" << std::endl;
-  std::cout << "hostName: " << m_udpChannel->getMyHostName() << std::endl;
-  std::cout << "IP addresses: " << std::endl;
-  for (auto & it : m_udpChannel->getMyIpAdresses())
-    std::cout << it << std::endl;
 
   TRC_LEAVE("");
 }

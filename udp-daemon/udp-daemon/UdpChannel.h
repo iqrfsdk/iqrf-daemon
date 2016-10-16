@@ -29,6 +29,7 @@ typedef size_t clientlen_t;
 #include <exception>
 #include <thread>
 #include <vector>
+#include <atomic>
 
 class UdpChannel : public Channel
 {
@@ -38,16 +39,19 @@ public:
   virtual void sendTo(const std::basic_string<unsigned char>& message);
   virtual void registerReceiveFromHandler(ReceiveFromFunc receiveFromFunc);
 
-  const std::string& getMyHostName() { return m_myHostName; }
-  const std::vector<std::string> getMyIpAdresses() { return m_myIpAdresses; }
+  std::string getListeningIpAdress() { return m_myIpAdress; }
+  unsigned short getListeningIpPort() { return m_localPort; }
+  bool isListening() { return m_isListening; }
 
 private:
   UdpChannel();
   ReceiveFromFunc m_receiveFromFunc;
   
+  std::atomic_bool m_isListening;
   bool m_runListenThread;
   std::thread m_listenThread;
   void listen();
+  void getMyIpAddress();
 
   SOCKET iqrfUdpSocket;
   sockaddr_in iqrfUdpListener;
@@ -59,8 +63,7 @@ private:
   unsigned char* m_rx;
   unsigned m_bufsize;
 
-  std::string m_myHostName;
-  std::vector<std::string> m_myIpAdresses;
+  std::string m_myIpAdress;
 };
 
 class UdpChannelException : public std::exception {

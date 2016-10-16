@@ -3,6 +3,8 @@
 #include "helpers.h"
 
 #include "PlatformDep.h"
+#include <stdlib.h>     //srand, rand
+#include <time.h>       //time
 
 #ifndef WIN
 #define WSAGetLastError() errno
@@ -20,6 +22,7 @@ UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort, unsi
   , m_localPort(localPort)
   , m_bufsize(bufsize)
 {
+  m_isListening = false;
   m_rx = ant_new unsigned char[m_bufsize];
   memset(m_rx, 0, m_bufsize);
 
@@ -64,26 +67,6 @@ UdpChannel::UdpChannel(unsigned short remotePort, unsigned short localPort, unsi
     THROW_EX(UdpChannelException, "bind failed: " << GetLastError());
   }
 
-  //TODO gethostname obsolete for IPV6
-  if (SOCKET_ERROR == gethostname((char*)m_rx, m_bufsize)) {
-    closesocket(iqrfUdpSocket);
-    THROW_EX(UdpChannelException, "gethostname failed: " << GetLastError());
-  }
-
-  m_myHostName = std::string((char*)m_rx);
-
-  struct hostent *phe = gethostbyname((const char*)m_rx);
-  if (phe == 0) {
-    closesocket(iqrfUdpSocket);
-    THROW_EX(UdpChannelException, "gethostbyname failed");
-  }
-
-  for (int i = 0; phe->h_addr_list[i] != 0; ++i) {
-    struct in_addr addr;
-    memcpy(&addr, phe->h_addr_list[i], sizeof(struct in_addr));
-    m_myIpAdresses.push_back(inet_ntoa(addr));
-  }
-
   m_listenThread = std::thread(&UdpChannel::listen, this);
 }
 
@@ -109,15 +92,19 @@ void UdpChannel::listen()
   TRC_ENTER("thread starts");
 
   int recn = -1;
-  socklen_t iqrfUdpServerLength = sizeof(iqrfUdpListener);
+  socklen_t iqrfUdpListenerLength = sizeof(iqrfUdpListener);
 
   try {
+    //try to get local IP by trm and rec to itself
+    getMyIpAddress();
+
+    m_isListening = true;
     while (m_runListenThread)
     {
-      recn = recvfrom(iqrfUdpSocket, (char*)m_rx, m_bufsize, 0, (struct sockaddr *)&iqrfUdpListener, &iqrfUdpServerLength);
+      recn = recvfrom(iqrfUdpSocket, (char*)m_rx, m_bufsize, 0, (struct sockaddr *)&iqrfUdpListener, &iqrfUdpListenerLength);
 
       if (recn == SOCKET_ERROR) {
-        THROW_EX(UdpChannelException, "recvfrom failed: " << WSAGetLastError());
+        THROW_EX(UdpChannelException, "recvfrom returned: " << WSAGetLastError());
       }
 
       if (recn > 0) {
@@ -129,9 +116,10 @@ void UdpChannel::listen()
     }
   }
   catch (UdpChannelException& e) {
-    CATCH_EX("listening thread error", UdpChannelException, e);
+    CATCH_EX("listening thread finished", UdpChannelException, e);
     m_runListenThread = false;
   }
+  m_isListening = false;
   TRC_ENTER("thread stopped");
 }
 
@@ -150,4 +138,61 @@ void UdpChannel::sendTo(const std::basic_string<unsigned char>& message)
 void UdpChannel::registerReceiveFromHandler(ReceiveFromFunc receiveFromFunc)
 {
   m_receiveFromFunc = receiveFromFunc;
+}
+
+void UdpChannel::getMyIpAddress()
+{
+  TRC_ENTER("");
+  const int ATTEMPTS_CNT = 3;
+  int attempts;
+
+  //initialize random seed
+  srand(time(NULL));
+
+  //generate secret number
+  int short secret = (int short)rand();
+
+  std::basic_string<unsigned char> msgTrm = { 0x66, 0x64, 0, 0 };
+
+  msgTrm[2] = (unsigned char)((secret >> 8) & 0xFF);
+  msgTrm[3] = (unsigned char)(secret & 0xFF);
+
+  sockaddr_in iqrfUdpMyself;
+  socklen_t iqrfUdpMyselfLength = sizeof(iqrfUdpMyself);
+  socklen_t iqrfUdpListenerLength = sizeof(iqrfUdpListener);
+
+  memset(&iqrfUdpMyself, 0, sizeof(iqrfUdpMyself));
+  iqrfUdpMyself.sin_family = AF_INET;
+  iqrfUdpMyself.sin_port = htons(m_localPort);
+  iqrfUdpMyself.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+
+  for (attempts = ATTEMPTS_CNT; attempts > 0; attempts--) {
+    int recn = -1;
+
+    TRC_DBG("Send to UDP to myself: " << std::endl << FORM_HEX(msgTrm.data(), msgTrm.size()));
+    int trmn = sendto(iqrfUdpSocket, (const char*)msgTrm.data(), msgTrm.size(), 0, (struct sockaddr *)&iqrfUdpMyself, sizeof(iqrfUdpMyself));
+    if (trmn < 0) {
+      THROW_EX(UdpChannelException, "sendto failed: " << WSAGetLastError());
+    }
+
+    recn = recvfrom(iqrfUdpSocket, (char*)m_rx, m_bufsize, 0, (struct sockaddr *)&iqrfUdpListener, &iqrfUdpListenerLength);
+    if (recn == SOCKET_ERROR) {
+      THROW_EX(UdpChannelException, "recvfrom failed: " << WSAGetLastError());
+    }
+
+    if (recn > 0) {
+      TRC_DBG("Received from UDP: " << std::endl << FORM_HEX(m_rx, recn));
+      std::basic_string<unsigned char> msgRec(m_rx, recn);
+      if (msgTrm == msgRec) {
+        m_myIpAdress = inet_ntoa(iqrfUdpListener.sin_addr);    // my address is address of the last received packet
+        break;
+      }
+    }
+  }
+  
+  if (attempts <= 0) {
+    THROW_EX(UdpChannelException, "Failed listen myself - cannot specify my IP address.");
+  }
+  
+  TRC_LEAVE("");
 }
