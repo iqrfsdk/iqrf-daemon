@@ -2,6 +2,11 @@ project (clibudp)
 
 cmake_minimum_required(VERSION 2.8)
 
+FIND_PACKAGE(clibcdc REQUIRED)
+FIND_PACKAGE(clibspi REQUIRED)
+FIND_PACKAGE(cutils REQUIRED)
+
+
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_DEBUG "_DEBUG")
 endif()
@@ -30,11 +35,21 @@ message(STATUS "CMAKE_C_FLAGS_RELEASE:   ${CMAKE_C_FLAGS_RELEASE}")
 message(STATUS "CMAKE_C_FLAGS_DEBUG:     ${CMAKE_C_FLAGS_DEBUG}")
 
 include_directories(${CMAKE_SOURCE_DIR}/../include)
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
+include_directories(${clibcdc_INCLUDE_DIRS})
+include_directories(${clibspi_INCLUDE_DIRS})
+include_directories(${cutils_INCLUDE_DIRS})
 
 #library build
+add_subdirectory(include)
 add_subdirectory(udp)
-add_subdirectory(udp-daemon)
+add_subdirectory(MessageQueue)
+add_subdirectory(UdpMessaging)
+add_subdirectory(daemon)
+#add_subdirectory(udp-daemon)
 add_subdirectory(iqrf_ide_dummy)
+add_subdirectory(iqrfapp)
 
 # Configure config file.
 # This file specifies actions performed and variables exported when using find_package on this project.

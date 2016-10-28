@@ -46,7 +46,7 @@ int main()
 
   UdpChannel *m_udpChannel = ant_new UdpChannel(m_remotePort, m_localPort, IQRF_UDP_BUFFER_SIZE);
 
-  //Received messages from IQRF channel are pushed to IQRF MessageQueue
+  //Received messages from IQRF channel are pushed to IQRF MessageQueueChannel
   m_udpChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) -> int {
     return handleMessageFromUdp(msg); });
 
