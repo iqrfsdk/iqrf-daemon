@@ -1,5 +1,6 @@
 #pragma once
 
+#include "TaskQueue.h"
 #include "IDaemon.h"
 #include <unordered_map>
 #include <string>
@@ -9,7 +10,6 @@ typedef std::basic_string<unsigned char> ustring;
 
 class IChannel;
 class DpaHandler;
-class MessageQueue;
 
 class MessagingController : public IDaemon
 {
@@ -20,8 +20,6 @@ public:
   virtual std::set<IMessaging*>& getSetOfMessaging();
   virtual void registerMessaging(IMessaging& messaging);
   virtual void unregisterMessaging(IMessaging& messaging);
-
-  void handleMessageFromIqrf(const ustring& iqrfMessage);
 
   void startProtocols();
   void stopProtocols();
@@ -34,7 +32,9 @@ public:
 private:
   IChannel* m_iqrfInterface;
   DpaHandler* m_dpaHandler;
-  MessageQueue* m_toIqrfMessageQueue;
+
+  void executeDpaTransactionFunc(DpaTransaction* dpaTransaction);
+  TaskQueue<DpaTransaction*> *m_dpaTransactionQueue;
   std::string m_iqrfPortName;
 
   std::atomic_bool m_running;

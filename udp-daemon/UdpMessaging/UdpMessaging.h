@@ -1,5 +1,6 @@
 #pragma once
 
+#include "TaskQueue.h"
 #include "DpaTransaction.h"
 #include "UdpChannel.h"
 #include "IDaemon.h"
@@ -10,11 +11,12 @@
 typedef std::basic_string<unsigned char> ustring;
 
 class MessageQueue;
+class UdpMessaging;
 
 class UdpMessagingTransaction : public DpaTransaction
 {
 public:
-  UdpMessagingTransaction(MessageQueue* messageQueue);
+  UdpMessagingTransaction(UdpMessaging* udpMessaging);
   virtual ~UdpMessagingTransaction();
   virtual const DpaMessage& getMessage() const;
   virtual void processConfirmationMessage(const DpaMessage& confirmation);
@@ -23,7 +25,8 @@ public:
   void setMessage(ustring message);
 private:
   DpaMessage m_message;
-  MessageQueue* m_messageQueue;
+  UdpMessaging* m_udpMessaging;
+  bool m_success;
 };
 
 class UdpMessaging: public IMessaging
@@ -32,8 +35,11 @@ public:
   UdpMessaging();
   virtual ~UdpMessaging();
 
-  virtual void sendMessage(const std::basic_string<unsigned char>& message);
   virtual void setDaemon(IDaemon* daemon);
+  virtual void start();
+  virtual void stop();
+
+  void sendDpaMessageToUdp(const DpaMessage&  dpaMessage);
 
   void getGwIdent(ustring& message);
   void getGwStatus(ustring& message);
@@ -43,13 +49,12 @@ public:
   void encodeMessageUdp(ustring& udpMessage, const ustring& message = ustring());
   void decodeMessageUdp(const ustring& udpMessage, ustring& message);
 
-  virtual void start();
-  virtual void stop();
-
 private:
   IDaemon *m_daemon;
+  UdpMessagingTransaction* m_transaction;
+
   UdpChannel *m_udpChannel;
-  MessageQueue *m_toUdpMessageQueue;
+  TaskQueue<ustring> *m_toUdpMessageQueue;
 
   unsigned long int m_remotePort;
   unsigned long int m_localPort;

@@ -12,7 +12,6 @@ set(iqrfapp_INC_FILES
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_SOURCE_DIR}/MessageQueueChannel)
 include_directories(${CMAKE_SOURCE_DIR}/UdpMessaging)
 include_directories(${CMAKE_SOURCE_DIR}/DpaExtension)
 include_directories(${CMAKE_SOURCE_DIR}/udp)

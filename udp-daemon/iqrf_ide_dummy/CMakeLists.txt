@@ -5,7 +5,6 @@ set(iqrf_ide_dummy_SRC_FILES
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_SOURCE_DIR}/MessageQueueChannel)
 include_directories(${CMAKE_SOURCE_DIR}/UdpChannel)
 include_directories(${CMAKE_SOURCE_DIR}/UdpMessaging)
 

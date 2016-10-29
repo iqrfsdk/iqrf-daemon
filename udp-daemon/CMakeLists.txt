@@ -44,10 +44,8 @@ include_directories(${cutils_INCLUDE_DIRS})
 #library build
 add_subdirectory(include)
 add_subdirectory(udp)
-add_subdirectory(MessageQueue)
 add_subdirectory(UdpMessaging)
 add_subdirectory(daemon)
-#add_subdirectory(udp-daemon)
 add_subdirectory(iqrf_ide_dummy)
 add_subdirectory(iqrfapp)
 

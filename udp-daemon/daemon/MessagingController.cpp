@@ -2,7 +2,6 @@
 #include "IqrfCdcChannel.h"
 #include "IqrfSpiChannel.h"
 #include "DpaHandler.h"
-#include "MessageQueue.h"
 
 //TODO temporary here
 #include "IMessaging.h"
@@ -11,27 +10,26 @@
 #include "IqrfLogging.h"
 #include "PlatformDep.h"
 
-void MessagingController ::handleMessageFromIqrf(const ustring& iqrfMessage)
-{
-  TRC_DBG("Received from IQRF: " << std::endl << FORM_HEX(iqrfMessage.data(), iqrfMessage.size()));
-  //TODO
-  if (m_protocols.size() > 0) {
-    IMessaging* protocol = *(m_protocols.begin());
-    protocol->sendMessage(iqrfMessage);
-  }
-}
-
 void MessagingController::executeDpaTransaction(DpaTransaction& dpaTransaction)
 {
-  //TODO queue
-  //m_toIqrfMessageQueue->pushToQueue(message);
-  m_dpaHandler->ExecuteDpaTransaction(dpaTransaction);
+  m_dpaTransactionQueue->pushToQueue(&dpaTransaction);
+}
+
+//called from task queue thread passed by lambda in task queue ctor
+void MessagingController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
+{
+  try {
+    m_dpaHandler->ExecuteDpaTransaction(*dpaTransaction);
+  }
+  catch (std::exception& e) {
+    CATCH_EX("Error in ExecuteDpaTransaction: ", std::exception, e);
+  }
 }
 
 MessagingController::MessagingController(const std::string& iqrfPortName)
   :m_iqrfInterface(nullptr)
   ,m_dpaHandler(nullptr)
-  ,m_toIqrfMessageQueue(nullptr)
+  ,m_dpaTransactionQueue(nullptr)
   ,m_iqrfPortName(iqrfPortName)
 {
 }
@@ -113,20 +111,16 @@ void MessagingController::start()
     //  this,
     //  std::placeholders::_1));
 
-    m_dpaHandler->Timeout(10);    // Default timeout is infinite
+    m_dpaHandler->Timeout(100);    // Default timeout is infinite
   }
   catch (std::exception& ae) {
     std::cout << "There was an error during DPA handler creation: " << ae.what() << std::endl;
   }
 
-  //m_toIqrfMessageQueue = ant_new MessageQueue([&](const ustring& iqrfMessage) {
-  //  processDpa);
-  
-  m_iqrfInterface->registerReceiveFromHandler([&](const ustring& iqrfMessage) -> int {
-    handleMessageFromIqrf(iqrfMessage);
-    return 0;
+  m_dpaTransactionQueue = ant_new TaskQueue<DpaTransaction*>([&](DpaTransaction* trans) {
+    executeDpaTransactionFunc(trans);
   });
- 
+
   startProtocols();
 
   std::cout << "daemon started" << std::endl;
@@ -142,7 +136,7 @@ void MessagingController::stop()
 
   //TODO unregister call-backs first ?
   delete m_iqrfInterface;
-  delete m_toIqrfMessageQueue;
+  delete m_dpaTransactionQueue;
   TRC_LEAVE("");
 }
 
