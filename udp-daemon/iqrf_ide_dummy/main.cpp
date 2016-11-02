@@ -74,8 +74,8 @@ int main()
     {
       TRC_DBG("Write data to TR module ...");
       ustring udpMessage;
-      //temperatureRequest
-      ustring message = { 0x01, 0x00, 0x0A, 0x00, 0xFF, 0xFF };
+      ////pulse LEDR 1
+      ustring message = { 0x01, 0x00, 0x06, 0x03, 0xFF, 0xFF };
       encodeMessageUdp(3, 0, message, udpMessage);
 
       for (int i = 1; i > 0; i--)

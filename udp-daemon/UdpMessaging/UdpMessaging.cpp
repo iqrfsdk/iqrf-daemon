@@ -222,7 +222,7 @@ void UdpMessaging::start()
 
   m_transaction = ant_new UdpMessagingTransaction(this);
 
-  std::cout << "udp-daemon-protocol started" << std::endl;
+  std::cout << "daemon-UDP-protocol started" << std::endl;
 
   TRC_LEAVE("");
 }

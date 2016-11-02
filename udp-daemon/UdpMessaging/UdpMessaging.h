@@ -10,7 +10,6 @@
 
 typedef std::basic_string<unsigned char> ustring;
 
-class MessageQueue;
 class UdpMessaging;
 
 class UdpMessagingTransaction : public DpaTransaction
@@ -45,7 +44,6 @@ public:
   void getGwStatus(ustring& message);
 
   int handleMessageFromUdp(const ustring& udpMessage);
-  int handleMessageFromIqrf(const ustring& iqrfMessage);
   void encodeMessageUdp(ustring& udpMessage, const ustring& message = ustring());
   void decodeMessageUdp(const ustring& udpMessage, ustring& message);
 

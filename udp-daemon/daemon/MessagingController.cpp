@@ -6,6 +6,7 @@
 //TODO temporary here
 #include "IMessaging.h"
 #include "UdpMessaging.h"
+#include "PipeMessaging.h"
 
 #include "IqrfLogging.h"
 #include "PlatformDep.h"
@@ -78,9 +79,15 @@ void MessagingController::watchDog()
 void MessagingController::startProtocols()
 {
   TRC_ENTER("");
+  //TODO
   IMessaging* udp = ant_new UdpMessaging();
   udp->setDaemon(this);
   udp->start();
+
+  IMessaging* pipe = ant_new PipeMessaging();
+  pipe->setDaemon(this);
+  pipe->start();
+
   TRC_LEAVE("");
 }
 
