@@ -32,7 +32,7 @@ add_executable(${PROJECT_NAME} ${daemon_SRC_FILES} ${daemon_INC_FILES})
 if (WIN32) 
 	target_link_libraries(${PROJECT_NAME} PipeMessaging MqChannel IqrfCdcChannel IqrfSpiChannel dpa UdpMessaging UdpChannel cdc spi_iqrf sysfs_gpio udp Ws2_32)
 else()
-	target_link_libraries(${PROJECT_NAME} PipeMessaging MqChannel IqrfCdcChannel IqrfSpiChannel dpa UdpMessaging UdpChannel cdc spi_iqrf sysfs_gpio udp pthread)
+	target_link_libraries(${PROJECT_NAME} PipeMessaging MqChannel IqrfCdcChannel IqrfSpiChannel dpa UdpMessaging UdpChannel cdc spi_iqrf sysfs_gpio udp pthread rt)
 endif()
 
 #install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/sbin)

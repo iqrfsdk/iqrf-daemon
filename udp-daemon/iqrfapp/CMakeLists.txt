@@ -23,7 +23,7 @@ add_executable(${PROJECT_NAME} ${iqrfapp_SRC_FILES} ${iqrfapp_INC_FILES})
 if (WIN32) 
 	target_link_libraries(${PROJECT_NAME} MqChannel DpaExtension dpa)
 else()
-	target_link_libraries(${PROJECT_NAME} MqChannel DpaExtension dpa pthread)
+	target_link_libraries(${PROJECT_NAME} MqChannel DpaExtension dpa pthread rt)
 endif()
 
 #install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/sbin)
