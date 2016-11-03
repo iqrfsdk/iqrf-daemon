@@ -3,17 +3,6 @@
 #include "PlatformDep.h"
 #include "IqrfLogging.h"
 #include <string>
-#include <sstream>
-#include <thread>
-
-/////////////////////////
-#include <windows.h> 
-#include <stdio.h>
-#include <conio.h>
-#include <tchar.h>
-
-#define BUFSIZE 512
-///////////////////////
 
 TRC_INIT("");
 
@@ -28,7 +17,6 @@ int main()
   std::cout << "iqrfapp started" << std::endl;
 
   MqChannel* mqChannel = ant_new MqChannel("iqrf-daemon-110", "iqrf-daemon-100", 1024);
-  //MqChannel* mqChannel(nullptr);
 
   //Received messages from IQRF channel are pushed to IQRF MessageQueueChannel
   mqChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) -> int {
