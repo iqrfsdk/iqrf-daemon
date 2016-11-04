@@ -19,11 +19,16 @@ void MessagingController::executeDpaTransaction(DpaTransaction& dpaTransaction)
 //called from task queue thread passed by lambda in task queue ctor
 void MessagingController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
 {
-  try {
-    m_dpaHandler->ExecuteDpaTransaction(*dpaTransaction);
+  if (m_dpaHandler) {
+    try {
+      m_dpaHandler->ExecuteDpaTransaction(*dpaTransaction);
+    }
+    catch (std::exception& e) {
+      CATCH_EX("Error in ExecuteDpaTransaction: ", std::exception, e);
+    }
   }
-  catch (std::exception& e) {
-    CATCH_EX("Error in ExecuteDpaTransaction: ", std::exception, e);
+  else {
+    TRC_ERR("Dpa interface is not working");
   }
 }
 

@@ -3,8 +3,57 @@
 #include "PlatformDep.h"
 #include "IqrfLogging.h"
 #include <string>
+#include <sstream>
 
 TRC_INIT("");
+
+#if 0
+//TODO
+int handleMessageFromMq(const ustring& message)
+{
+  //TODO process temperature
+  std::cout << FORM_HEX(message.data(), message.size()) << std::endl;
+  return 0;
+}
+
+int main(int argc, char** argv)
+{
+  int num = -1;
+
+  if (argc < 3) {
+    std::cerr << "Usage" << std::endl;
+    std::cerr << "  iqrfapp temp <num>" << std::endl << std::endl;
+    std::cerr << "Example" << std::endl;
+    std::cerr << "  iqrfapp temp 1" << std::endl;
+    return (-1);
+  }
+
+  std::string nustr = argv[2];
+  std::istringstream is(nustr);
+  is >> num;
+  if (num < 0) {
+    std::cerr << "invalid number: " << nustr;
+    return (-1);
+  }
+
+  MqChannel* mqChannel = ant_new MqChannel("iqrf-daemon-110", "iqrf-daemon-100", 1024);
+
+  //Received messages from IQRF channel are pushed to IQRF MessageQueueChannel
+  mqChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) -> int {
+    return handleMessageFromMq(msg); });
+
+  ustring message = { 0x00, 0x00, 0x02, 0x01, 0xFF, 0xFF };
+  message[0] = num;
+
+  try {
+    mqChannel->sendTo(message);
+  }
+  catch (std::exception& e) {
+    //TRC_DBG("sendTo failed: " << e.what());
+  }
+
+}
+#endif
 
 int handleMessageFromMq(const ustring& udpMessage)
 {
