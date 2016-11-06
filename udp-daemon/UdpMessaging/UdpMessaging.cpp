@@ -1,10 +1,8 @@
-#include "MessageHandler.h"
-#include "IqrfCdcChannel.h"
-#include "IqrfSpiChannel.h"
-#include "UdpChannel.h"
+#include "DpaTask.h"
+#include "DpaMessage.h"
+#include "UdpMessaging.h"
 #include "UdpMessage.h"
 #include "helpers.h"
-#include "MessageQueue.h"
 #include "IqrfLogging.h"
 #include "PlatformDep.h"
 #include <climits>
@@ -12,9 +10,27 @@
 #include <ratio>
 #include <chrono>
 
-int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
+void UdpMessaging::sendDpaMessageToUdp(const DpaMessage&  dpaMessage)
 {
-  TRC_DBG("Received from UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
+  ustring message(dpaMessage.DpaPacketData(), dpaMessage.Length());
+  TRC_DBG(FORM_HEX(message.data(), message.size()));
+
+  std::basic_string<unsigned char> udpMessage(IQRF_UDP_HEADER_SIZE + IQRF_UDP_CRC_SIZE, '\0');
+  udpMessage[cmd] = (unsigned char)IQRF_UDP_IQRF_SPI_DATA;
+  encodeMessageUdp(udpMessage, message);
+  m_toUdpMessageQueue->pushToQueue(udpMessage);
+}
+
+void UdpMessaging::setDaemon(IDaemon* daemon)
+{
+  m_daemon = daemon;
+  m_daemon->registerMessaging(*this);
+}
+
+int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
+{
+  TRC_DBG("==================================" << std::endl <<
+    "Received from UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
 
   size_t msgSize = udpMessage.size();
   std::basic_string<unsigned char> message;
@@ -53,8 +69,6 @@ int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
 
   case IQRF_UDP_WRITE_IQRF:       // --- Writes data to the TR module ---
   {
-    m_toIqrfMessageQueue->pushToQueue(message);
-
     //send response
     ustring udpResponse(udpMessage.substr(0, IQRF_UDP_HEADER_SIZE));
     udpResponse[cmd] = udpResponse[cmd] | 0x80;
@@ -62,6 +76,9 @@ int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
     encodeMessageUdp(udpResponse);
     //TODO it is required to send back via subcmd write result - implement sync write with appropriate ret code
     m_toUdpMessageQueue->pushToQueue(udpResponse);
+
+    m_transaction->setMessage(message);
+    m_daemon->executeDpaTransaction(*m_transaction);
   }
   return 0;
 
@@ -77,19 +94,7 @@ int MessageHandler::handleMessageFromUdp(const ustring& udpMessage)
   return -1;
 }
 
-int MessageHandler::handleMessageFromIqrf(const ustring& iqrfMessage)
-{
-  TRC_DBG("Received from IQRF: " << std::endl << FORM_HEX(iqrfMessage.data(), iqrfMessage.size()));
-
-  std::basic_string<unsigned char> udpMessage(IQRF_UDP_HEADER_SIZE + IQRF_UDP_CRC_SIZE, '\0');
-  std::basic_string<unsigned char> message(iqrfMessage);
-  udpMessage[cmd] = (unsigned char)IQRF_UDP_IQRF_SPI_DATA;
-  encodeMessageUdp(udpMessage, message);
-  m_toUdpMessageQueue->pushToQueue(udpMessage);
-  return 0;
-}
-
-void MessageHandler::encodeMessageUdp(ustring& udpMessage, const ustring& message)
+void UdpMessaging::encodeMessageUdp(ustring& udpMessage, const ustring& message)
 {
   unsigned short dlen = (unsigned short)message.size();
 
@@ -106,7 +111,7 @@ void MessageHandler::encodeMessageUdp(ustring& udpMessage, const ustring& messag
   udpMessage[dlen + IQRF_UDP_HEADER_SIZE + 1] = (unsigned char)(crc & 0xFF);
 }
 
-void MessageHandler::decodeMessageUdp(const ustring& udpMessage, ustring& message)
+void UdpMessaging::decodeMessageUdp(const ustring& udpMessage, ustring& message)
 {
   unsigned short dlen = 0;
 
@@ -133,26 +138,27 @@ void MessageHandler::decodeMessageUdp(const ustring& udpMessage, ustring& messag
   message = udpMessage.substr(IQRF_UDP_HEADER_SIZE, dlen);
 }
 
-MessageHandler::MessageHandler(const std::string& iqrf_port_name, const std::string& remote_ip_port, const std::string& local_ip_port)
-  :m_iqrfChannel(nullptr)
+UdpMessaging::UdpMessaging()
+  :m_daemon(nullptr)
   , m_udpChannel(nullptr)
   , m_toUdpMessageQueue(nullptr)
-  , m_toIqrfMessageQueue(nullptr)
-  , m_iqrfPortName(iqrf_port_name)
 {
-  m_remotePort = strtoul(remote_ip_port.c_str(), nullptr, 0);
-  if (0 == m_remotePort || ULONG_MAX == m_remotePort)
-    m_remotePort = 55000;
-  m_localPort = strtoul(local_ip_port.c_str(), nullptr, 0);
-  if (0 == m_localPort || ULONG_MAX == m_localPort)
-    m_localPort = 55300;
+  m_remotePort = 55000;
+  m_localPort = 55300;
+
+  //m_remotePort = strtoul(remote_ip_port.c_str(), nullptr, 0);
+  //if (0 == m_remotePort || ULONG_MAX == m_remotePort)
+  //  m_remotePort = 55000;
+  //m_localPort = strtoul(local_ip_port.c_str(), nullptr, 0);
+  //if (0 == m_localPort || ULONG_MAX == m_localPort)
+  //  m_localPort = 55300;
 }
 
-MessageHandler::~MessageHandler()
+UdpMessaging::~UdpMessaging()
 {
 }
 
-void MessageHandler::getGwIdent(ustring& message)
+void UdpMessaging::getGwIdent(ustring& message)
 {
   //1. - GW type e.g.: GW - ETH - 02A
   //2. - FW version e.g. : 2.50
@@ -182,7 +188,7 @@ void MessageHandler::getGwIdent(ustring& message)
   message = res;
 }
 
-void MessageHandler::getGwStatus(ustring& message)
+void UdpMessaging::getGwStatus(ustring& message)
 {
   // current date/time based on current system
   time_t now = time(0);
@@ -201,78 +207,67 @@ void MessageHandler::getGwStatus(ustring& message)
   message[timeYear] = (unsigned char)(ltm->tm_year % 100);   //DB10 GW date – year
 }
 
-void MessageHandler::watchDog()
+void UdpMessaging::start()
 {
   TRC_ENTER("");
-  m_running = true;
-  bool m_cout_IP = false;
-  try {
-    start();
-    while (m_running)
-    {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-      //TODO
-      //watch worker threads and possibly restart
-      if (m_udpChannel->isListening()) {
-        if (!m_cout_IP) {
-          std::cout << "Listening on: " << m_udpChannel->getListeningIpAdress() << ":" << m_udpChannel->getListeningIpPort() << std::endl;
-          m_cout_IP = true;
-        }
-      }
-    }
-  }
-  catch (std::exception& e) {
-    CATCH_EX("error", std::exception, e);
-  }
-
-  stop();
-  TRC_LEAVE("");
-}
-
-void MessageHandler::start()
-{
-  TRC_ENTER("");
-  size_t found = m_iqrfPortName.find("spi");
-  if (found != std::string::npos)
-    m_iqrfChannel = ant_new IqrfSpiChannel(m_iqrfPortName);
-  else
-    m_iqrfChannel = ant_new IqrfCdcChannel(m_iqrfPortName);
 
   m_udpChannel = ant_new UdpChannel((unsigned short)m_remotePort, (unsigned short)m_localPort, IQRF_UDP_BUFFER_SIZE);
 
-  //Messages from IQRF are sent via MessageQueue to UDP channel
-  m_toUdpMessageQueue = ant_new MessageQueue(m_udpChannel);
+  m_toUdpMessageQueue = ant_new TaskQueue<ustring>([&](const ustring& msg) {
+    m_udpChannel->sendTo(msg);
+  });
 
-  //Messages from UDP are sent via MessageQueue to IQRF channel
-  m_toIqrfMessageQueue = ant_new MessageQueue(m_iqrfChannel);
-
-  //Received messages from IQRF channel are pushed to UDP MessageQueue
-  m_iqrfChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) -> int {
-    return handleMessageFromIqrf(msg); });
-
-  //Received messages from UDP channel are pushed to IQRF MessageQueue
   m_udpChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) -> int {
     return handleMessageFromUdp(msg); });
 
-  std::cout << "udp-daemon started" << std::endl;
+  m_transaction = ant_new UdpMessagingTransaction(this);
+
+  std::cout << "daemon-UDP-protocol started" << std::endl;
 
   TRC_LEAVE("");
 }
 
-void MessageHandler::stop()
+void UdpMessaging::stop()
 {
   TRC_ENTER("");
-  std::cout << "udp-daemon stops" << std::endl;
-  delete m_iqrfChannel;
+  std::cout << "udp-daemon-protocol stops" << std::endl;
+  delete m_transaction;
   delete m_udpChannel;
   delete m_toUdpMessageQueue;
-  delete m_toIqrfMessageQueue;
   TRC_LEAVE("");
 }
 
-void MessageHandler::exit()
+////////////////////////////////////
+UdpMessagingTransaction::UdpMessagingTransaction(UdpMessaging* udpMessaging)
+  :m_udpMessaging(udpMessaging)
 {
-  TRC_WAR("exiting ...");
-  std::cout << "udp-daemon exits" << std::endl;
-  m_running = false;
+}
+
+UdpMessagingTransaction::~UdpMessagingTransaction()
+{
+}
+
+const DpaMessage& UdpMessagingTransaction::getMessage() const
+{
+  return m_message;
+}
+
+void UdpMessagingTransaction::processConfirmationMessage(const DpaMessage& confirmation)
+{
+  m_udpMessaging->sendDpaMessageToUdp(confirmation);
+}
+
+void UdpMessagingTransaction::processResponseMessage(const DpaMessage& response)
+{
+  m_udpMessaging->sendDpaMessageToUdp(response);
+}
+
+void UdpMessagingTransaction::processFinished(bool success)
+{
+  m_success = success;
+}
+
+void UdpMessagingTransaction::setMessage(ustring message)
+{
+  m_message.DataToBuffer(message.data(), message.length());
 }

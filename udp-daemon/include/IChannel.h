@@ -3,11 +3,11 @@
 #include <string>
 #include <functional>
 
-class Channel
+class IChannel
 {
 public:
   typedef std::function<int(const std::basic_string<unsigned char>&)> ReceiveFromFunc;
-  virtual ~Channel() {};
+  virtual ~IChannel() {};
   virtual void sendTo(const std::basic_string<unsigned char>& message) = 0;
   virtual void registerReceiveFromHandler(ReceiveFromFunc receiveFromFunc) = 0;
 };

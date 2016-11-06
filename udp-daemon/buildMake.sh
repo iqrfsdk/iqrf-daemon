@@ -20,10 +20,22 @@ pushd ${clibspi}
 clibspi=$PWD
 popd
 
+#get path to clibdpa libs
+clibdpa=../../clibdpa/${buildexp}
+pushd ${clibdpa}
+clibdpa=$PWD
+popd
+
+#get path to cutils libs
+cutils=../../cutils/${buildexp}
+pushd ${cutils}
+cutils=$PWD
+popd
+
 #launch cmake to generate build environment
 pushd ${builddir}
 pwd
-cmake -G "Unix Makefiles" -Dclibcdc_DIR:PATH=${clibcdc} -Dclibspi_DIR:PATH=${clibspi} ${currentdir}
+cmake -G "Unix Makefiles" -Dclibcdc_DIR:PATH=${clibcdc} -Dclibspi_DIR:PATH=${clibspi} -Dclibdpa_DIR:PATH=${clibdpa} -Dcutils_DIR:PATH=${cutils} ${currentdir}
 popd
 
 #build from generated build environment

@@ -1,4 +1,4 @@
-#include "MessageHandler.h"
+#include "MessagingController.h"
 #include "IqrfLogging.h"
 
 #include <signal.h>
@@ -38,7 +38,7 @@ protected:
 
 TRC_INIT("");
 
-MessageHandler* msgHndl(nullptr);
+MessagingController* msgCtrl;
 
 //-------------------------------------------------
 //catches CTRL-C to stop main loop
@@ -55,8 +55,8 @@ void SignalHandler(int signal)
   case SIGSTOP:
   case SIGHUP:
 #endif
-    if (nullptr != msgHndl)
-      msgHndl->exit();
+    if (nullptr != msgCtrl)
+      msgCtrl->exit();
     break;
 
   default:
@@ -73,8 +73,8 @@ BOOL WINAPI ConsoleHandlerRoutine(DWORD dwCtrlType)
 {
   if (dwCtrlType == CTRL_CLOSE_EVENT)
   {
-    if (nullptr != msgHndl)
-      msgHndl->exit();
+    if (nullptr != msgCtrl)
+      msgCtrl->exit();
     std::this_thread::sleep_for(std::chrono::milliseconds(10000)); //Win waits ~10 sec and then exits anyway
     return TRUE;
   }
@@ -91,8 +91,6 @@ int main(int argc, char** argv)
   TRC_ENTER("started");
 
   std::string iqrf_port_name;
-  std::string remote_ip_port("55000");
-  std::string local_ip_port("55300");
 
   try {
     if (SIG_ERR == signal(SIGINT, SignalHandler)) {
@@ -120,21 +118,15 @@ int main(int argc, char** argv)
 
     if (argc < 2) {
       std::cerr << "Usage" << std::endl;
-      std::cerr << "  udp-daemon <iqrf_port_name> [remote_ip_port] [local_ip_port]" << std::endl << std::endl;
+      std::cerr << "  daemon <iqrf_port_name>" << std::endl << std::endl;
       std::cerr << "Example" << std::endl;
-      std::cerr << "  udp-daemon COM5" << std::endl;
-      std::cerr << "  udp-daemon /dev/ttyACM0 55000 55300" << std::endl;
-      std::cerr << "  udp-daemon /dev/spidev0.0" << std::endl;
+      std::cerr << "  daemon COM5" << std::endl;
+      std::cerr << "  daemon /dev/ttyACM0" << std::endl;
+      std::cerr << "  daemon /dev/spidev0.0" << std::endl;
       return (-1);
     }
     else {
       iqrf_port_name = argv[1];
-      if (argc > 2) {
-        remote_ip_port = argv[2];
-      }
-      if (argc > 3) {
-        local_ip_port = argv[3];
-      }
     }
   }
   catch (std::exception& e) {
@@ -142,13 +134,13 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  TRC_ENTER(PAR(iqrf_port_name) << PAR(remote_ip_port) << PAR(local_ip_port));
+  TRC_DBG(PAR(iqrf_port_name));
 
-  msgHndl = ant_new MessageHandler(iqrf_port_name, remote_ip_port, local_ip_port);
-  msgHndl->watchDog();
+  msgCtrl = ant_new MessagingController(iqrf_port_name);
+  msgCtrl->watchDog();
 
-  TRC_DBG("deleting msgHndl");
-  delete msgHndl;
+  TRC_DBG("deleting msgCtrl");
+  delete msgCtrl;
 
   TRC_ENTER("finished");
 }
