@@ -6,7 +6,7 @@
 //TODO temporary here
 #include "IMessaging.h"
 #include "UdpMessaging.h"
-#include "PipeMessaging.h"
+#include "MqMessaging.h"
 
 #include "IqrfLogging.h"
 #include "PlatformDep.h"
@@ -89,7 +89,7 @@ void MessagingController::startProtocols()
   udp->setDaemon(this);
   udp->start();
 
-  IMessaging* pipe = ant_new PipeMessaging();
+  IMessaging* pipe = ant_new MqMessaging();
   pipe->setDaemon(this);
   pipe->start();
 

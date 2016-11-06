@@ -10,13 +10,13 @@
 
 typedef std::basic_string<unsigned char> ustring;
 
-class PipeMessaging;
+class MqMessaging;
 
-class PipeMessagingTransaction : public DpaTransaction
+class MqMessagingTransaction : public DpaTransaction
 {
 public:
-  PipeMessagingTransaction(PipeMessaging* mqMessaging);
-  virtual ~PipeMessagingTransaction();
+  MqMessagingTransaction(MqMessaging* mqMessaging);
+  virtual ~MqMessagingTransaction();
   virtual const DpaMessage& getMessage() const;
   virtual void processConfirmationMessage(const DpaMessage& confirmation);
   virtual void processResponseMessage(const DpaMessage& response);
@@ -24,15 +24,15 @@ public:
   void setMessage(ustring message);
 private:
   DpaMessage m_message;
-  PipeMessaging* m_mqMessaging;
+  MqMessaging* m_mqMessaging;
   bool m_success;
 };
 
-class PipeMessaging: public IMessaging
+class MqMessaging: public IMessaging
 {
 public:
-  PipeMessaging();
-  virtual ~PipeMessaging();
+  MqMessaging();
+  virtual ~MqMessaging();
 
   virtual void setDaemon(IDaemon* daemon);
   virtual void start();
@@ -44,7 +44,7 @@ public:
 
 private:
   IDaemon *m_daemon;
-  PipeMessagingTransaction* m_transaction;
+  MqMessagingTransaction* m_transaction;
 
   MqChannel *m_mqChannel;
   TaskQueue<ustring> *m_toMqMessageQueue;

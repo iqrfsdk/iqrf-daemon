@@ -1,6 +1,6 @@
 #include "DpaTask.h"
 #include "DpaMessage.h"
-#include "PipeMessaging.h"
+#include "MqMessaging.h"
 #include "IqrfLogging.h"
 #include "PlatformDep.h"
 #include <climits>
@@ -10,7 +10,7 @@
 
 const unsigned IQRF_MQ_BUFFER_SIZE = 1024;
 
-void PipeMessaging::sendDpaMessageToMq(const DpaMessage&  dpaMessage)
+void MqMessaging::sendDpaMessageToMq(const DpaMessage&  dpaMessage)
 {
   ustring message(dpaMessage.DpaPacketData(), dpaMessage.Length());
   TRC_DBG(FORM_HEX(message.data(), message.size()));
@@ -18,13 +18,13 @@ void PipeMessaging::sendDpaMessageToMq(const DpaMessage&  dpaMessage)
   m_toMqMessageQueue->pushToQueue(message);
 }
 
-void PipeMessaging::setDaemon(IDaemon* daemon)
+void MqMessaging::setDaemon(IDaemon* daemon)
 {
   m_daemon = daemon;
   m_daemon->registerMessaging(*this);
 }
 
-int PipeMessaging::handleMessageFromMq(const ustring& mqMessage)
+int MqMessaging::handleMessageFromMq(const ustring& mqMessage)
 {
   TRC_DBG("==================================" << std::endl <<
     "Received from MQ: " << std::endl << FORM_HEX(mqMessage.data(), mqMessage.size()));
@@ -35,7 +35,7 @@ int PipeMessaging::handleMessageFromMq(const ustring& mqMessage)
   return 0;
 }
 
-PipeMessaging::PipeMessaging()
+MqMessaging::MqMessaging()
   :m_daemon(nullptr)
   , m_mqChannel(nullptr)
   , m_toMqMessageQueue(nullptr)
@@ -44,11 +44,11 @@ PipeMessaging::PipeMessaging()
   m_remoteMqName = "iqrf-daemon-100";
 }
 
-PipeMessaging::~PipeMessaging()
+MqMessaging::~MqMessaging()
 {
 }
 
-void PipeMessaging::start()
+void MqMessaging::start()
 {
   TRC_ENTER("");
 
@@ -61,14 +61,14 @@ void PipeMessaging::start()
   m_mqChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) -> int {
     return handleMessageFromMq(msg); });
 
-  m_transaction = ant_new PipeMessagingTransaction(this);
+  m_transaction = ant_new MqMessagingTransaction(this);
 
   std::cout << "daemon-MQ-protocol started" << std::endl;
 
   TRC_LEAVE("");
 }
 
-void PipeMessaging::stop()
+void MqMessaging::stop()
 {
   TRC_ENTER("");
   std::cout << "udp-daemon-protocol stops" << std::endl;
@@ -79,36 +79,36 @@ void PipeMessaging::stop()
 }
 
 ////////////////////////////////////
-PipeMessagingTransaction::PipeMessagingTransaction(PipeMessaging* mqMessaging)
+MqMessagingTransaction::MqMessagingTransaction(MqMessaging* mqMessaging)
   :m_mqMessaging(mqMessaging)
 {
 }
 
-PipeMessagingTransaction::~PipeMessagingTransaction()
+MqMessagingTransaction::~MqMessagingTransaction()
 {
 }
 
-const DpaMessage& PipeMessagingTransaction::getMessage() const
+const DpaMessage& MqMessagingTransaction::getMessage() const
 {
   return m_message;
 }
 
-void PipeMessagingTransaction::processConfirmationMessage(const DpaMessage& confirmation)
+void MqMessagingTransaction::processConfirmationMessage(const DpaMessage& confirmation)
 {
   m_mqMessaging->sendDpaMessageToMq(confirmation);
 }
 
-void PipeMessagingTransaction::processResponseMessage(const DpaMessage& response)
+void MqMessagingTransaction::processResponseMessage(const DpaMessage& response)
 {
   m_mqMessaging->sendDpaMessageToMq(response);
 }
 
-void PipeMessagingTransaction::processFinished(bool success)
+void MqMessagingTransaction::processFinished(bool success)
 {
   m_success = success;
 }
 
-void PipeMessagingTransaction::setMessage(ustring message)
+void MqMessagingTransaction::setMessage(ustring message)
 {
   m_message.DataToBuffer(message.data(), message.length());
 }
