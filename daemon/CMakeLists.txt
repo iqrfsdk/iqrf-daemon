@@ -1,4 +1,4 @@
-project (clibudp)
+project (daemon)
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -43,7 +43,6 @@ include_directories(${cutils_INCLUDE_DIRS})
 
 #library build
 add_subdirectory(include)
-add_subdirectory(udp)
 add_subdirectory(UdpMessaging)
 add_subdirectory(MqMessaging)
 add_subdirectory(daemon)
