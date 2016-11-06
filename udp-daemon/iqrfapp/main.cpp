@@ -55,9 +55,18 @@ int main(int argc, char** argv)
 }
 #endif
 
-int handleMessageFromMq(const ustring& udpMessage)
+int handleMessageFromMq(const ustring& message)
 {
-  TRC_WAR("Received from MQ: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
+  TRC_WAR("Received from MQ: " << std::endl << FORM_HEX(message.data(), message.size()));
+  if (message.size() == 11) {
+    //TODO just an example
+    DpaThermometer thm(1); //address 1
+    DpaMessage dpamsg;
+    dpamsg.DataToBuffer(message.data(), message.length());
+    thm.parseResponse(dpamsg);
+    thm.getTemperature();
+    TRC_WAR("Received temperature from: " << NAME_PAR(addr, thm.getAddress()) << NAME_PAR(temperature, thm.getTemperature()));
+  }
   return 0;
 }
 
@@ -112,6 +121,13 @@ int main()
         //DpaRawTask raw(dpaMsg);
         //IqrfAppDpaTransaction trans(raw);
         //dpaHandler->ExecuteDpaTransaction(trans);
+        ustring message = { 0x01, 0x00, 0x0A, 0x00, 0xFF, 0xFF };
+        try {
+          mqChannel->sendTo(message);
+        }
+        catch (std::exception& e) {
+          TRC_DBG("sendTo failed: " << e.what());
+        }
         break;
       }
       case 3:
