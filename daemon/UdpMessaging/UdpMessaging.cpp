@@ -262,9 +262,9 @@ void UdpMessagingTransaction::processResponseMessage(const DpaMessage& response)
   m_udpMessaging->sendDpaMessageToUdp(response);
 }
 
-void UdpMessagingTransaction::processFinished(bool success)
+void UdpMessagingTransaction::processFinish(DpaRequest::DpaRequestStatus status)
 {
-  m_success = success;
+  m_success = isProcessed(status);
 }
 
 void UdpMessagingTransaction::setMessage(ustring message)

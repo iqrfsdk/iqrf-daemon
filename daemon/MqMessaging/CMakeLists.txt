@@ -4,10 +4,12 @@ FIND_PACKAGE(clibdpa REQUIRED)
 
 set(MqMessaging_SRC_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/MqMessaging.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/IqrfappMqMessaging.cpp
 )
 
 set(MqMessaging_INC_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/MqMessaging.h
+	${CMAKE_CURRENT_SOURCE_DIR}/IqrfappMqMessaging.h
 )
 
 include_directories(${clibdpa_INCLUDE_DIRS})

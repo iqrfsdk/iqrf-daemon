@@ -2,38 +2,43 @@
 #include "DpaTask.h"
 #include "PlatformDep.h"
 #include "IqrfLogging.h"
+#include <vector>
 #include <string>
 #include <sstream>
 
 TRC_INIT("");
 
-#if 0
-//TODO
 int handleMessageFromMq(const ustring& message)
 {
-  //TODO process temperature
-  std::cout << FORM_HEX(message.data(), message.size()) << std::endl;
+  TRC_WAR("Received from MQ: " << std::endl << FORM_HEX(message.data(), message.size()));
+  std::string msg((char*)message.data(), message.size());
+  std::cout << msg << std::endl;
   return 0;
 }
 
 int main(int argc, char** argv)
 {
-  int num = -1;
+  int addrNum = -1;
+  std::string device;
+  std::string addrStr;
+  bool cmdl = false;
 
-  if (argc < 3) {
-    std::cerr << "Usage" << std::endl;
-    std::cerr << "  iqrfapp temp <num>" << std::endl << std::endl;
-    std::cerr << "Example" << std::endl;
-    std::cerr << "  iqrfapp temp 1" << std::endl;
-    return (-1);
+  if (argc == 1) {
+    cmdl = true;
   }
-
-  std::string nustr = argv[2];
-  std::istringstream is(nustr);
-  is >> num;
-  if (num < 0) {
-    std::cerr << "invalid number: " << nustr;
-    return (-1);
+  else if (argc != 3 ) {
+    std::cerr << "Usage" << std::endl;
+    std::cerr << "  iqrfapp [temp <num>]" << std::endl << std::endl;
+    std::cerr << "Example" << std::endl;
+    std::cerr << "  iqrfapp" << std::endl;
+    std::cerr << "  iqrfapp temp 1" << std::endl;
+    std::cerr << "  iqrfapp pulseG 1" << std::endl;
+    std::cerr << "  iqrfapp pulseR 1" << std::endl;
+    exit (-1);
+  }
+  else {
+    device = argv[1];
+    addrStr = argv[2];
   }
 
   MqChannel* mqChannel = ant_new MqChannel("iqrf-daemon-110", "iqrf-daemon-100", 1024);
@@ -42,19 +47,55 @@ int main(int argc, char** argv)
   mqChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) -> int {
     return handleMessageFromMq(msg); });
 
-  ustring message = { 0x00, 0x00, 0x02, 0x01, 0xFF, 0xFF };
-  message[0] = num;
+  bool run = true;
+  while (run)
+  {
+    if (cmdl) {
+      addrNum = -1;
+      std::string command;
+      std::cout << std::endl << ">> ";
 
-  try {
-    mqChannel->sendTo(message);
-  }
-  catch (std::exception& e) {
-    //TRC_DBG("sendTo failed: " << e.what());
+      getline(std::cin, command);
+
+      std::istringstream iscmd(command);
+      iscmd >> device >> addrStr;
+    }
+
+    std::istringstream is(addrStr);
+    is >> addrNum;
+    if (addrNum < 0) {
+      std::cerr << "invalid number: " << addrStr;
+      if (cmdl)
+        continue;
+      else
+        break;
+    }
+
+    std::ostringstream os;
+    os << device << " " << addrNum;
+    std::string msgStr(os.str());
+    ustring msg((unsigned char*)msgStr.data(), msgStr.size());
+
+    try {
+      mqChannel->sendTo(msg);
+    }
+    catch (std::exception& e) {
+      TRC_DBG("sendTo failed: " << e.what());
+      std::cerr << "send failure" << std::endl;
+    }
+
+    //TODO wait timeout
+    Sleep(200);
+    if (!cmdl)
+      break;
   }
 
+  delete mqChannel;
+
+  return 0;
 }
-#endif
 
+#if 0
 int handleMessageFromMq(const ustring& message)
 {
   TRC_WAR("Received from MQ: " << std::endl << FORM_HEX(message.data(), message.size()));
@@ -171,3 +212,4 @@ int main()
   std::cout << "exited" << std::endl;
   system("pause");
 }
+#endif

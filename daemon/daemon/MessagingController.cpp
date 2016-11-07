@@ -6,7 +6,8 @@
 //TODO temporary here
 #include "IMessaging.h"
 #include "UdpMessaging.h"
-#include "MqMessaging.h"
+//#include "MqMessaging.h"
+#include "IqrfappMqMessaging.h"
 
 #include "IqrfLogging.h"
 #include "PlatformDep.h"
@@ -14,6 +15,7 @@
 void MessagingController::executeDpaTransaction(DpaTransaction& dpaTransaction)
 {
   m_dpaTransactionQueue->pushToQueue(&dpaTransaction);
+  //TODO wait here for something
 }
 
 //called from task queue thread passed by lambda in task queue ctor
@@ -25,10 +27,12 @@ void MessagingController::executeDpaTransactionFunc(DpaTransaction* dpaTransacti
     }
     catch (std::exception& e) {
       CATCH_EX("Error in ExecuteDpaTransaction: ", std::exception, e);
+      dpaTransaction->processFinish(DpaRequest::kCreated);
     }
   }
   else {
     TRC_ERR("Dpa interface is not working");
+    dpaTransaction->processFinish(DpaRequest::kCreated);
   }
 }
 
@@ -89,9 +93,9 @@ void MessagingController::startProtocols()
   udp->setDaemon(this);
   udp->start();
 
-  IMessaging* pipe = ant_new MqMessaging();
-  pipe->setDaemon(this);
-  pipe->start();
+  IMessaging* mqm = ant_new IqrfappMqMessaging();
+  mqm->setDaemon(this);
+  mqm->start();
 
   TRC_LEAVE("");
 }

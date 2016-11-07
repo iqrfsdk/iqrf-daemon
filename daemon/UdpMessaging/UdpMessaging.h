@@ -20,7 +20,7 @@ public:
   virtual const DpaMessage& getMessage() const;
   virtual void processConfirmationMessage(const DpaMessage& confirmation);
   virtual void processResponseMessage(const DpaMessage& response);
-  virtual void processFinished(bool success);
+  virtual void processFinish(DpaRequest::DpaRequestStatus status);
   void setMessage(ustring message);
 private:
   DpaMessage m_message;
