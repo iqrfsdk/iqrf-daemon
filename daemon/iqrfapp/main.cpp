@@ -64,7 +64,7 @@ int main(int argc, char** argv)
     std::istringstream is(addrStr);
     is >> addrNum;
     if (addrNum < 0) {
-      std::cerr << "invalid number: " << addrStr;
+      std::cerr << "invalid address: " << addrStr;
       if (cmdl)
         continue;
       else
