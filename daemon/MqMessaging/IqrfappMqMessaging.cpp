@@ -7,9 +7,8 @@
 
 const unsigned IQRF_MQ_BUFFER_SIZE = 1024;
 
-const std::string MQ_ERROR_ADDRESS("error: address");
-const std::string MQ_ERROR_DEVICE("error: device");
-const std::string MQ_ERROR_TIMEOUT("error: timeout");
+const std::string MQ_ERROR_ADDRESS("ERROR_ADDRESS");
+const std::string MQ_ERROR_DEVICE("ERROR_DEVICE");
 
 IqrfappMqMessaging::IqrfappMqMessaging()
   :m_daemon(nullptr)
@@ -91,34 +90,34 @@ int IqrfappMqMessaging::handleMessageFromMq(const ustring& mqMessage)
     DpaThermometer temp(address);
     DpaTransactionTask trans(temp);
     m_daemon->executeDpaTransaction(trans);
-    bool success = trans.waitFinish();
+    int result = trans.waitFinish();
 
-    if (success)
+    if (0 == result)
       os << temp;
     else
-      os << MQ_ERROR_TIMEOUT;
+      os << trans.getErrorStr();
   }
   else if (device == NAME_PulseLedG) {
     DpaPulseLedG pulse(address);
     DpaTransactionTask trans(pulse);
     m_daemon->executeDpaTransaction(trans);
-    bool success = trans.waitFinish();
+    int result = trans.waitFinish();
 
-    if (success)
+    if (0 == result)
       os << pulse;
     else
-      os << MQ_ERROR_TIMEOUT;
+      os << trans.getErrorStr();
   }
   else if (device == NAME_PulseLedR) {
     DpaPulseLedR pulse(address);
     DpaTransactionTask trans(pulse);
     m_daemon->executeDpaTransaction(trans);
-    bool success = trans.waitFinish();
+    int result = trans.waitFinish();
 
-    if (success)
+    if (0 == result)
       os << pulse;
     else
-      os << MQ_ERROR_TIMEOUT;
+      os << trans.getErrorStr();
   }
   else {
     os << MQ_ERROR_DEVICE;

@@ -54,6 +54,8 @@ int main(int argc, char** argv)
       addrNum = -1;
       std::string command;
       std::cout << std::endl << ">> ";
+      device = "";
+      addrStr = "";
 
       getline(std::cin, command);
 
