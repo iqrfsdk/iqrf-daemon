@@ -33,7 +33,7 @@ void IqrfappMqMessaging::start()
 {
   TRC_ENTER("");
 
-  m_mqChannel = ant_new MqChannel(m_remoteMqName, m_localMqName, IQRF_MQ_BUFFER_SIZE);
+  m_mqChannel = ant_new MqChannel(m_remoteMqName, m_localMqName, IQRF_MQ_BUFFER_SIZE, true);
 
   m_toMqMessageQueue = ant_new TaskQueue<ustring>([&](const ustring& msg) {
     m_mqChannel->sendTo(msg);
