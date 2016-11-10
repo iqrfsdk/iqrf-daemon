@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <chrono>
+#include <thread>
 
 TRC_INIT("");
 
@@ -87,7 +89,7 @@ int main(int argc, char** argv)
     }
 
     //TODO wait timeout
-    Sleep(200);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     if (!cmdl)
       break;
   }
