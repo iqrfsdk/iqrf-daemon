@@ -8,6 +8,7 @@
 #include "UdpMessaging.h"
 //#include "MqMessaging.h"
 #include "IqrfappMqMessaging.h"
+#include "MqttMessaging.h"
 
 #include "IqrfLogging.h"
 #include "PlatformDep.h"
@@ -96,6 +97,10 @@ void MessagingController::startProtocols()
   IMessaging* mqm = ant_new IqrfappMqMessaging();
   mqm->setDaemon(this);
   mqm->start();
+
+  IMessaging* mqttm = ant_new MqttMessaging();
+  mqttm->setDaemon(this);
+  mqttm->start();
 
   TRC_LEAVE("");
 }
