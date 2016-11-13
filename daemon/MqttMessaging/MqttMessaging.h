@@ -1,11 +1,10 @@
 #pragma once
 
-#include "TaskQueue.h"
 #include "IMessaging.h"
 #include <string>
 
 class IDaemon;
-class MqChannel;
+class Impl;
 
 typedef std::basic_string<unsigned char> ustring;
 
@@ -20,14 +19,28 @@ public:
   virtual void stop();
 
 private:
-  void sendMessageToMqtt(const std::string& message);
-  int handleMessageFromMqtt(const ustring& mqMessage);
+  Impl* m_impl;
+};
 
-  IDaemon* m_daemon;
-  //MqChannel* m_mqChannel;
-  TaskQueue<ustring>* m_toMqttMessageQueue;
+class MqttChannelException : public std::exception {
+public:
+  MqttChannelException(const std::string& cause)
+    :m_cause(cause)
+  {}
 
-  //std::string m_localMqName;
-  //std::string m_remoteMqName;
+  //TODO ?
+#ifndef WIN32
+  virtual const char* what() const noexcept(true)
+#else
+  virtual const char* what() const
+#endif
+  {
+    return m_cause.c_str();
+  }
 
+  virtual ~MqttChannelException()
+  {}
+
+protected:
+  std::string m_cause;
 };
