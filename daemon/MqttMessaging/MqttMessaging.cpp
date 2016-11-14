@@ -12,11 +12,10 @@ const std::string MQ_ERROR_DEVICE("ERROR_DEVICE");
 
 const std::string MQTT_BROKER_ADDRESS("tcp://192.168.1.26:1883");
 const std::string MQTT_CLIENTID("IqrfDpaMessaging");
-const std::string MQTT_TOPIC("Iqrf/Dpa");
+const std::string MQTT_TOPIC_DPA_REQUEST("Iqrf/DpaRequest");
+const std::string MQTT_TOPIC_DPA_RESPONSE("Iqrf/DpaResponse");
 const int MQTT_QOS(1);
-//#define MQTT_TIMEOUT     10000L
-
-//volatile MQTTClient_deliveryToken deliveredtoken;
+const unsigned long MQTT_TIMEOUT(10000);
 
 class Impl {
 public:
@@ -48,15 +47,17 @@ public:
 
   void delivered(MQTTClient_deliveryToken dt)
   {
-    printf("Message with token value %d delivery confirmed\n", dt);
+    TRC_DBG("Message delivery confirmed" << PAR(dt));
     m_deliveredtoken = dt;
   }
 
   int msgarrvd(char *topicName, int topicLen, MQTTClient_message *message)
   {
     ustring msg((unsigned char*)message->payload, message->payloadlen);
-    if (!strncmp(topicName, MQTT_TOPIC.c_str(), topicLen))
+    if (!strncmp(topicName, MQTT_TOPIC_DPA_REQUEST.c_str(), topicLen))
       handleMessageFromMqtt(msg);
+    MQTTClient_freeMessage(&message);
+    MQTTClient_free(topicName);
     return 1;
   }
 
@@ -65,6 +66,8 @@ public:
     TRC_WAR("Connection lost: " << PAR(cause));
     m_connected = false;
   }
+
+  void sendTo(const ustring& msg);
 
   IDaemon* m_daemon;
   //MqChannel* m_mqChannel;
@@ -107,10 +110,9 @@ void Impl::start()
   //m_mqChannel = ant_new MqChannel(m_remoteMqName, m_localMqName, IQRF_MQ_BUFFER_SIZE, true);
 
   m_toMqttMessageQueue = ant_new TaskQueue<ustring>([&](const ustring& msg) {
+    sendTo(msg);
     //m_mqChannel->sendTo(msg);
-  });
-
-  m_client = ant_new MQTTClient();
+   });
 
   MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
   int retval;
@@ -125,8 +127,8 @@ void Impl::start()
     THROW_EX(MqttChannelException, "MQTTClient_connect() failed: " << PAR(retval));
   }
 
-  TRC_DBG("Subscribing: " << PAR(MQTT_TOPIC) << PAR(MQTT_CLIENTID) << PAR(MQTT_QOS));
-  if ((retval = MQTTClient_subscribe(m_client, MQTT_TOPIC.c_str(), MQTT_QOS)) != MQTTCLIENT_SUCCESS) {
+  TRC_DBG("Subscribing: " << PAR(MQTT_TOPIC_DPA_REQUEST) << PAR(MQTT_CLIENTID) << PAR(MQTT_QOS));
+  if ((retval = MQTTClient_subscribe(m_client, MQTT_TOPIC_DPA_REQUEST.c_str(), MQTT_QOS)) != MQTTCLIENT_SUCCESS) {
     THROW_EX(MqttChannelException, "MQTTClient_subscribe() failed: " << PAR(retval));
   }
 
@@ -141,7 +143,8 @@ void Impl::stop()
 {
   TRC_ENTER("");
   //delete m_mqChannel;
-  delete m_client;
+  MQTTClient_disconnect(m_client, 10000);
+  MQTTClient_destroy(&m_client);
   delete m_toMqttMessageQueue;
   std::cout << "daemon-MQTT-protocol stopped" << std::endl;
   TRC_LEAVE("");
@@ -217,4 +220,20 @@ int Impl::handleMessageFromMqtt(const ustring& mqMessage)
   sendMessageToMqtt(os.str());
 
   return 0;
+}
+
+void Impl::sendTo(const ustring& msg)
+{
+  MQTTClient_deliveryToken token;
+  MQTTClient_message pubmsg = MQTTClient_message_initializer;
+  int retval;
+
+  pubmsg.payload = (void*)msg.data();
+  pubmsg.payloadlen = (int)msg.size();
+  pubmsg.qos = MQTT_QOS;
+  pubmsg.retained = 0;
+  
+  MQTTClient_publishMessage(m_client, MQTT_TOPIC_DPA_RESPONSE.c_str(), &pubmsg, &token);
+  TRC_DBG("Waiting for publication: " << PAR(MQTT_TIMEOUT));
+  retval = MQTTClient_waitForCompletion(m_client, token, MQTT_TIMEOUT);
 }
