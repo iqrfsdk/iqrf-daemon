@@ -5,6 +5,7 @@
 #include "PlatformDep.h"
 #include "IDaemon.h"
 #include "IqrfLogging.h"
+#include <string.h>
 #include <atomic>
 
 const std::string MQ_ERROR_ADDRESS("ERROR_ADDRESS");
@@ -19,12 +20,12 @@ const unsigned long MQTT_TIMEOUT(10000);
 
 class Impl {
 public:
-  Impl::Impl()
+  Impl()
     :m_daemon(nullptr)
     ,m_toMqttMessageQueue(nullptr)
   {}
 
-  Impl::~Impl()
+  ~Impl()
   {}
 
   void start();

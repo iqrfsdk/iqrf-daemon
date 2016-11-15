@@ -31,10 +31,11 @@ link_directories(${CMAKE_SOURCE_DIR}/MqttMessaging/paho/lib)
 add_executable(${PROJECT_NAME} ${daemon_SRC_FILES} ${daemon_INC_FILES})
 
 if (WIN32) 
-	target_link_libraries(${PROJECT_NAME} MqttMessaging paho-mqtt3c MqMessaging DpaExtension
-		 MqChannel IqrfCdcChannel IqrfSpiChannel dpa UdpMessaging UdpChannel cdc spi_iqrf sysfs_gpio Ws2_32)
+ 	target_link_libraries(${PROJECT_NAME} MqttMessaging paho-mqtt3c MqMessaging DpaExtension
+		MqChannel IqrfCdcChannel IqrfSpiChannel dpa UdpMessaging UdpChannel cdc spi_iqrf sysfs_gpio Ws2_32)
 else()
-	target_link_libraries(${PROJECT_NAME} MqttMessaging MqMessaging DpaExtension MqChannel IqrfCdcChannel IqrfSpiChannel dpa UdpMessaging UdpChannel cdc spi_iqrf sysfs_gpio pthread rt)
+	target_link_libraries(${PROJECT_NAME} MqttMessaging paho-mqtt3c MqMessaging DpaExtension
+		MqChannel IqrfCdcChannel IqrfSpiChannel dpa UdpMessaging UdpChannel cdc spi_iqrf sysfs_gpio pthread rt)
 endif()
 
 #install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/sbin)
