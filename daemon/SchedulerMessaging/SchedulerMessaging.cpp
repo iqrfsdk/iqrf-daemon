@@ -257,7 +257,7 @@ void SchedulerMessaging::timer()
     // fire all expired tasks
     while (!m_scheduledTasks.empty()) {
 
-      auto & begin = m_scheduledTasks.begin();
+      auto begin = m_scheduledTasks.begin();
       std::shared_ptr<ScheduleRecord> record = begin->second;
 
       if (begin->first < timePoint) {
