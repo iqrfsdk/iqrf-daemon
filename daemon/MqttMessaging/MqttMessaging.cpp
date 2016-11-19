@@ -3,6 +3,7 @@
 #include "DpaTransactionTask.h"
 #include "MQTTClient.h"
 #include "PlatformDep.h"
+#include "IScheduler.h"
 #include "IDaemon.h"
 #include "IqrfLogging.h"
 #include <string.h>
@@ -23,6 +24,7 @@ public:
   Impl()
     :m_daemon(nullptr)
     ,m_toMqttMessageQueue(nullptr)
+    ,m_scheduler(nullptr)
   {}
 
   ~Impl()
@@ -64,11 +66,15 @@ public:
 
   void connlost(char *cause)
   {
-    TRC_WAR("Connection lost: " << PAR(cause));
+    TRC_WAR("Connection lost: " << NAME_PAR(cause, (cause ? cause : "nullptr")));
     m_connected = false;
   }
 
   void sendTo(const ustring& msg);
+
+  void setScheduler(IScheduler* scheduler);
+  void resetScheduler();
+  void handleSchedulerResponse(const std::string& response);
 
   IDaemon* m_daemon;
   //MqChannel* m_mqChannel;
@@ -76,6 +82,8 @@ public:
   std::atomic_bool m_connected;
   std::atomic<MQTTClient_deliveryToken> m_deliveredtoken;
   MQTTClient m_client;
+  
+  IScheduler* m_scheduler;
 };
 
 MqttMessaging::MqttMessaging()
@@ -96,11 +104,13 @@ void MqttMessaging::setDaemon(IDaemon* daemon)
 
 void MqttMessaging::start()
 {
+  m_impl->setScheduler(m_impl->m_daemon->getScheduler());
   m_impl->start();
 }
 
 void MqttMessaging::stop()
 {
+  m_impl->resetScheduler();
   m_impl->stop();
 }
 
@@ -237,4 +247,23 @@ void Impl::sendTo(const ustring& msg)
   MQTTClient_publishMessage(m_client, MQTT_TOPIC_DPA_RESPONSE.c_str(), &pubmsg, &token);
   TRC_DBG("Waiting for publication: " << PAR(MQTT_TIMEOUT));
   retval = MQTTClient_waitForCompletion(m_client, token, MQTT_TIMEOUT);
+}
+
+///////////////////
+void Impl::setScheduler(IScheduler* scheduler)
+{
+  m_scheduler = scheduler;
+  if (m_scheduler) {
+    m_scheduler->registerResponseHandler("mqtt", [&](const std::string& response) {
+      sendMessageToMqtt(response);
+    });
+  }
+}
+
+void Impl::resetScheduler()
+{
+  //TODO
+  //if (m_scheduler) {
+  //  m_scheduler->unregisterResponseHandler("mqtt");
+  //}
 }

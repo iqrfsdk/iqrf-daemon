@@ -9,6 +9,7 @@
 //#include "MqMessaging.h"
 #include "IqrfappMqMessaging.h"
 #include "MqttMessaging.h"
+#include "SchedulerMessaging.h"
 
 #include "IqrfLogging.h"
 #include "PlatformDep.h"
@@ -42,6 +43,7 @@ MessagingController::MessagingController(const std::string& iqrfPortName)
   ,m_dpaHandler(nullptr)
   ,m_dpaTransactionQueue(nullptr)
   ,m_iqrfPortName(iqrfPortName)
+  ,m_scheduler(nullptr)
 {
 }
 
@@ -89,7 +91,14 @@ void MessagingController::watchDog()
 void MessagingController::startProtocols()
 {
   TRC_ENTER("");
-  //TODO
+
+  SchedulerMessaging* schdm = ant_new SchedulerMessaging();
+  IMessaging* smsg = schdm;
+  m_scheduler = schdm;
+  smsg->setDaemon(this);
+  smsg->start();
+
+  //TODO plugins?
   IMessaging* udp = ant_new UdpMessaging();
   udp->setDaemon(this);
   udp->start();
@@ -127,7 +136,7 @@ void MessagingController::start()
     else
       m_iqrfInterface = ant_new IqrfCdcChannel(m_iqrfPortName);
 
-    m_dpaHandler = new DpaHandler(m_iqrfInterface);
+    m_dpaHandler = ant_new DpaHandler(m_iqrfInterface);
     //dpaHandler->RegisterAsyncMessageHandler(std::bind(&DpaLibraryDemo::UnexpectedMessage,
     //  this,
     //  std::placeholders::_1));
@@ -158,6 +167,8 @@ void MessagingController::stop()
   //TODO unregister call-backs first ?
   delete m_iqrfInterface;
   delete m_dpaTransactionQueue;
+  delete m_dpaHandler;
+
   TRC_LEAVE("");
 }
 

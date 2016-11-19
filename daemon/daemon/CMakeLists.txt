@@ -19,6 +19,7 @@ include_directories(${CMAKE_SOURCE_DIR}/MqChannel)
 include_directories(${CMAKE_SOURCE_DIR}/UdpMessaging)
 include_directories(${CMAKE_SOURCE_DIR}/MqMessaging)
 include_directories(${CMAKE_SOURCE_DIR}/MqttMessaging)
+include_directories(${CMAKE_SOURCE_DIR}/SchedulerMessaging)
 include_directories(${CMAKE_SOURCE_DIR}/DpaExtension)
 include_directories(${CMAKE_SOURCE_DIR}/IqrfCdcChannel)
 include_directories(${CMAKE_SOURCE_DIR}/IqrfSpiChannel)
@@ -31,10 +32,10 @@ link_directories(${CMAKE_SOURCE_DIR}/MqttMessaging/paho/lib)
 add_executable(${PROJECT_NAME} ${daemon_SRC_FILES} ${daemon_INC_FILES})
 
 if (WIN32) 
- 	target_link_libraries(${PROJECT_NAME} MqttMessaging paho-mqtt3c MqMessaging DpaExtension
+ 	target_link_libraries(${PROJECT_NAME} SchedulerMessaging MqttMessaging paho-mqtt3c MqMessaging DpaExtension
 		MqChannel IqrfCdcChannel IqrfSpiChannel dpa UdpMessaging UdpChannel cdc spi_iqrf sysfs_gpio Ws2_32)
 else()
-	target_link_libraries(${PROJECT_NAME} MqttMessaging paho-mqtt3c MqMessaging DpaExtension
+	target_link_libraries(${PROJECT_NAME} SchedulerMessaging MqttMessaging paho-mqtt3c MqMessaging DpaExtension
 		MqChannel IqrfCdcChannel IqrfSpiChannel dpa UdpMessaging UdpChannel cdc spi_iqrf sysfs_gpio pthread rt)
 endif()
 

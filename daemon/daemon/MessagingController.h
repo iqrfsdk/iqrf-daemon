@@ -20,6 +20,7 @@ public:
   virtual std::set<IMessaging*>& getSetOfMessaging();
   virtual void registerMessaging(IMessaging& messaging);
   virtual void unregisterMessaging(IMessaging& messaging);
+  virtual IScheduler* getScheduler() { return m_scheduler; }
 
   void startProtocols();
   void stopProtocols();
@@ -44,4 +45,5 @@ private:
   //<pacid_to_IQRF, pair<pacid_to_protocol, messaging*>>
   std::unordered_map<unsigned short, std::pair<unsigned short, IMessaging*>> m_pacid_mapping;
 
+  IScheduler* m_scheduler;
 };
