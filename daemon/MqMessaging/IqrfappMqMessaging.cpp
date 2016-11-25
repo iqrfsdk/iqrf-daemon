@@ -1,6 +1,7 @@
 #include "IqrfappMqMessaging.h"
+#include "PrfThermometer.h"
+#include "PrfLeds.h"
 #include "DpaTransactionTask.h"
-//#include "DpaTask.h"
 #include "MqChannel.h"
 #include "IDaemon.h"
 #include "IqrfLogging.h"
@@ -86,8 +87,8 @@ int IqrfappMqMessaging::handleMessageFromMq(const ustring& mqMessage)
   //to encode output message
   std::ostringstream os;
 
-  if (device == NAME_Thermometer) {
-    DpaThermometer temp(address);
+  if (device == PRF_NAME_Thermometer) {
+    PrfThermometer temp(address, PrfThermometer::READ);
     DpaTransactionTask trans(temp);
     m_daemon->executeDpaTransaction(trans);
     int result = trans.waitFinish();
@@ -97,8 +98,8 @@ int IqrfappMqMessaging::handleMessageFromMq(const ustring& mqMessage)
     else
       os << trans.getErrorStr();
   }
-  else if (device == NAME_PulseLedG) {
-    DpaPulseLedG pulse(address);
+  else if (device == PRF_NAME_LedG) {
+    PrfLedG pulse(address, PrfLed::PULSE);
     DpaTransactionTask trans(pulse);
     m_daemon->executeDpaTransaction(trans);
     int result = trans.waitFinish();
@@ -108,8 +109,8 @@ int IqrfappMqMessaging::handleMessageFromMq(const ustring& mqMessage)
     else
       os << trans.getErrorStr();
   }
-  else if (device == NAME_PulseLedR) {
-    DpaPulseLedR pulse(address);
+  else if (device == PRF_NAME_LedR) {
+    PrfLedR pulse(address, PrfLed::PULSE);
     DpaTransactionTask trans(pulse);
     m_daemon->executeDpaTransaction(trans);
     int result = trans.waitFinish();

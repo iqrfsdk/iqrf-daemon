@@ -1,6 +1,7 @@
 #include "SchedulerMessaging.h"
+#include "PrfThermometer.h"
+#include "PrfLeds.h"
 #include "DpaTransactionTask.h"
-//#include "DpaTask.h"
 #include "MqChannel.h"
 #include "IDaemon.h"
 #include "IqrfLogging.h"
@@ -53,19 +54,19 @@ void SchedulerMessaging::start()
   //sec mnt hrs day mon year dow
   std::vector<std::string> temp = {
     "20 30 11 * * * 6",
-    "0 * * * * * * mqtt Thermometer 1",
-    "5 * * * * * * mqtt PulseLedR 0",
-    "10 * * * * * * mqtt PulseLedG 0",
-    "15 * * * * * * mqtt PulseLedR 0",
-    "20 * * * * * * mqtt PulseLedG 0",
-    "25 * * * * * * mqtt PulseLedR 0",
-    "30 * * * * * * mqtt PulseLedG 0",
-    "35 * * * * * * mqtt PulseLedR 0",
-    "40 * * * * * * mqtt PulseLedG 0",
-    "45 * * * * * * mqtt PulseLedR 0",
-    "50 * * * * * * mqtt PulseLedG 0",
-    "55 * * * * * * mqtt PulseLedR 0",
-    "00 * * * * * * mqtt PulseLedG 0",
+    "0 * * * * * * mqtt Thermometer 1 READ",
+    "5 * * * * * * mqtt LedR 0 PULSE",
+    "10 * * * * * * mqtt LedG 0 PULSE",
+    "15 * * * * * * mqtt LedR 0 PULSE",
+    "20 * * * * * * mqtt LedG 0 PULSE",
+    "25 * * * * * * mqtt LedR 0 PULSE",
+    "30 * * * * * * mqtt LedG 0 PULSE",
+    "35 * * * * * * mqtt LedR 0 PULSE",
+    "40 * * * * * * mqtt LedG 0 PULSE",
+    "45 * * * * * * mqtt LedR 0 PULSE",
+    "50 * * * * * * mqtt LedG 0 PULSE",
+    "55 * * * * * * mqtt LedR 0 PULSE",
+    "00 * * * * * * mqtt LedG 0 PULSE",
     "00 00 09 10 11 * *",
     "00 00 * * * * *",
     "00 00 00 * * * 1"
@@ -130,7 +131,10 @@ int SchedulerMessaging::handleScheduledRecord(const ScheduleRecord& record)
   //parse input message
   std::string device;
   int address(-1);
-  is >> device >> address;
+  std::string command;
+  std::string params;
+  is >> device >> address >> command;
+  std::getline(is, params, '|'); // just to get rest of line with spaces
 
   //to encode output message
   std::ostringstream os;
@@ -139,38 +143,38 @@ int SchedulerMessaging::handleScheduledRecord(const ScheduleRecord& record)
   if (address < 0) {
     os << MQ_ERROR_ADDRESS;
   }
-  else if (device == NAME_Thermometer) {
-    DpaThermometer temp(address);
+  else if (device == PRF_NAME_Thermometer) {
+    PrfThermometer temp(address, PrfThermometer::convertCommand(command));
     DpaTransactionTask trans(temp);
     m_daemon->executeDpaTransaction(trans);
     int result = trans.waitFinish();
 
     if (0 == result)
-      os << temp;
+      os << temp.getTaskName() << " " << temp.getAddress() << " " << temp;
     else
-      os << trans.getErrorStr();
+      os << temp.getTaskName() << " " << temp.getAddress() << " " << trans.getErrorStr();
   }
-  else if (device == NAME_PulseLedG) {
-    DpaPulseLedG pulse(address);
+  else if (device == PRF_NAME_LedG) {
+    PrfLedG pulse(address, PrfLed::convertCommand(command));
     DpaTransactionTask trans(pulse);
     m_daemon->executeDpaTransaction(trans);
     int result = trans.waitFinish();
 
     if (0 == result)
-      os << pulse;
+      os << pulse.getTaskName() << pulse.getAddress() << pulse;
     else
-      os << trans.getErrorStr();
+      os << pulse.getTaskName() << pulse.getAddress() << trans.getErrorStr();
   }
-  else if (device == NAME_PulseLedR) {
-    DpaPulseLedR pulse(address);
+  else if (device == PRF_NAME_LedR) {
+    PrfLedR pulse(address, PrfLed::convertCommand(command));
     DpaTransactionTask trans(pulse);
     m_daemon->executeDpaTransaction(trans);
     int result = trans.waitFinish();
 
     if (0 == result)
-      os << pulse;
+      os << pulse.getTaskName() << " " << pulse.getAddress() << " " << pulse;
     else
-      os << trans.getErrorStr();
+      os << pulse.getTaskName() << " " << pulse.getAddress() << " " << trans.getErrorStr();
   }
   else {
     os << MQ_ERROR_DEVICE;
