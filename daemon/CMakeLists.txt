@@ -5,7 +5,7 @@ enable_language(C)
 
 cmake_minimum_required(VERSION 2.8)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
 FIND_PACKAGE(clibcdc REQUIRED)
 FIND_PACKAGE(clibspi REQUIRED)
