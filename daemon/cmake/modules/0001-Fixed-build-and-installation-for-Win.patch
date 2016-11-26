@@ -1,0 +1,64 @@
+From 42418795c0cc219f5aaf49a3b5f44c3e0d1796fb Mon Sep 17 00:00:00 2001
+From: Frantisek Mikulu <frantisek.mikulu@openhs.org>
+Date: Sat, 26 Nov 2016 14:28:39 +0100
+Subject: [PATCH] Fixed build and installation for Win
+
+---
+ src/CMakeLists.txt | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 1faaa92..3960a8f 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -50,14 +50,14 @@ SET(common_src
+ IF (CMAKE_SYSTEM_NAME MATCHES "Windows")
+     SET(LIBS_SYSTEM ws2_32)
+ ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+-    SET(LIBS_SYSTEM dl)
++    SET(LIBS_SYSTEM pthread dl)
+ ENDIF()
+ 
+ ADD_EXECUTABLE(MQTTVersion MQTTVersion.c)
+ ADD_LIBRARY(paho-mqtt3c SHARED ${common_src} MQTTClient.c)
+ ADD_LIBRARY(paho-mqtt3a SHARED ${common_src} MQTTAsync.c)
+-TARGET_LINK_LIBRARIES(paho-mqtt3c pthread ${LIBS_SYSTEM}) 
+-TARGET_LINK_LIBRARIES(paho-mqtt3a pthread ${LIBS_SYSTEM})
++TARGET_LINK_LIBRARIES(paho-mqtt3c ${LIBS_SYSTEM}) 
++TARGET_LINK_LIBRARIES(paho-mqtt3a ${LIBS_SYSTEM})
+ TARGET_LINK_LIBRARIES(MQTTVersion paho-mqtt3a paho-mqtt3c ${LIBS_SYSTEM})
+ SET_TARGET_PROPERTIES(
+     paho-mqtt3c paho-mqtt3a PROPERTIES
+@@ -65,6 +65,7 @@ SET_TARGET_PROPERTIES(
+     SOVERSION ${PAHO_VERSION_MAJOR})
+ INSTALL(TARGETS paho-mqtt3c paho-mqtt3a MQTTVersion
+     RUNTIME DESTINATION bin
++    ARCHIVE DESTINATION lib
+     LIBRARY DESTINATION lib)
+ INSTALL(FILES MQTTAsync.h MQTTClient.h MQTTClientPersistence.h
+     DESTINATION include)
+@@ -81,17 +82,19 @@ IF (PAHO_WITH_SSL)
+         )
+     ADD_LIBRARY(paho-mqtt3cs SHARED ${common_src} MQTTClient.c SSLSocket.c)
+     ADD_LIBRARY(paho-mqtt3as SHARED ${common_src} MQTTAsync.c SSLSocket.c)
+-    TARGET_LINK_LIBRARIES(paho-mqtt3cs pthread ${OPENSSL_LIBRARIES} ${LIBS_SYSTEM})
+-    TARGET_LINK_LIBRARIES(paho-mqtt3as pthread ${OPENSSL_LIBRARIES} ${LIBS_SYSTEM})
++    TARGET_LINK_LIBRARIES(paho-mqtt3cs ${OPENSSL_LIBRARIES} ${LIBS_SYSTEM})
++    TARGET_LINK_LIBRARIES(paho-mqtt3as ${OPENSSL_LIBRARIES} ${LIBS_SYSTEM})
+     SET_TARGET_PROPERTIES(
+         paho-mqtt3cs paho-mqtt3as PROPERTIES
+         VERSION ${CLIENT_VERSION}
+         SOVERSION ${PAHO_VERSION_MAJOR})
+     INSTALL(TARGETS paho-mqtt3cs
+         RUNTIME DESTINATION bin
++        ARCHIVE DESTINATION lib
+         LIBRARY DESTINATION lib)
+     INSTALL(TARGETS paho-mqtt3as
+         RUNTIME DESTINATION bin
++        ARCHIVE DESTINATION lib
+         LIBRARY DESTINATION lib)
+ ENDIF()
+ 
+-- 
+1.9.5.msysgit.0
+

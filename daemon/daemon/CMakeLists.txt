@@ -26,16 +26,15 @@ include_directories(${CMAKE_SOURCE_DIR}/IqrfSpiChannel)
 include_directories(${clibcdc_INCLUDE_DIRS})
 include_directories(${clibspi_INCLUDE_DIRS})
 include_directories(${clibdpa_INCLUDE_DIRS})
-
-link_directories(${CMAKE_SOURCE_DIR}/MqttMessaging/paho/lib)
+include_directories(${PAHO_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME} ${daemon_SRC_FILES} ${daemon_INC_FILES})
 
 if (WIN32) 
- 	target_link_libraries(${PROJECT_NAME} SchedulerMessaging MqttMessaging paho-mqtt3c MqMessaging DpaExtension
+ 	target_link_libraries(${PROJECT_NAME} SchedulerMessaging MqttMessaging ${PAHO_LIBRARIES} MqMessaging DpaExtension
 		MqChannel IqrfCdcChannel IqrfSpiChannel dpa UdpMessaging UdpChannel cdc spi_iqrf sysfs_gpio Ws2_32)
 else()
-	target_link_libraries(${PROJECT_NAME} SchedulerMessaging MqttMessaging paho-mqtt3c MqMessaging DpaExtension
+	target_link_libraries(${PROJECT_NAME} SchedulerMessaging MqttMessaging ${PAHO_LIBRARIES} MqMessaging DpaExtension
 		MqChannel IqrfCdcChannel IqrfSpiChannel dpa UdpMessaging UdpChannel cdc spi_iqrf sysfs_gpio pthread rt)
 endif()
 
