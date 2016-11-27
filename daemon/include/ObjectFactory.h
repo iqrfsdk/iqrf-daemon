@@ -13,7 +13,7 @@
 template<typename K, typename T>
 class ObjectFactory {
 private:
-  typedef std::function<std::shared_ptr<T>(const K&)> CreateObjectFunc;
+  typedef std::function<std::unique_ptr<T>()> CreateObjectFunc;
 
   /**
   * A map keys (K) to functions (CreateObjectFunc)
@@ -28,8 +28,8 @@ private:
   * @return a object with the type of S
   */
   template<typename S>
-  static std::shared_ptr<T> createObject(){
-    return std::shared_ptr<T>(new S());
+  static std::unique_ptr<T> createObject() {
+    return std::unique_ptr<T>(new S());
   }
 public:
 
@@ -44,7 +44,7 @@ public:
     if (m_creators.find(id) != m_creators.end()){
       //your error handling here
     }
-    m_creators.insert(std::make_pair<K, CreateObjectFunc>(id, &createObject<S>));
+    m_creators.insert(std::make_pair(id, createObject<S>));
   }
 
   /**
@@ -63,13 +63,13 @@ public:
   * @param id the id of the object to create
   * @return the new object or null if the object id doesn't exist
   */
-  std::shared_ptr<T> createObject(K id){
+  std::unique_ptr<T> createObject(K id){
     //Don't use hasClass here as doing so would involve two lookups
-    auto iter = mObjectCreator.find(id);
-    if (iter == mObjectCreator.end()){
-      return std::shared_ptr<T>;
+    auto iter = m_creators.find(id);
+    if (iter == m_creators.end()){
+      return std::unique_ptr<T>();
     }
     //calls the required createObject() function
-    return iter.second();
+    return std::move(iter->second());
   }
 };

@@ -11,6 +11,7 @@ set(MqttMessaging_INC_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/MqttMessaging.h
 )
 
+include_directories(${CMAKE_SOURCE_DIR}/JsonCoding)
 include_directories(${PAHO_INCLUDE_DIRS})
 include_directories(${clibdpa_INCLUDE_DIRS})
 

@@ -26,6 +26,7 @@ include_directories(${CMAKE_SOURCE_DIR}/IqrfSpiChannel)
 include_directories(${clibcdc_INCLUDE_DIRS})
 include_directories(${clibspi_INCLUDE_DIRS})
 include_directories(${clibdpa_INCLUDE_DIRS})
+include_directories(${CMAKE_SOURCE_DIR}/JsonCoding)
 include_directories(${PAHO_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME} ${daemon_SRC_FILES} ${daemon_INC_FILES})

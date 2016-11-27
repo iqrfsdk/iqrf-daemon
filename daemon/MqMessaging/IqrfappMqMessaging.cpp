@@ -69,6 +69,36 @@ int IqrfappMqMessaging::handleMessageFromMq(const ustring& mqMessage)
   TRC_DBG("==================================" << std::endl <<
     "Received from MQ: " << std::endl << FORM_HEX(mqMessage.data(), mqMessage.size()));
 
+  //to encode output message
+  std::ostringstream os;
+
+  //get input message
+  std::string msg((const char*)mqMessage.data(), mqMessage.size());
+  std::istringstream is(msg);
+
+  std::unique_ptr<DpaTask> dpaTask = m_factory.parse(msg);
+  if (dpaTask) {
+    //PrfThermometer temp(address, PrfThermometer::Cmd::READ);
+    DpaTransactionTask trans(*dpaTask);
+    m_daemon->executeDpaTransaction(trans);
+    int result = trans.waitFinish();
+    dpaTask->encodeResponseMessage(os, trans.getErrorStr());
+  }
+  else {
+    os << MQ_ERROR_DEVICE;
+  }
+
+  sendMessageToMq(os.str());
+
+  return 1;
+}
+
+#if 0
+int IqrfappMqMessaging::handleMessageFromMq(const ustring& mqMessage)
+{
+  TRC_DBG("==================================" << std::endl <<
+    "Received from MQ: " << std::endl << FORM_HEX(mqMessage.data(), mqMessage.size()));
+
   //get input message
   std::string msg((const char*)mqMessage.data(), mqMessage.size());
   std::istringstream is(msg);
@@ -87,8 +117,8 @@ int IqrfappMqMessaging::handleMessageFromMq(const ustring& mqMessage)
   //to encode output message
   std::ostringstream os;
 
-  if (device == PRF_NAME_Thermometer) {
-    PrfThermometer temp(address, PrfThermometer::READ);
+  if (device == PrfThermometer::PRF_NAME_Thermometer) {
+    PrfThermometer temp((int)address, (int)PrfThermometer::Cmd::READ);
     DpaTransactionTask trans(temp);
     m_daemon->executeDpaTransaction(trans);
     int result = trans.waitFinish();
@@ -98,8 +128,8 @@ int IqrfappMqMessaging::handleMessageFromMq(const ustring& mqMessage)
     else
       os << trans.getErrorStr();
   }
-  else if (device == PRF_NAME_LedG) {
-    PrfLedG pulse(address, PrfLed::PULSE);
+  else if (device == PrfLedG::PRF_NAME_LedG) {
+    PrfLedG pulse((int)address, (int)PrfLed::Cmd::PULSE);
     DpaTransactionTask trans(pulse);
     m_daemon->executeDpaTransaction(trans);
     int result = trans.waitFinish();
@@ -109,8 +139,8 @@ int IqrfappMqMessaging::handleMessageFromMq(const ustring& mqMessage)
     else
       os << trans.getErrorStr();
   }
-  else if (device == PRF_NAME_LedR) {
-    PrfLedR pulse(address, PrfLed::PULSE);
+  else if (device == PrfLedR::PRF_NAME_LedR) {
+    PrfLedR pulse((int)address, (int)PrfLed::Cmd::PULSE);
     DpaTransactionTask trans(pulse);
     m_daemon->executeDpaTransaction(trans);
     int result = trans.waitFinish();
@@ -128,3 +158,4 @@ int IqrfappMqMessaging::handleMessageFromMq(const ustring& mqMessage)
 
   return 0;
 }
+#endif

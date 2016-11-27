@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SimpleSerializer.h"
 #include "TaskQueue.h"
 #include "IMessaging.h"
 #include "IScheduler.h"
@@ -60,6 +61,7 @@ private:
   std::condition_variable m_conditionVariable;
   void timer();
 
+  DpaTaskSimpleSerializerFactory m_factory;
 };
 
 class ScheduleRecord {

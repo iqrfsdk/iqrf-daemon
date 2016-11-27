@@ -3,146 +3,84 @@
 #include "ObjectFactory.h"
 #include "PrfThermometer.h"
 #include "PrfLeds.h"
+#include "PlatformDep.h"
 #include <memory>
 #include <string>
 
-class DpaTaskSimpleSerializer
+inline void parseRequestCommon(std::istream& istr, DpaTask& dpaTask)
+{
+  int address = -1;
+  std::string command;
+
+  istr >> address >> command;
+
+  dpaTask.setAddress(address);
+  dpaTask.parseCommand(command);
+}
+
+inline void encodeResponseCommon(std::ostream& ostr, DpaTask & dt)
+{
+  ostr << dt.getPrfName() << " " << dt.getAddress() << " " << dt.encodeCommand() << " ";
+}
+
+class PrfThermometerSimple : public PrfThermometer
 {
 public:
-  DpaTaskSimpleSerializer()
-  {}
+  virtual ~PrfThermometerSimple() {}
 
-  std::unique_ptr<DpaTask> getDpaTask() { return m_dpaTask; }
-  
-  virtual void parseRequest(std::istream& istr) = 0;
-  virtual void encodeResponse(std::ostream& ostr) = 0;
-
-protected:
-  void parseRequestCommon(std::istream& istr)
+  void parseRequestMessage(std::istream& istr) override
   {
-    istr >> m_perif >> m_address >> m_command;
+    parseRequestCommon(istr, *this);
+    m_valid = true;
   }
 
-  std::unique_ptr<DpaTask> getDpaTask() { return m_dpaTask; }
-
-  void encodeResponseCommon(std::ostream& ostr)
+  void encodeResponseMessage(std::ostream& ostr, const std::string& errStr) override
   {
-    ostr << m_perif << " " << m_address << " " << m_command << " ";
+    encodeResponseCommon(ostr, *this);
+    ostr << " " << getFloatTemperature();
   }
-
-  std::string m_perif;
-  int m_address;
-  std::string m_command;
-  std::unique_ptr<DpaTask> m_dpaTask;
 };
 
-class PrfThermometerSimpleSerializer : public DpaTaskSimpleSerializer
+template <typename L>
+class PrfLedSimple : public L
 {
 public:
-  PrfThermometerSimpleSerializer()
-    :DpaTaskSimpleSerializer()
-    ,m_therm(nullptr)
-  {}
+  virtual ~PrfLedSimple() {}
 
-  virtual ~PrfThermometerSimpleSerializer()
+  void parseRequestMessage(std::istream& istr) override
   {
-    delete m_therm;
+    parseRequestCommon(istr, *this);
+    m_valid = true;
   }
 
-  virtual void parseRequest(std::istream& istr)
+  void encodeResponseMessage(std::ostream& ostr, const std::string& errStr) override
   {
-    parseRequestCommon(istr);
-    m_therm = ant_new PrfThermometer(m_address, PrfThermometer::convertCommand(m_command));
-    m_dpaTask = m_therm;
+    encodeResponseCommon(ostr, *this);
+    ostr << " " << getLedState();
   }
-
-  void encodeResponse(std::ostream& ostr)
-  {
-    encodeResponseCommon(ostr);
-    ostr << " " << m_therm->getFloatTemperature();
-  }
-
-private:
-  PrfThermometer* m_therm;
 };
 
-class PrfLedGSimpleSerializer : public DpaTaskSimpleSerializer
+typedef PrfLedSimple<PrfLedG> PrfLedGSimple;
+typedef PrfLedSimple<PrfLedR> PrfLedRSimple;
+
+///////////////////////////////////
+class DpaTaskSimpleSerializerFactory : public ObjectFactory<std::string, DpaTask>
 {
 public:
-  PrfLedGSimpleSerializer()
-    :DpaTaskSimpleSerializer()
-    , m_ledG(nullptr)
-  {}
-
-  virtual ~PrfLedGSimpleSerializer()
+  DpaTaskSimpleSerializerFactory()
   {
-    delete m_ledG;
+    registerClass<PrfThermometerSimple>(PrfThermometer::PRF_NAME);
+    registerClass<PrfLedGSimple>(PrfLedG::PRF_NAME);
+    registerClass<PrfLedRSimple>(PrfLedR::PRF_NAME);
   }
 
-  virtual void parseRequest(std::istream& istr)
+  std::unique_ptr<DpaTask> parse(const std::string& request)
   {
-    parseRequestCommon(istr);
-    m_ledG = ant_new PrfLedG(m_address, PrfLed::convertCommand(m_command));
-    m_dpaTask = m_ledG;
+    std::istringstream istr(request);
+    std::string perif;
+    istr >> perif;
+    auto obj = createObject(perif);
+    obj->parseRequestMessage(istr);
+    return std::move(obj);
   }
-
-  void encodeResponse(std::ostream& ostr)
-  {
-    encodeResponseCommon(ostr);
-    ostr << " " << m_ledG->getLedState();
-  }
-
-private:
-  PrfLedG* m_ledG;
 };
-
-class PrfLedRSimpleSerializer : public DpaTaskSimpleSerializer
-{
-public:
-  PrfLedRSimpleSerializer()
-    :DpaTaskSimpleSerializer()
-    , m_ledR(nullptr)
-  {}
-
-  virtual ~PrfLedRSimpleSerializer()
-  {
-    delete m_ledR;
-  }
-
-  virtual void parseRequest(std::istream& istr)
-  {
-    parseRequestCommon(istr);
-    m_ledR = ant_new PrfLedR(m_address, PrfLed::convertCommand(m_command));
-    m_dpaTask = m_ledR;
-  }
-
-  void encodeResponse(std::ostream& ostr)
-  {
-    encodeResponseCommon(ostr);
-    ostr << " " << m_ledR->getLedState();
-  }
-
-private:
-  PrfLedR* m_ledR;
-};
-
-//class SimpleSerializerFactory
-//{
-//public:
-//  typedef std::function<std::shared_ptr<DpaTask>(const std::string&)> CreateDpaTaskFunc;
-//  
-//  SimpleSerializerFactory();
-//  virtual ~SimpleSerializerFactory();
-//
-//  void parseTask(const std::string& task) {
-//
-//  }
-//
-//  void encodeTask(const std::string& task) {
-//
-//  }
-//
-//private:
-//  std::map<std::string, CreateDpaTaskFunc> m_creator;
-//  //int handleScheduledRecord(const std::string& msg);
-//};

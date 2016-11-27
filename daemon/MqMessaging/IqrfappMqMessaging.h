@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SimpleSerializer.h"
 #include "TaskQueue.h"
 #include "IMessaging.h"
 #include <string>
@@ -29,5 +30,7 @@ private:
 
   std::string m_localMqName;
   std::string m_remoteMqName;
+
+  DpaTaskSimpleSerializerFactory m_factory;
 
 };

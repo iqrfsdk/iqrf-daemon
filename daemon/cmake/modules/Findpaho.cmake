@@ -1,6 +1,7 @@
 # - Try to find paho
 #  Once done this will define
 #  PAHO_FOUND - System has paho
+#  PAHO_ROOT_DIR - The paho root path
 #  PAHO_INCLUDE_DIRS - The paho include directories
 #  PAHO_LIBRARY_DIRS - The libraries include directories
 #  PAHO_DEFINITIONS - Compiler switches required for using paho
@@ -10,11 +11,11 @@
 #   Build in a directory outside sources:
 #     mkdir pahoBuild
 #	  cd pahoBuild
-#	  cmake -G "Visual Studio 12 2013 Win64" -DPAHO_WITH_SSL=FALSE -DPAHO_BUILD_DOCUMENTATION=FALSE -DPAHO_BUILD_SAMPLES=TRUE ../paho.mqtt.c.orig
+#	  cmake -G "Visual Studio 12 2013 Win64" -DPAHO_WITH_SSL=FALSE -DPAHO_BUILD_DOCUMENTATION=FALSE -DPAHO_BUILD_SAMPLES=TRUE ../paho.mqtt.c
 #	  cd ..
 #	  cmake --build ./pahoBuild
 #	Install with admin(WIN) privileges or sudo(LIN)
-#	  cmake --build ./pahoBuild --target INSTALL 
+#	  cmake --build ./pahoBuild --target install 
 #  Linux specific:
 #    Paho is installed in /usr/local/bin and /usr/local/include
 #  Windows specific:
