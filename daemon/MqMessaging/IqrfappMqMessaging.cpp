@@ -78,7 +78,6 @@ int IqrfappMqMessaging::handleMessageFromMq(const ustring& mqMessage)
 
   std::unique_ptr<DpaTask> dpaTask = m_factory.parse(msg);
   if (dpaTask) {
-    //PrfThermometer temp(address, PrfThermometer::Cmd::READ);
     DpaTransactionTask trans(*dpaTask);
     m_daemon->executeDpaTransaction(trans);
     int result = trans.waitFinish();
@@ -92,70 +91,3 @@ int IqrfappMqMessaging::handleMessageFromMq(const ustring& mqMessage)
 
   return 1;
 }
-
-#if 0
-int IqrfappMqMessaging::handleMessageFromMq(const ustring& mqMessage)
-{
-  TRC_DBG("==================================" << std::endl <<
-    "Received from MQ: " << std::endl << FORM_HEX(mqMessage.data(), mqMessage.size()));
-
-  //get input message
-  std::string msg((const char*)mqMessage.data(), mqMessage.size());
-  std::istringstream is(msg);
-
-  //parse input message
-  std::string device;
-  int address(-1);
-  is >> device >> address;
-
-  //check delivered address
-  if (address < 0) {
-    sendMessageToMq(MQ_ERROR_ADDRESS);
-    return -1;
-  }
-
-  //to encode output message
-  std::ostringstream os;
-
-  if (device == PrfThermometer::PRF_NAME_Thermometer) {
-    PrfThermometer temp((int)address, (int)PrfThermometer::Cmd::READ);
-    DpaTransactionTask trans(temp);
-    m_daemon->executeDpaTransaction(trans);
-    int result = trans.waitFinish();
-
-    if (0 == result)
-      os << temp;
-    else
-      os << trans.getErrorStr();
-  }
-  else if (device == PrfLedG::PRF_NAME_LedG) {
-    PrfLedG pulse((int)address, (int)PrfLed::Cmd::PULSE);
-    DpaTransactionTask trans(pulse);
-    m_daemon->executeDpaTransaction(trans);
-    int result = trans.waitFinish();
-
-    if (0 == result)
-      os << pulse;
-    else
-      os << trans.getErrorStr();
-  }
-  else if (device == PrfLedR::PRF_NAME_LedR) {
-    PrfLedR pulse((int)address, (int)PrfLed::Cmd::PULSE);
-    DpaTransactionTask trans(pulse);
-    m_daemon->executeDpaTransaction(trans);
-    int result = trans.waitFinish();
-
-    if (0 == result)
-      os << pulse;
-    else
-      os << trans.getErrorStr();
-  }
-  else {
-    os << MQ_ERROR_DEVICE;
-  }
-
-  sendMessageToMq(os.str());
-
-  return 0;
-}
-#endif

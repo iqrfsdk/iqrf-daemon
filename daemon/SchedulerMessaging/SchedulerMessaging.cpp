@@ -130,7 +130,6 @@ int SchedulerMessaging::handleScheduledRecord(const ScheduleRecord& record)
 
   std::unique_ptr<DpaTask> dpaTask = m_factory.parse(record.getTask());
   if (dpaTask) {
-    //PrfThermometer temp(address, PrfThermometer::Cmd::READ);
     DpaTransactionTask trans(*dpaTask);
     m_daemon->executeDpaTransaction(trans);
     int result = trans.waitFinish();
@@ -156,86 +155,6 @@ int SchedulerMessaging::handleScheduledRecord(const ScheduleRecord& record)
 
   return 0;
 }
-
-
-#if 0
-int SchedulerMessaging::handleScheduledRecord(const ScheduleRecord& record)
-{
-  TRC_DBG("==================================" << std::endl <<
-    "Scheduled msg: " << std::endl << FORM_HEX(record.getTask().data(), record.getTask().size()));
-
-  //get input message
-  std::istringstream is(record.getTask());
-
-  //parse input message
-  std::string device;
-  int address(-1);
-  std::string command;
-  std::string params;
-  is >> device >> address >> command;
-  std::getline(is, params, '|'); // just to get rest of line with spaces
-
-  //to encode output message
-  std::ostringstream os;
-
-  //check delivered address
-  if (address < 0) {
-    os << MQ_ERROR_ADDRESS;
-  }
-  else if (device == PrfThermometer::PRF_NAME_Thermometer) {
-    PrfThermometer temp(address, PrfThermometer::convertCommand(command));
-    DpaTransactionTask trans(temp);
-    m_daemon->executeDpaTransaction(trans);
-    int result = trans.waitFinish();
-
-    if (0 == result)
-      os << temp.getPrfName() << " " << temp.getAddress() << " " << temp;
-    else
-      os << temp.getPrfName() << " " << temp.getAddress() << " " << trans.getErrorStr();
-  }
-  else if (device == PrfLedG::PRF_NAME_LedG) {
-    PrfLedG pulse(address, convertCommand(command));
-    DpaTransactionTask trans(pulse);
-    m_daemon->executeDpaTransaction(trans);
-    int result = trans.waitFinish();
-
-    if (0 == result)
-      os << pulse.getPrfName() << pulse.getAddress() << pulse;
-    else
-      os << pulse.getPrfName() << pulse.getAddress() << trans.getErrorStr();
-  }
-  else if (device == PrfLedR::PRF_NAME_LedR) {
-    PrfLedR pulse(address, PrfLed::convertCommand(command));
-    DpaTransactionTask trans(pulse);
-    m_daemon->executeDpaTransaction(trans);
-    int result = trans.waitFinish();
-
-    if (0 == result)
-      os << pulse.getPrfName() << " " << pulse.getAddress() << " " << pulse;
-    else
-      os << pulse.getPrfName() << " " << pulse.getAddress() << " " << trans.getErrorStr();
-  }
-  else {
-    os << MQ_ERROR_DEVICE;
-  }
-
-  //sendMessageToMq(os.str());
-  {
-    std::lock_guard<std::mutex> lck(m_responseHandlersMutex);
-    auto found = m_responseHandlers.find(record.getClientId());
-    if (found != m_responseHandlers.end()) {
-      TRC_DBG(NAME_PAR(Response, os.str()) << " has been passed to: " << NAME_PAR(ClinetId, record.getClientId()));
-      found->second(os.str());
-      TRC_DBG(NAME_PAR(Response, os.str()) << " has been processed by: " << NAME_PAR(ClinetId, record.getClientId()));
-    }
-    else {
-      TRC_DBG("Response: " << os.str());
-    }
-  }
-
-  return 0;
-}
-#endif
 
 void SchedulerMessaging::addScheduleRecord(std::shared_ptr<ScheduleRecord>& record)
 {

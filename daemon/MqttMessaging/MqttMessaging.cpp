@@ -16,6 +16,7 @@ const std::string MQ_ERROR_ADDRESS("ERROR_ADDRESS");
 const std::string MQ_ERROR_DEVICE("ERROR_DEVICE");
 
 const std::string MQTT_BROKER_ADDRESS("tcp://192.168.1.26:1883");
+//const std::string MQTT_BROKER_ADDRESS("tcp://192.168.1.27:1883");
 const std::string MQTT_CLIENTID("IqrfDpaMessaging");
 const std::string MQTT_TOPIC_DPA_REQUEST("Iqrf/DpaRequest");
 const std::string MQTT_TOPIC_DPA_RESPONSE("Iqrf/DpaResponse");
@@ -136,6 +137,7 @@ void Impl::start()
   MQTTClient_create(&m_client, MQTT_BROKER_ADDRESS.c_str(), MQTT_CLIENTID.c_str(), MQTTCLIENT_PERSISTENCE_NONE, NULL);
   conn_opts.keepAliveInterval = 20;
   conn_opts.cleansession = 1;
+  conn_opts.connectTimeout = 5;
 
   MQTTClient_setCallbacks(m_client, this, sconnlost, smsgarrvd, sdelivered);
 
@@ -149,11 +151,6 @@ void Impl::start()
   }
 
   m_connected = true;
-
-  /////////////////////
-  // register
-  //m_factory.registerClass<>(
-  /////////////////////
 
   std::cout << "daemon-MQTT-protocol started" << std::endl;
 
@@ -178,9 +175,6 @@ void Impl::sendMessageToMqtt(const std::string& message)
   m_toMqttMessageQueue->pushToQueue(msg);
 }
 
-////////////////////////////////////
-////////////////////////////////////
-////////////////////////////////////
 int Impl::handleMessageFromMqtt(const ustring& mqMessage)
 {
   TRC_DBG("==================================" << std::endl <<
@@ -195,7 +189,6 @@ int Impl::handleMessageFromMqtt(const ustring& mqMessage)
 
   std::unique_ptr<DpaTask> dpaTask = m_factory.parse(msg);
   if (dpaTask) {
-    //PrfThermometer temp(address, PrfThermometer::Cmd::READ);
     DpaTransactionTask trans(*dpaTask);
     m_daemon->executeDpaTransaction(trans);
     int result = trans.waitFinish();
@@ -209,73 +202,6 @@ int Impl::handleMessageFromMqtt(const ustring& mqMessage)
 
   return 1;
 }
-
-#if 0
-int Impl::handleMessageFromMqtt(const ustring& mqMessage)
-{
-  TRC_DBG("==================================" << std::endl <<
-    "Received from MQ: " << std::endl << FORM_HEX(mqMessage.data(), mqMessage.size()));
-
-  //get input message
-  std::string msg((const char*)mqMessage.data(), mqMessage.size());
-  std::istringstream is(msg);
-
-  //parse input message
-  std::string device;
-  int address(-1);
-  is >> device >> address;
-
-  //check delivered address
-  if (address < 0) {
-    sendMessageToMqtt(MQ_ERROR_ADDRESS);
-    return -1;
-  }
-
-  //to encode output message
-  std::ostringstream os;
-
-  if (device == PrfThermometer::PRF_NAME_Thermometer) {
-    PrfThermometer temp((int)address, (int)PrfThermometer::Cmd::READ);
-    DpaTransactionTask trans(temp);
-    m_daemon->executeDpaTransaction(trans);
-    int result = trans.waitFinish();
-
-    if (0 == result)
-      os << temp;
-    else
-      os << trans.getErrorStr();
-  }
-  else if (device == PrfLedG::PRF_NAME_LedG) {
-    PrfLedG pulse((int)address, (int)PrfLed::Cmd::PULSE);
-    DpaTransactionTask trans(pulse);
-    m_daemon->executeDpaTransaction(trans);
-    int result = trans.waitFinish();
-
-    if (0 == result)
-      os << pulse;
-    else
-      os << trans.getErrorStr();
-  }
-  else if (device == PrfLedR::PRF_NAME_LedR) {
-    PrfLedR pulse((int)address, (int)PrfLed::Cmd::PULSE);
-    DpaTransactionTask trans(pulse);
-    m_daemon->executeDpaTransaction(trans);
-    int result = trans.waitFinish();
-
-    if (0 == result)
-      os << pulse;
-    else
-      os << trans.getErrorStr();
-  }
-  else {
-    os << MQ_ERROR_DEVICE;
-  }
-
-  sendMessageToMqtt(os.str());
-
-  return 0;
-}
-#endif
 
 void Impl::sendTo(const ustring& msg)
 {

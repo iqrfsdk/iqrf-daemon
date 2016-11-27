@@ -3,12 +3,10 @@
 #include "rapidjson/rapidjson.h"
 #include <string>
 
+//TODO
 class JsonCoding
 {
 public:
   JsonCoding();
   virtual ~JsonCoding();
-
-private:
-  int handleScheduledRecord(const std::string& msg);
 };
