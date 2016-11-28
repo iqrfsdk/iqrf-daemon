@@ -1,8 +1,5 @@
 {
     "naddr": 0,
-    "pnum": "thermometer",
-    "request": {
-        "command": "",
-        "raw": ""
-    }
+    "pnum": "Thermometer",
+    "command": "READ"
 }
