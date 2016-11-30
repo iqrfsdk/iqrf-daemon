@@ -7,42 +7,42 @@
 #include <memory>
 #include <string>
 
-void parseRequestCommon(std::istream& istr, DpaTask& dpaTask);
-void encodeResponseCommon(std::ostream& ostr, DpaTask & dt);
+void parseRequestSimple(std::istream& istr, DpaTask& dpaTask);
+void encodeResponseSimple(std::ostream& ostr, DpaTask & dt);
 
-class PrfThermometerSimple : public PrfThermometer
+class PrfThermometerSimple : PrfThermometer
 {
 public:
+  explicit PrfThermometerSimple(std::istream& istr);
   virtual ~PrfThermometerSimple();
-  void parseRequestMessage(std::istream& istr) override;
-  void encodeResponseMessage(std::ostream& ostr, const std::string& errStr) override;
+  virtual void encodeResponseMessage(std::ostream& ostr, const std::string& errStr) override;
 };
 
 template <typename L>
 class PrfLedSimple : public L
 {
 public:
-  virtual ~PrfLedSimple() {}
-
-  void parseRequestMessage(std::istream& istr) override
-  {
-    parseRequestCommon(istr, *this);
-    m_valid = true;
+  explicit PrfLedSimple(std::istream& istr) {
+    parseRequestSimple(istr, *this);
   }
+
+  virtual ~PrfLedSimple() {}
 
   void encodeResponseMessage(std::ostream& ostr, const std::string& errStr) override
   {
-    encodeResponseCommon(ostr, *this);
-    ostr << " " << getLedState();
+    encodeResponseSimple(ostr, *this);
+    ostr << " " << getLedState() << " " << errStr;
   }
 };
 
 typedef PrfLedSimple<PrfLedG> PrfLedGSimple;
 typedef PrfLedSimple<PrfLedR> PrfLedRSimple;
 
-class DpaTaskSimpleSerializerFactory : public ObjectFactory<std::string, DpaTask>
+
+class DpaTaskSimpleSerializerFactory : public ObjectFactory<DpaTask, std::istream>
 {
 public:
   DpaTaskSimpleSerializerFactory();
   std::unique_ptr<DpaTask> parse(const std::string& request);
+  std::string serializeError(const std::string& err);
 };

@@ -9,62 +9,56 @@
 #include <memory>
 #include <string>
 
-//void parseRequestCommonJson(std::istream& istr, DpaTask& dpaTask);
-//void encodeResponseCommonJson(std::ostream& ostr, DpaTask & dt);
+void parseRequestJson(DpaTask& dpaTask, rapidjson::Value& val);
+void encodeResponseJson(DpaTask& dpaTask, rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc);
 
-class JsonSerialized
+class PrfThermometerJson : public PrfThermometer
 {
 public:
-  virtual ~JsonSerialized() {};
-
-  std::unique_ptr<DpaTask> moveDpaTask() {
-    return std::move(m_dpaTask);
-  }
-
-  virtual void parseRequestJson(const rapidjson::Document& doc);
-  virtual void encodeResponseJson(rapidjson::Document& doc, const std::string& errStr);
-
-protected:
-  std::unique_ptr<DpaTask> m_dpaTask;
+  explicit PrfThermometerJson(rapidjson::Value& val);
+  virtual ~PrfThermometerJson() {}
+  void encodeResponseMessage(std::ostream& ostr, const std::string& errStr) override;
 };
 
-class PrfThermometerJson: public JsonSerialized
-{
-public:
-  PrfThermometerJson();
-  virtual ~PrfThermometerJson();
-  void parseRequestJson(const rapidjson::Document& doc) override;
-  void encodeResponseJson(rapidjson::Document& doc, const std::string& errStr) override;
-};
-
-#if 0
 template <typename L>
 class PrfLedJson : public L
 {
 public:
-  virtual ~PrfLedJson() {}
-
-  void parseRequestJson(const rapidjson::Document& doc) override
-  {
-    parseRequestJson(istr, *this);
-    m_valid = true;
+  explicit PrfLedJson(rapidjson::Value& val) {
+    parseRequestJson(*this, val);
   }
 
-  void encodeResponseJson(rapidjson::Document& doc, const std::string& errStr) override;
+  virtual ~PrfLedJson() {}
+
+  void encodeResponseMessage(std::ostream& ostr, const std::string& errStr) override
   {
-    encodeResponseJson(ostr, *this);
-    ostr << " " << getLedState();
+    Document doc;
+    doc.SetObject();
+
+    encodeResponseJson(*this, doc, doc.GetAllocator());
+
+    rapidjson::Value v;
+    v = getLedState();
+    doc.AddMember("LedState", v, doc.GetAllocator());
+
+    v.SetString(errStr.c_str(), doc.GetAllocator());
+    doc.AddMember("Status", v, doc.GetAllocator());
+
+    StringBuffer buffer;
+    PrettyWriter<StringBuffer> writer(buffer);
+    doc.Accept(writer);
+    ostr << buffer.GetString();
   }
 
 };
 
 typedef PrfLedJson<PrfLedG> PrfLedGJson;
 typedef PrfLedJson<PrfLedR> PrfLedRJson;
-#endif
 
-class DpaTaskJsonSerializerFactory : public ObjectFactory<std::string, JsonSerialized>
+class DpaTaskJsonSerializerFactory : public ObjectFactory<DpaTask, rapidjson::Value>
 {
 public:
   DpaTaskJsonSerializerFactory();
   std::unique_ptr<DpaTask> parse(const std::string& request);
+  std::string serializeError(const std::string& err);
 };

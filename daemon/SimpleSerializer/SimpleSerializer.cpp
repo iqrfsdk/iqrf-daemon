@@ -1,7 +1,7 @@
 #include "SimpleSerializer.h"
 #include "IqrfLogging.h"
 
-void parseRequestCommon(std::istream& istr, DpaTask& dpaTask)
+void parseRequestSimple(std::istream& istr, DpaTask& dpaTask)
 {
   int address = -1;
   std::string command;
@@ -12,25 +12,24 @@ void parseRequestCommon(std::istream& istr, DpaTask& dpaTask)
   dpaTask.parseCommand(command);
 }
 
-void encodeResponseCommon(std::ostream& ostr, DpaTask & dt)
+void encodeResponseSimple(std::ostream& ostr, DpaTask & dt)
 {
   ostr << dt.getPrfName() << " " << dt.getAddress() << " " << dt.encodeCommand() << " ";
+}
+
+PrfThermometerSimple::PrfThermometerSimple(std::istream& istr)
+{
+  parseRequestSimple(istr, *this);
 }
 
 PrfThermometerSimple::~PrfThermometerSimple()
 {
 }
 
-void PrfThermometerSimple::parseRequestMessage(std::istream& istr)
-{
-  parseRequestCommon(istr, *this);
-  m_valid = true;
-}
-
 void PrfThermometerSimple::encodeResponseMessage(std::ostream& ostr, const std::string& errStr)
 {
-  encodeResponseCommon(ostr, *this);
-  ostr << " " << getFloatTemperature();
+  encodeResponseSimple(ostr, *this);
+  ostr << " " << getFloatTemperature() << " " << errStr;
 }
 
 ///////////////////////////////////////////
@@ -46,7 +45,6 @@ std::unique_ptr<DpaTask> DpaTaskSimpleSerializerFactory::parse(const std::string
   std::istringstream istr(request);
   std::string perif;
   istr >> perif;
-  auto obj = createObject(perif);
-  obj->parseRequestMessage(istr);
+  auto obj = createObject(perif, istr);
   return std::move(obj);
 }

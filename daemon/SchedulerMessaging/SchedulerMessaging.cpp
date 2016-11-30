@@ -52,21 +52,42 @@ void SchedulerMessaging::start()
   });
 
   //sec mnt hrs day mon year dow
+  //std::vector<std::string> temp = {
+  //  "20 30 11 * * * 6",
+  //  "0 * * * * * * mqtt Thermometer 1 READ",
+  //  "5 * * * * * * mqtt LedR 0 PULSE",
+  //  "10 * * * * * * mqtt LedG 0 PULSE",
+  //  "15 * * * * * * mqtt LedR 0 PULSE",
+  //  "20 * * * * * * mqtt LedG 0 PULSE",
+  //  "25 * * * * * * mqtt LedR 0 PULSE",
+  //  "30 * * * * * * mqtt LedG 0 PULSE",
+  //  "35 * * * * * * mqtt LedR 0 PULSE",
+  //  "40 * * * * * * mqtt LedG 0 PULSE",
+  //  "45 * * * * * * mqtt LedR 0 PULSE",
+  //  "50 * * * * * * mqtt LedG 0 PULSE",
+  //  "55 * * * * * * mqtt LedR 0 PULSE",
+  //  "00 * * * * * * mqtt LedG 0 PULSE",
+  //  "00 00 09 10 11 * *",
+  //  "00 00 * * * * *",
+  //  "00 00 00 * * * 1"
+  //};
+
+  //    "0 * * * * * * mqtt {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+
   std::vector<std::string> temp = {
     "20 30 11 * * * 6",
-    "0 * * * * * * mqtt Thermometer 1 READ",
-    "5 * * * * * * mqtt LedR 0 PULSE",
-    "10 * * * * * * mqtt LedG 0 PULSE",
-    "15 * * * * * * mqtt LedR 0 PULSE",
-    "20 * * * * * * mqtt LedG 0 PULSE",
-    "25 * * * * * * mqtt LedR 0 PULSE",
-    "30 * * * * * * mqtt LedG 0 PULSE",
-    "35 * * * * * * mqtt LedR 0 PULSE",
-    "40 * * * * * * mqtt LedG 0 PULSE",
-    "45 * * * * * * mqtt LedR 0 PULSE",
-    "50 * * * * * * mqtt LedG 0 PULSE",
-    "55 * * * * * * mqtt LedR 0 PULSE",
-    "00 * * * * * * mqtt LedG 0 PULSE",
+    "0 * * * * * * mqtt LedR 0 PULSE",
+    "5 * * * * * * mqtt LedG 0 PULSE",
+    "10 * * * * * * mqtt {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "15 * * * * * * mqtt {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "20 * * * * * * mqtt LedR 0 PULSE",
+    "25 * * * * * * mqtt LedG 0 PULSE",
+    "30 * * * * * * mqtt {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "35 * * * * * * mqtt {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "40 * * * * * * mqtt LedR 0 PULSE",
+    "45 * * * * * * mqtt LedG 0 PULSE",
+    "50 * * * * * * mqtt {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "55 * * * * * * mqtt {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
     "00 00 09 10 11 * *",
     "00 00 * * * * *",
     "00 00 00 * * * 1"
@@ -128,15 +149,36 @@ int SchedulerMessaging::handleScheduledRecord(const ScheduleRecord& record)
   //to encode output message
   std::ostringstream os;
 
-  std::unique_ptr<DpaTask> dpaTask = m_factory.parse(record.getTask());
-  if (dpaTask) {
-    DpaTransactionTask trans(*dpaTask);
-    m_daemon->executeDpaTransaction(trans);
-    int result = trans.waitFinish();
-    dpaTask->encodeResponseMessage(os, trans.getErrorStr());
+  //TOD this will be solved by plug-in approach - get rid of all deps on parser here
+  if (record.getTask()[1] == '{') {
+    std::unique_ptr<DpaTask> dpaTask;
+    try {
+      dpaTask = m_jsonFactory.parse(record.getTask());
+      if (dpaTask) {
+        DpaTransactionTask trans(*dpaTask);
+        m_daemon->executeDpaTransaction(trans);
+        int result = trans.waitFinish();
+        dpaTask->encodeResponseMessage(os, trans.getErrorStr());
+      }
+      else {
+        os << MQ_ERROR_DEVICE;
+      }
+    }
+    catch (std::exception& e) {
+      CATCH_EX("Caught", std::exception, e);
+    }
   }
   else {
-    os << MQ_ERROR_DEVICE;
+    std::unique_ptr<DpaTask> dpaTask = m_simpleFactory.parse(record.getTask());
+    if (dpaTask) {
+      DpaTransactionTask trans(*dpaTask);
+      m_daemon->executeDpaTransaction(trans);
+      int result = trans.waitFinish();
+      dpaTask->encodeResponseMessage(os, trans.getErrorStr());
+    }
+    else {
+      os << MQ_ERROR_DEVICE;
+    }
   }
 
   //sendMessageToMq(os.str());

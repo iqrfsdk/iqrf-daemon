@@ -4,6 +4,8 @@
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
 #include "rapidjson/istreamwrapper.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/prettywriter.h"
 
 //TODO using istream is slower according http://rapidjson.org/md_doc_stream.html
 
@@ -176,188 +178,68 @@ namespace jutils
 } //jutils
 
 //////////////////////////////////////////
-//void parseRequestCommonJson(std::istream& istr, DpaTask& dpaTask)
-//{
-//  int address = -1;
-//  std::string command;
-//
-//  istr >> address >> command;
-//
-//  dpaTask.setAddress(address);
-//  dpaTask.parseCommand(command);
-//}
-//
-//void encodeResponseCommonJson(std::ostream& ostr, DpaTask & dt)
-//{
-//  ostr << dt.getPrfName() << " " << dt.getAddress() << " " << dt.encodeCommand() << " ";
-//}
-
-void JsonSerialized::parseRequestJson(const rapidjson::Document& doc)
+void parseRequestJson(DpaTask& dpaTask, rapidjson::Value& val)
 {
-  jutils::checkIsObject("", doc);
-  m_dpaTask->setAddress(jutils::getMemberAsInt("naddr", doc));
-  m_dpaTask->parseCommand(jutils::getMemberAsString("command", doc));
+  jutils::checkIsObject("", val);
+  dpaTask.setAddress(jutils::getMemberAsInt("Addr", val));
+  dpaTask.parseCommand(jutils::getMemberAsString("Comd", val));
 }
 
-void JsonSerialized::encodeResponseJson(rapidjson::Document& doc, const std::string& errStr)
+void encodeResponseJson(DpaTask& dpaTask, rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc)
 {
-  //ostr << dt.getPrfName() << " " << dt.getAddress() << " " << dt.encodeCommand() << " ";
+  rapidjson::Value v;
+  v.SetString(dpaTask.getPrfName().c_str(),alloc);
+  val.AddMember("Type", v, alloc);
+
+  v = dpaTask.getAddress();
+  val.AddMember("Addr", v, alloc);
+
+  v.SetString(dpaTask.encodeCommand().c_str(), alloc);
+  val.AddMember("Comd", v, alloc);
 }
 
 //-------------------------------
-PrfThermometerJson::PrfThermometerJson()
+PrfThermometerJson::PrfThermometerJson(rapidjson::Value& val)
 {
-  m_dpaTask = std::unique_ptr<DpaTask>(ant_new PrfThermometer());
+  parseRequestJson(*this, val);
 }
 
-PrfThermometerJson::~PrfThermometerJson()
+void PrfThermometerJson::encodeResponseMessage(std::ostream& ostr, const std::string& errStr)
 {
-}
+  Document doc;
+  doc.SetObject();
 
-void PrfThermometerJson::parseRequestJson(const rapidjson::Document& doc)
-{
-  JsonSerialized::parseRequestJson(doc);
-}
+  encodeResponseJson(*this, doc, doc.GetAllocator());
 
-void PrfThermometerJson::encodeResponseJson(rapidjson::Document& doc, const std::string& errStr)
-{
-  JsonSerialized::encodeResponseJson(doc, errStr);
-  //ostr << " " << getFloatTemperature();
+  rapidjson::Value v;
+  v = getFloatTemperature();
+  doc.AddMember("Temperature", v, doc.GetAllocator());
+
+  v.SetString(errStr.c_str(), doc.GetAllocator());
+  doc.AddMember("Status", v, doc.GetAllocator());
+
+  StringBuffer buffer;
+  PrettyWriter<StringBuffer> writer(buffer);
+  doc.Accept(writer);
+  ostr << buffer.GetString();
 }
 
 ///////////////////////////////////////////
 DpaTaskJsonSerializerFactory::DpaTaskJsonSerializerFactory()
 {
   registerClass<PrfThermometerJson>(PrfThermometer::PRF_NAME);
-  //registerClass<PrfLedGJson>(PrfLedG::PRF_NAME);
-  //registerClass<PrfLedRJson>(PrfLedR::PRF_NAME);
+  registerClass<PrfLedGJson>(PrfLedG::PRF_NAME);
+  registerClass<PrfLedRJson>(PrfLedR::PRF_NAME);
 }
 
 std::unique_ptr<DpaTask> DpaTaskJsonSerializerFactory::parse(const std::string& request)
 {
-  std::unique_ptr<Document> doc(ant_new Document);
-  jutils::parseString(request, *doc);
+  Document doc;
+  jutils::parseString(request, doc);
 
-  jutils::checkIsObject("", *doc);
-  std::string perif = jutils::getMemberAsString("pnum", *doc);
+  jutils::checkIsObject("", doc);
+  std::string perif = jutils::getMemberAsString("Type", doc);
 
-  auto jsonSerialized = createObject(perif);
-  jsonSerialized->parseRequestJson(*doc);
-  return jsonSerialized->moveDpaTask();
+  auto obj = createObject(perif, doc);
+  return std::move(obj);
 }
-
-#if 0
-try {
-  rapidjson::Document doc;
-  JsonUtils::ParseJsonFile(fname, doc);
-
-  JsonUtils::checkIsObject("", doc);
-  m_name = JsonUtils::getMemberAsString("name", doc);
-  m_sname = JsonUtils::getMemberAsString("symbolicName", doc);
-  m_namespace = JsonUtils::getMemberAsString("namespace", doc);
-  m_relativePath = JsonUtils::getPossibleMemberAsString("relativePath", doc);
-
-  m_ver = JsonUtils::getMemberAsString("version", doc);
-  m_libname = m_name; //TODO name+ver
-  m_policy = JsonUtils::getMemberAsInt("activationPolicy", doc);
-  m_persistency = JsonUtils::getMemberAsInt("activationPersistency", doc);
-
-  const char* componentStr("Component");
-  const auto memberComponent = doc.FindMember(componentStr);
-
-  m_hasActivate = false;
-  m_hasDeactivate = false;
-  m_hasModified = false;
-  m_hasLoggerSupport = false;
-
-  if (memberComponent != doc.MemberEnd()) {
-    //m_isComponent = true;
-    const rapidjson::Value& component = memberComponent->value;
-    JsonUtils::checkIsObject(componentStr, component);
-
-    m_componentId = m_namespace + "::" + m_name;
-    m_implSharedObj = JsonUtils::getPossibleMemberAsString("implSharedObject", component);
-    m_immediate = JsonUtils::getMemberAsBool("immediate", component);
-    m_autoEnable = JsonUtils::getMemberAsBool("autoEnable", component);
-    m_singleton = JsonUtils::getMemberAsBool("singleton", component);
-
-    const char* prSerStr("ProvidedServices");
-    const auto memberPrSer = doc.FindMember(prSerStr);
-    if (memberPrSer != doc.MemberEnd()) {
-      const rapidjson::Value& prSer = memberPrSer->value;
-      JsonUtils::checkIsArray(prSerStr, prSer);
-
-      for (auto itr = prSer.Begin(); itr != prSer.End(); ++itr)
-      {
-        std::vector<int> ver = JsonUtils::getPossibleMemberAsVectorInt("version", *itr);
-
-        int vmajor(0), vminor(0), vmicro(0);
-        if (ver.size() >= 3) {
-          vmajor = ver[0];
-          vminor = ver[1];
-          vmicro = ver[2];
-        }
-        else if (ver.size() == 2) {
-          vmajor = ver[0];
-          vminor = ver[1];
-        }
-        else if (ver.size() == 1) {
-          vmajor = ver[0];
-        }
-
-        m_providedServices.push_back(
-          ProvidedService(
-          JsonUtils::getMemberAsString("name", *itr),
-          JsonUtils::getPossibleMemberAsString("relativePath", *itr),
-          vmajor, vminor, vmicro
-          )
-          );
-      }
-    }
-
-    //Logger support
-    const char* logSupStr("LoggerSupport");
-    if (JsonUtils::getPossibleMemberAsBool(logSupStr, doc)) {
-      m_hasLoggerSupport = true;
-      m_references.push_back(ComponentReferenceJson(
-        "hps::ILoggerService",
-        "",
-        "hps::ILoggerService",
-        "",                             // relative path to interface file
-        ComponentReference::STATIC,
-        ComponentReference::MULTIPLE,
-        ComponentReference::OPTIONAL_REF
-        ));
-    }
-
-    m_hasActivate = JsonUtils::getPossibleMemberAsBool("Activate", doc, true);
-    m_hasDeactivate = JsonUtils::getPossibleMemberAsBool("Deactivate", doc, true);
-    m_hasModified = JsonUtils::getPossibleMemberAsBool("Modified", doc, false);
-
-    const char* rfSerStr("ReferencedServices");
-    const auto memberRfSer = doc.FindMember(rfSerStr);
-    if (memberRfSer != doc.MemberEnd()) {
-      const rapidjson::Value& rfSer = memberRfSer->value;
-      JsonUtils::checkIsArray(prSerStr, rfSer);
-
-      for (auto itr = rfSer.Begin(); itr != rfSer.End(); ++itr) {
-        m_references.push_back(ComponentReferenceJson(*itr));
-      }
-    }
-
-    const auto memberProps = doc.FindMember("Properties");
-    if (memberProps != doc.MemberEnd()) {
-      JsonProps::ParseJsonObject(memberProps->value, m_properties);
-    }
-  }
-  else {
-    THROW_EX(std::exception, "Missing Component part");
-  }
-
-}
-catch (const BaseException& e)
-{
-  THROW_EX(std::exception, "Parse failed for file: " << PAR(fname) << std::endl << e << std::endl);
-  throw e;
-}
-#endif

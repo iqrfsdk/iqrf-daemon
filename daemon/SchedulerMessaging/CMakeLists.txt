@@ -11,6 +11,8 @@ set(SchedulerMessaging_INC_FILES
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/SimpleSerializer)
+include_directories(${CMAKE_SOURCE_DIR}/JsonSerializer)
+include_directories(${CMAKE_SOURCE_DIR}/JsonSerializer/include)
 include_directories(${clibdpa_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME} STATIC ${SchedulerMessaging_SRC_FILES} ${SchedulerMessaging_INC_FILES})
