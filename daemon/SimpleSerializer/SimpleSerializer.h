@@ -41,7 +41,7 @@ public:
   {
     std::ostringstream ostr;
     encodeResponseSimple(*this, ostr);
-    ostr << " " << getLedState() << " " << errStr;
+    ostr << " " << L::getLedState() << " " << errStr;
     return ostr.str();
   }
 };
