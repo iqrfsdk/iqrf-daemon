@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ISerializer.h"
 #include "ObjectFactory.h"
 #include "PrfThermometer.h"
 #include "PrfLeds.h"
@@ -17,7 +18,7 @@ class PrfThermometerJson : public PrfThermometer
 public:
   explicit PrfThermometerJson(rapidjson::Value& val);
   virtual ~PrfThermometerJson() {}
-  void encodeResponseMessage(std::ostream& ostr, const std::string& errStr) override;
+  std::string encodeResponse(const std::string& errStr) const  override;
 };
 
 template <typename L>
@@ -30,7 +31,7 @@ public:
 
   virtual ~PrfLedJson() {}
 
-  void encodeResponseMessage(std::ostream& ostr, const std::string& errStr) override
+  std::string encodeResponse(const std::string& errStr) const override
   {
     Document doc;
     doc.SetObject();
@@ -47,7 +48,7 @@ public:
     StringBuffer buffer;
     PrettyWriter<StringBuffer> writer(buffer);
     doc.Accept(writer);
-    ostr << buffer.GetString();
+    return buffer.GetString();
   }
 
 };
@@ -55,10 +56,11 @@ public:
 typedef PrfLedJson<PrfLedG> PrfLedGJson;
 typedef PrfLedJson<PrfLedR> PrfLedRJson;
 
-class DpaTaskJsonSerializerFactory : public ObjectFactory<DpaTask, rapidjson::Value>
+class DpaTaskJsonSerializerFactory : public ObjectFactory<DpaTask, rapidjson::Value>, public ISerializer
 {
 public:
   DpaTaskJsonSerializerFactory();
-  std::unique_ptr<DpaTask> parse(const std::string& request);
-  std::string serializeError(const std::string& err);
+
+  std::unique_ptr<DpaTask> parseRequest(const std::string& request) override;
+  std::string getLastError() const override;
 };

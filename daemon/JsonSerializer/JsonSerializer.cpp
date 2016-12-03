@@ -185,7 +185,7 @@ void parseRequestJson(DpaTask& dpaTask, rapidjson::Value& val)
   dpaTask.parseCommand(jutils::getMemberAsString("Comd", val));
 }
 
-void encodeResponseJson(DpaTask& dpaTask, rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc)
+void encodeResponseJson(const DpaTask& dpaTask, rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc)
 {
   rapidjson::Value v;
   v.SetString(dpaTask.getPrfName().c_str(),alloc);
@@ -204,7 +204,7 @@ PrfThermometerJson::PrfThermometerJson(rapidjson::Value& val)
   parseRequestJson(*this, val);
 }
 
-void PrfThermometerJson::encodeResponseMessage(std::ostream& ostr, const std::string& errStr)
+std::string PrfThermometerJson::encodeResponse(const std::string& errStr) const
 {
   Document doc;
   doc.SetObject();
@@ -221,7 +221,7 @@ void PrfThermometerJson::encodeResponseMessage(std::ostream& ostr, const std::st
   StringBuffer buffer;
   PrettyWriter<StringBuffer> writer(buffer);
   doc.Accept(writer);
-  ostr << buffer.GetString();
+  return buffer.GetString();
 }
 
 ///////////////////////////////////////////
@@ -232,7 +232,7 @@ DpaTaskJsonSerializerFactory::DpaTaskJsonSerializerFactory()
   registerClass<PrfLedRJson>(PrfLedR::PRF_NAME);
 }
 
-std::unique_ptr<DpaTask> DpaTaskJsonSerializerFactory::parse(const std::string& request)
+std::unique_ptr<DpaTask> DpaTaskJsonSerializerFactory::parseRequest(const std::string& request)
 {
   Document doc;
   jutils::parseString(request, doc);
@@ -243,3 +243,9 @@ std::unique_ptr<DpaTask> DpaTaskJsonSerializerFactory::parse(const std::string& 
   auto obj = createObject(perif, doc);
   return std::move(obj);
 }
+
+std::string DpaTaskJsonSerializerFactory::getLastError() const
+{
+  return "OK";
+}
+

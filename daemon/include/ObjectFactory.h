@@ -21,7 +21,7 @@ public:
   template<typename S>
   void registerClass(const std::string& id){
     if (m_creators.find(id) != m_creators.end()){
-      //your error handling here
+      //TODO error handling
     }
     m_creators.insert(std::make_pair(id, createObject<S>));
   }
@@ -31,7 +31,6 @@ public:
   }
 
   std::unique_ptr<T> createObject(const std::string& id, R& representation){
-    //Don't use hasClass here as doing so would involve two lookups
     auto iter = m_creators.find(id);
     if (iter == m_creators.end()){
       return std::unique_ptr<T>();

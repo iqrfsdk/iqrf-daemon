@@ -38,6 +38,14 @@ void MessagingController::executeDpaTransactionFunc(DpaTransaction* dpaTransacti
   }
 }
 
+void MessagingController::registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> asyncHandler)
+{
+  m_asyncHandler = asyncHandler;
+  m_dpaHandler->RegisterAsyncMessageHandler([&](const DpaMessage& dpaMessage) {
+    m_asyncHandler(dpaMessage);
+  });
+}
+
 MessagingController::MessagingController(const std::string& iqrfPortName)
   :m_iqrfInterface(nullptr)
   ,m_dpaHandler(nullptr)
@@ -137,9 +145,6 @@ void MessagingController::start()
       m_iqrfInterface = ant_new IqrfCdcChannel(m_iqrfPortName);
 
     m_dpaHandler = ant_new DpaHandler(m_iqrfInterface);
-    //dpaHandler->RegisterAsyncMessageHandler(std::bind(&DpaLibraryDemo::UnexpectedMessage,
-    //  this,
-    //  std::placeholders::_1));
 
     m_dpaHandler->Timeout(100);    // Default timeout is infinite
   }

@@ -76,15 +76,15 @@ int IqrfappMqMessaging::handleMessageFromMq(const ustring& mqMessage)
   std::string msg((const char*)mqMessage.data(), mqMessage.size());
   std::istringstream is(msg);
 
-  std::unique_ptr<DpaTask> dpaTask = m_factory.parse(msg);
+  std::unique_ptr<DpaTask> dpaTask = m_factory.parseRequest(msg);
   if (dpaTask) {
     DpaTransactionTask trans(*dpaTask);
     m_daemon->executeDpaTransaction(trans);
     int result = trans.waitFinish();
-    dpaTask->encodeResponseMessage(os, trans.getErrorStr());
+    os << dpaTask->encodeResponse(trans.getErrorStr());
   }
   else {
-    os << MQ_ERROR_DEVICE;
+    os << m_factory.getLastError();
   }
 
   sendMessageToMq(os.str());

@@ -187,21 +187,22 @@ namespace iqrf {
             //char output
             os << oschar.str();
             oschar.seekp(0);
+            os << std::endl;
           }
-          os << std::endl;
+          //os << std::endl;
         }
       }
-      //align last line
-      i--;
-      if (i % 16) {
-        for (; i % 16; i++) {
-          os << "   ";
-          oschar << ' ';
-        }
-        if (!plain) {
+      if (!plain) {
+        //align last line
+        i--;
+        if (i % 16) {
+          for (; i % 16; i++) {
+            os << "   ";
+            oschar << ' ';
+          }
           os << oschar.str();
+          os << std::endl;
         }
-        os << std::endl;
       }
     }
 

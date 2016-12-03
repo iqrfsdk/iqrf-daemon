@@ -80,14 +80,14 @@ void SchedulerMessaging::start()
     "5 * * * * * * mqtt LedG 0 PULSE",
     "10 * * * * * * mqtt {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
     "15 * * * * * * mqtt {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "20 * * * * * * mqtt LedR 0 PULSE",
-    "25 * * * * * * mqtt LedG 0 PULSE",
-    "30 * * * * * * mqtt {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "35 * * * * * * mqtt {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "40 * * * * * * mqtt LedR 0 PULSE",
-    "45 * * * * * * mqtt LedG 0 PULSE",
-    "50 * * * * * * mqtt {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "55 * * * * * * mqtt {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "20 * * * * * * mqtt Raw 00 00 06 03 ff ff",
+    "25 * * * * * * mqtt Raw 00 00 07 03 ff ff",
+    "30 * * * * * * mqtt LedR 0 PULSE",
+    "35 * * * * * * mqtt LedG 0 PULSE",
+    "40 * * * * * * mqtt {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "45 * * * * * * mqtt {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "50 * * * * * * mqtt Raw 00 00 06 03 ff ff",
+    "55 * * * * * * mqtt Raw 00 00 07 03 ff ff",
     "00 00 09 10 11 * *",
     "00 00 * * * * *",
     "00 00 00 * * * 1"
@@ -153,15 +153,15 @@ int SchedulerMessaging::handleScheduledRecord(const ScheduleRecord& record)
   if (record.getTask()[1] == '{') {
     std::unique_ptr<DpaTask> dpaTask;
     try {
-      dpaTask = m_jsonFactory.parse(record.getTask());
+      dpaTask = m_jsonFactory.parseRequest(record.getTask());
       if (dpaTask) {
         DpaTransactionTask trans(*dpaTask);
         m_daemon->executeDpaTransaction(trans);
         int result = trans.waitFinish();
-        dpaTask->encodeResponseMessage(os, trans.getErrorStr());
+        os << dpaTask->encodeResponse(trans.getErrorStr());
       }
       else {
-        os << MQ_ERROR_DEVICE;
+        os << m_jsonFactory.getLastError();
       }
     }
     catch (std::exception& e) {
@@ -169,15 +169,15 @@ int SchedulerMessaging::handleScheduledRecord(const ScheduleRecord& record)
     }
   }
   else {
-    std::unique_ptr<DpaTask> dpaTask = m_simpleFactory.parse(record.getTask());
+    std::unique_ptr<DpaTask> dpaTask = m_simpleFactory.parseRequest(record.getTask());
     if (dpaTask) {
       DpaTransactionTask trans(*dpaTask);
       m_daemon->executeDpaTransaction(trans);
       int result = trans.waitFinish();
-      dpaTask->encodeResponseMessage(os, trans.getErrorStr());
+      os << dpaTask->encodeResponse(trans.getErrorStr());
     }
     else {
-      os << MQ_ERROR_DEVICE;
+      os << m_simpleFactory.getLastError();
     }
   }
 

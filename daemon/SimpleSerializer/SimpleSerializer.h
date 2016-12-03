@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ISerializer.h"
 #include "ObjectFactory.h"
 #include "PrfThermometer.h"
 #include "PrfLeds.h"
@@ -7,15 +8,23 @@
 #include <memory>
 #include <string>
 
-void parseRequestSimple(std::istream& istr, DpaTask& dpaTask);
-void encodeResponseSimple(std::ostream& ostr, DpaTask & dt);
+void parseRequestSimple(DpaTask& dpaTask, std::istream& istr);
+void encodeResponseSimple(const DpaTask & dt, std::ostream& ostr);
 
-class PrfThermometerSimple : PrfThermometer
+class PrfRawSimple : public DpaRawTask
+{
+public:
+  explicit PrfRawSimple(std::istream& istr);
+  virtual ~PrfRawSimple() {};
+  std::string encodeResponse(const std::string& errStr) const  override;
+};
+
+class PrfThermometerSimple : public PrfThermometer
 {
 public:
   explicit PrfThermometerSimple(std::istream& istr);
-  virtual ~PrfThermometerSimple();
-  virtual void encodeResponseMessage(std::ostream& ostr, const std::string& errStr) override;
+  virtual ~PrfThermometerSimple() {};
+  std::string encodeResponse(const std::string& errStr) const  override;
 };
 
 template <typename L>
@@ -28,10 +37,12 @@ public:
 
   virtual ~PrfLedSimple() {}
 
-  void encodeResponseMessage(std::ostream& ostr, const std::string& errStr) override
+  std::string encodeResponse(const std::string& errStr) const override
   {
-    encodeResponseSimple(ostr, *this);
+    std::ostringstream ostr;
+    encodeResponseSimple(*this, ostr);
     ostr << " " << getLedState() << " " << errStr;
+    return ostr.str();
   }
 };
 
@@ -39,10 +50,11 @@ typedef PrfLedSimple<PrfLedG> PrfLedGSimple;
 typedef PrfLedSimple<PrfLedR> PrfLedRSimple;
 
 
-class DpaTaskSimpleSerializerFactory : public ObjectFactory<DpaTask, std::istream>
+class DpaTaskSimpleSerializerFactory : public ObjectFactory<DpaTask, std::istream>, public ISerializer
 {
 public:
   DpaTaskSimpleSerializerFactory();
-  std::unique_ptr<DpaTask> parse(const std::string& request);
-  std::string serializeError(const std::string& err);
+
+  std::unique_ptr<DpaTask> parseRequest(const std::string& request) override;
+  std::string getLastError() const override;
 };

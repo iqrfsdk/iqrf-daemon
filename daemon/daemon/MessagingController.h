@@ -17,6 +17,8 @@ public:
   MessagingController(const std::string& iqrfPortName);
   virtual ~MessagingController();
   virtual void executeDpaTransaction(DpaTransaction& dpaTransaction);
+  //TODO unregister
+  virtual void registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> message_handler);
   virtual std::set<IMessaging*>& getSetOfMessaging();
   virtual void registerMessaging(IMessaging& messaging);
   virtual void unregisterMessaging(IMessaging& messaging);
@@ -35,15 +37,12 @@ private:
   DpaHandler* m_dpaHandler;
 
   void executeDpaTransactionFunc(DpaTransaction* dpaTransaction);
+
   TaskQueue<DpaTransaction*> *m_dpaTransactionQueue;
   std::string m_iqrfPortName;
-
   std::atomic_bool m_running;
-
   std::set<IMessaging*> m_protocols;
   
-  //<pacid_to_IQRF, pair<pacid_to_protocol, messaging*>>
-  std::unordered_map<unsigned short, std::pair<unsigned short, IMessaging*>> m_pacid_mapping;
-
   IScheduler* m_scheduler;
+  std::function<void(const DpaMessage&)> m_asyncHandler;
 };
