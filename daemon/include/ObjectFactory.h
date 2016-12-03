@@ -27,7 +27,7 @@ public:
   }
 
   bool hasClass(const std::string& id){
-    return mObjectCreator.find(id) != mObjectCreator.end();
+    return m_creators.find(id) != m_creators.end();
   }
 
   std::unique_ptr<T> createObject(const std::string& id, R& representation){

@@ -153,6 +153,7 @@ int SchedulerMessaging::handleScheduledRecord(const ScheduleRecord& record)
   if (record.getTask()[1] == '{') {
     std::unique_ptr<DpaTask> dpaTask;
     try {
+      //bool has = m_jsonFactory.hasClass(record.getTask());
       dpaTask = m_jsonFactory.parseRequest(record.getTask());
       if (dpaTask) {
         DpaTransactionTask trans(*dpaTask);
