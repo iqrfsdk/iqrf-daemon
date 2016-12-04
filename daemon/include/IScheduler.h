@@ -11,6 +11,9 @@ public:
 
   virtual ~IScheduler() {};
   virtual void makeCommand(const std::string& clientId, const std::string& command) = 0;
-  virtual void registerResponseHandler(const std::string& clientId, MessageHandlerFunc fun) = 0;
-  virtual void unregisterResponseHandler(const std::string& clientId) = 0;
+  virtual void registerMessageHandler(const std::string& clientId, MessageHandlerFunc fun) = 0;
+  virtual void unregisterMessageHandler(const std::string& clientId) = 0;
+
+  virtual void start() = 0;
+  virtual void stop() = 0;
 };

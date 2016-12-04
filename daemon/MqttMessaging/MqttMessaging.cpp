@@ -1,12 +1,12 @@
 #include "MqttMessaging.h"
-#include "SimpleSerializer.h"
+//#include "SimpleSerializer.h"
 #include "TaskQueue.h"
-#include "PrfThermometer.h"
-#include "PrfLeds.h"
-#include "DpaTransactionTask.h"
+//#include "PrfThermometer.h"
+//#include "PrfLeds.h"
+//#include "DpaTransactionTask.h"
 #include "MQTTClient.h"
 #include "PlatformDep.h"
-#include "IScheduler.h"
+//#include "IScheduler.h"
 #include "IDaemon.h"
 #include "IqrfLogging.h"
 #include <string.h>
@@ -28,7 +28,7 @@ public:
   Impl()
     :m_daemon(nullptr)
     ,m_toMqttMessageQueue(nullptr)
-    ,m_scheduler(nullptr)
+    //,m_scheduler(nullptr)
   {}
 
   ~Impl()
@@ -88,9 +88,9 @@ public:
 
   void sendTo(const ustring& msg);
 
-  void setScheduler(IScheduler* scheduler);
-  void resetScheduler();
-  void handleSchedulerResponse(const std::string& response);
+  //void setScheduler(IScheduler* scheduler);
+  //void resetScheduler();
+  //void handleSchedulerResponse(const std::string& response);
 
   IDaemon* m_daemon;
   TaskQueue<ustring>* m_toMqttMessageQueue;
@@ -98,8 +98,8 @@ public:
   std::atomic<MQTTClient_deliveryToken> m_deliveredtoken;
   MQTTClient m_client;
   
-  IScheduler* m_scheduler;
-  DpaTaskSimpleSerializerFactory m_factory;
+  //IScheduler* m_scheduler;
+  //DpaTaskSimpleSerializerFactory m_factory;
 
   IMessaging::MessageHandlerFunc m_messageHandlerFunc;
 };
@@ -122,13 +122,13 @@ void MqttMessaging::setDaemon(IDaemon* daemon)
 
 void MqttMessaging::start()
 {
-  m_impl->setScheduler(m_impl->m_daemon->getScheduler());
+  //m_impl->setScheduler(m_impl->m_daemon->getScheduler());
   m_impl->start();
 }
 
 void MqttMessaging::stop()
 {
-  m_impl->resetScheduler();
+  //m_impl->resetScheduler();
   m_impl->stop();
 }
 
@@ -211,27 +211,27 @@ int Impl::handleMessageFromMqtt(const ustring& mqMessage)
   if (m_messageHandlerFunc)
     m_messageHandlerFunc(mqMessage);
 
-  //to encode output message
-  std::ostringstream os;
+  ////to encode output message
+  //std::ostringstream os;
 
-  //get input message
-  std::string msg((const char*)mqMessage.data(), mqMessage.size());
-  std::istringstream is(msg);
+  ////get input message
+  //std::string msg((const char*)mqMessage.data(), mqMessage.size());
+  //std::istringstream is(msg);
 
-  std::unique_ptr<DpaTask> dpaTask = m_factory.parseRequest(msg);
-  if (dpaTask) {
-    DpaTransactionTask trans(*dpaTask);
-    m_daemon->executeDpaTransaction(trans);
-    int result = trans.waitFinish();
-    os << dpaTask->encodeResponse(trans.getErrorStr());
-  }
-  else {
-    os << m_factory.getLastError();
-  }
+  //std::unique_ptr<DpaTask> dpaTask = m_factory.parseRequest(msg);
+  //if (dpaTask) {
+  //  DpaTransactionTask trans(*dpaTask);
+  //  m_daemon->executeDpaTransaction(trans);
+  //  int result = trans.waitFinish();
+  //  os << dpaTask->encodeResponse(trans.getErrorStr());
+  //}
+  //else {
+  //  os << m_factory.getLastError();
+  //}
 
-  ustring msgu((unsigned char*)os.str().data(), os.str().size());
-  sendMessage(msgu);
-  //sendMessageToMqtt(os.str());
+  //ustring msgu((unsigned char*)os.str().data(), os.str().size());
+  //sendMessage(msgu);
+  ////sendMessageToMqtt(os.str());
 
   return 1;
 }
@@ -253,24 +253,24 @@ void Impl::sendTo(const ustring& msg)
 }
 
 ///////////////////
-void Impl::setScheduler(IScheduler* scheduler)
-{
-  m_scheduler = scheduler;
-  if (m_scheduler) {
-    //m_scheduler->registerResponseHandler("mqtt", [&](const std::string& response) {
-    //  ustring msgu((unsigned char*)response.data(), response.size());
-    //  sendMessage(msgu);
-    //});
-    m_scheduler->registerResponseHandler("mqtt", [&](const ustring& response) {
-      sendMessage(response);
-    });
-  }
-}
-
-void Impl::resetScheduler()
-{
-  //TODO
-  //if (m_scheduler) {
-  //  m_scheduler->unregisterResponseHandler("mqtt");
-  //}
-}
+//void Impl::setScheduler(IScheduler* scheduler)
+//{
+//  m_scheduler = scheduler;
+//  if (m_scheduler) {
+//    //m_scheduler->registerResponseHandler("mqtt", [&](const std::string& response) {
+//    //  ustring msgu((unsigned char*)response.data(), response.size());
+//    //  sendMessage(msgu);
+//    //});
+//    m_scheduler->registerResponseHandler("mqtt", [&](const ustring& response) {
+//      sendMessage(response);
+//    });
+//  }
+//}
+//
+//void Impl::resetScheduler()
+//{
+//  //TODO
+//  //if (m_scheduler) {
+//  //  m_scheduler->unregisterResponseHandler("mqtt");
+//  //}
+//}

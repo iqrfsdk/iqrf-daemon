@@ -15,6 +15,9 @@
 #include "MqttMessaging.h"
 #include "SchedulerMessaging.h"
 
+#include "SimpleSerializer.h"
+#include "JsonSerializer.h"
+
 #include "IqrfLogging.h"
 #include "PlatformDep.h"
 
@@ -100,52 +103,41 @@ void MessagingController::watchDog()
   TRC_LEAVE("");
 }
 
-void MessagingController::startProtocols()
-{
-  TRC_ENTER("");
-
-  //SchedulerMessaging* schdm = ant_new SchedulerMessaging();
-  //IMessaging* smsg = schdm;
-  m_scheduler = ant_new SchedulerMessaging();
-  //m_scheduler->setDaemon(this);
-  //smsg->start();
-
-  //TODO plugins?
-  IMessaging* udp = ant_new UdpMessaging();
-  udp->setDaemon(this);
-  udp->start();
-
-  IMessaging* mqm = ant_new IqrfappMqMessaging();
-  mqm->setDaemon(this);
-  mqm->start();
-
-  IMessaging* mqttm = ant_new MqttMessaging();
-  mqttm->setDaemon(this);
-  mqttm->start();
-
-  TRC_LEAVE("");
-}
-
-void MessagingController::stopProtocols()
-{
-  TRC_ENTER("");
-  for (auto prti = m_protocols.begin(); prti != m_protocols.end(); prti++) {
-    IMessaging* prt = *prti;
-    prt->stop();
-    delete prt;
-  }
-  TRC_LEAVE("");
-}
-
 void MessagingController::startClients()
 {
   TRC_ENTER("");
 
+  ////////// TestClient1 //////////////////////////////////
   //TODO load clients plugins
-  IClient* client1 = ant_new TestClient();
+  IClient* client1 = ant_new TestClient("TestClient1");
   client1->setDaemon(this);
-  m_clients.insert(std::make_pair("client1", client1));
-  
+  m_clients.insert(std::make_pair(client1->getClientName(), client1));
+ 
+  //TODO load Messaging plugin
+  MqttMessaging* messaging = ant_new MqttMessaging();
+  messaging->start();
+  client1->setMessaging(messaging);
+
+  //TODO load Serializer plugin
+  DpaTaskSimpleSerializerFactory* serializer = ant_new DpaTaskSimpleSerializerFactory();
+  client1->setSerializer(serializer);
+
+  ////////// TestClient2 //////////////////////////////////
+  //TODO load clients plugins
+  IClient* client2 = ant_new TestClient("TestClient2");
+  client2->setDaemon(this);
+  m_clients.insert(std::make_pair(client2->getClientName(), client2));
+
+  //TODO load Messaging plugin
+  //MqttMessaging* messaging = ant_new MqttMessaging();
+  //messaging->start();
+  client2->setMessaging(messaging);
+
+  //TODO load Serializer plugin
+  DpaTaskJsonSerializerFactory* serializer2 = ant_new DpaTaskJsonSerializerFactory();
+  client2->setSerializer(serializer2);
+
+  /////////////////////
   for (auto cli : m_clients) {
     cli.second->start();
   }
@@ -187,7 +179,12 @@ void MessagingController::start()
     executeDpaTransactionFunc(trans);
   });
 
-  startProtocols();
+  m_scheduler = ant_new SchedulerMessaging();
+
+  //startProtocols();
+  startClients();
+
+  m_scheduler->start();
 
   std::cout << "daemon started" << std::endl;
   TRC_LEAVE("");
@@ -198,7 +195,10 @@ void MessagingController::stop()
   TRC_ENTER("");
   std::cout << "daemon stops" << std::endl;
   
-  stopProtocols();
+  //stopProtocols();
+  stopClients();
+
+  delete m_scheduler;
 
   //TODO unregister call-backs first ?
   delete m_iqrfInterface;

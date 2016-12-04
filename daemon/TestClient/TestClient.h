@@ -18,18 +18,23 @@ typedef std::basic_string<unsigned char> ustring;
 class TestClient : public IClient
 {
 public:
-  TestClient();
+  TestClient() = delete;
+  TestClient(const std::string& name);
   virtual ~TestClient();
 
   void setDaemon(IDaemon* daemon) override;
+  virtual void setSerializer(ISerializer* serializer) override;
+  virtual void setMessaging(IMessaging* messaging) override;
+  const std::string& getClientName() const override {
+    return m_name;
+  }
   void start() override;
   void stop() override;
-  const std::string& getClientName() override {
-    return "TestClient";
-  }
 
 private:
   void handleMsgFromMessaging(const ustring& msg);
+
+  std::string m_name;
 
   IMessaging* m_messaging;
   IDaemon* m_daemon;

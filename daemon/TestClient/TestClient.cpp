@@ -3,8 +3,11 @@
 #include "IDaemon.h"
 #include "IqrfLogging.h"
 
-TestClient::TestClient()
-  :m_daemon(nullptr)
+TestClient::TestClient(const std::string & name)
+  :m_name(name)
+  , m_messaging(nullptr)
+  , m_daemon(nullptr)
+  , m_serializer(nullptr)
 {
 }
 
@@ -17,18 +20,26 @@ void TestClient::setDaemon(IDaemon* daemon)
   m_daemon = daemon;
 }
 
+void TestClient::setSerializer(ISerializer* serializer)
+{
+  m_serializer = serializer;
+  m_messaging->registerMessageHandler([&](const ustring& msg) {
+    handleMsgFromMessaging(msg);
+  });
+}
+
+void TestClient::setMessaging(IMessaging* messaging)
+{
+  m_messaging = messaging;
+}
+
 void TestClient::start()
 {
   TRC_ENTER("");
 
-  //TODO load Messaging plugin
-  m_messaging = ant_new MqttMessaging();
-  m_messaging->registerMessageHandler([&](const ustring& msg) {
+  m_daemon->getScheduler()->registerMessageHandler(m_name, [&](const ustring& msg) {
     handleMsgFromMessaging(msg);
   });
-
-  //TODO load Serializer plugin
-  m_serializer = ant_new DpaTaskSimpleSerializerFactory();
 
   std::cout << "TestClient started" << std::endl;
 

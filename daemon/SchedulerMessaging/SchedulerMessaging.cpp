@@ -1,51 +1,20 @@
 #include "SchedulerMessaging.h"
-#include "PrfThermometer.h"
-#include "PrfLeds.h"
-#include "DpaTransactionTask.h"
-#include "MqChannel.h"
-#include "IDaemon.h"
 #include "IqrfLogging.h"
-
-const unsigned IQRF_MQ_BUFFER_SIZE = 1024;
-
-const std::string MQ_ERROR_ADDRESS("ERROR_ADDRESS");
-const std::string MQ_ERROR_DEVICE("ERROR_DEVICE");
+#include "PlatformDep.h"
 
 using namespace std::chrono;
 
 SchedulerMessaging::SchedulerMessaging()
-  :m_daemon(nullptr)
-  //, m_mqChannel(nullptr)
-  //, m_toMqMessageQueue(nullptr)
 {
-  //m_localMqName = "iqrf-daemon-110";
-  //m_remoteMqName = "iqrf-daemon-100";
 }
 
 SchedulerMessaging::~SchedulerMessaging()
 {
 }
 
-void SchedulerMessaging::setDaemon(IDaemon* daemon)
-{
-  m_daemon = daemon;
-  //m_daemon->registerMessaging(*this);
-}
-
 void SchedulerMessaging::start()
 {
   TRC_ENTER("");
-
-  /*
-  m_mqChannel = ant_new MqChannel(m_remoteMqName, m_localMqName, IQRF_MQ_BUFFER_SIZE, true);
-
-  m_toMqMessageQueue = ant_new TaskQueue<ustring>([&](const ustring& msg) {
-    m_mqChannel->sendTo(msg);
-  });
-
-  m_mqChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) -> int {
-    return handleMessageFromMq(msg); });
-  */
 
   m_dpaTaskQueue = ant_new TaskQueue<ScheduleRecord>([&](const ScheduleRecord& record) {
     handleScheduledRecord(record);
@@ -54,45 +23,45 @@ void SchedulerMessaging::start()
   //sec mnt hrs day mon year dow
   //std::vector<std::string> temp = {
   //  "20 30 11 * * * 6",
-  //  "0 * * * * * * mqtt Thermometer 1 READ",
-  //  "5 * * * * * * mqtt LedR 0 PULSE",
-  //  "10 * * * * * * mqtt LedG 0 PULSE",
-  //  "15 * * * * * * mqtt LedR 0 PULSE",
-  //  "20 * * * * * * mqtt LedG 0 PULSE",
-  //  "25 * * * * * * mqtt LedR 0 PULSE",
-  //  "30 * * * * * * mqtt LedG 0 PULSE",
-  //  "35 * * * * * * mqtt LedR 0 PULSE",
-  //  "40 * * * * * * mqtt LedG 0 PULSE",
-  //  "45 * * * * * * mqtt LedR 0 PULSE",
-  //  "50 * * * * * * mqtt LedG 0 PULSE",
-  //  "55 * * * * * * mqtt LedR 0 PULSE",
-  //  "00 * * * * * * mqtt LedG 0 PULSE",
+  //  "0 * * * * * * TestClient1 Thermometer 1 READ",
+  //  "5 * * * * * * TestClient1 LedR 0 PULSE",
+  //  "10 * * * * * * TestClient1 LedG 0 PULSE",
+  //  "15 * * * * * * TestClient1 LedR 0 PULSE",
+  //  "20 * * * * * * TestClient1 LedG 0 PULSE",
+  //  "25 * * * * * * TestClient1 LedR 0 PULSE",
+  //  "30 * * * * * * TestClient1 LedG 0 PULSE",
+  //  "35 * * * * * * TestClient1 LedR 0 PULSE",
+  //  "40 * * * * * * TestClient1 LedG 0 PULSE",
+  //  "45 * * * * * * TestClient1 LedR 0 PULSE",
+  //  "50 * * * * * * TestClient1 LedG 0 PULSE",
+  //  "55 * * * * * * TestClient1 LedR 0 PULSE",
+  //  "00 * * * * * * TestClient1 LedG 0 PULSE",
   //  "00 00 09 10 11 * *",
   //  "00 00 * * * * *",
   //  "00 00 00 * * * 1"
   //};
 
   //    "0 * * * * * * mqtt {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
-
+  
   std::vector<std::string> temp = {
     "20 30 11 * * * 6",
-    "0 * * * * * * mqtt LedR 0 PULSE",
-    "5 * * * * * * mqtt LedG 0 PULSE",
-    "10 * * * * * * mqtt {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "15 * * * * * * mqtt {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "20 * * * * * * mqtt Raw 00 00 06 03 ff ff",
-    "25 * * * * * * mqtt Raw 00 00 07 03 ff ff",
-    "30 * * * * * * mqtt LedR 0 PULSE",
-    "35 * * * * * * mqtt LedG 0 PULSE",
-    "40 * * * * * * mqtt {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "45 * * * * * * mqtt {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "50 * * * * * * mqtt Raw 00 00 06 03 ff ff",
-    "55 * * * * * * mqtt Raw 00 00 07 03 ff ff",
+    "0 * * * * * * TestClient1 LedR 0 PULSE",
+    "5 * * * * * * TestClient1 LedG 0 PULSE",
+    "10 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "15 * * * * * * TestClient2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "20 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
+    "25 * * * * * * TestClient1 Raw 00 00 07 03 ff ff",
+    "30 * * * * * * TestClient1 LedR 0 PULSE",
+    "35 * * * * * * TestClient1 LedG 0 PULSE",
+    "40 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "45 * * * * * * TestClient2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "50 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
+    "55 * * * * * * TestClient1 Raw 00 00 07 03 ff ff",
     "00 00 09 10 11 * *",
     "00 00 * * * * *",
     "00 00 00 * * * 1"
   };
-
+  
   std::vector<std::shared_ptr<ScheduleRecord>> tempRecords;
   int i = 0;
   for (auto & it : temp) {
@@ -113,11 +82,6 @@ void SchedulerMessaging::start()
 void SchedulerMessaging::stop()
 {
   TRC_ENTER("");
-  /*
-  delete m_mqChannel;
-  delete m_toMqMessageQueue;
-  */
-
   {
     m_runTimerThread = false;
     std::unique_lock<std::mutex> lck(m_conditionVariableMutex);
@@ -134,65 +98,21 @@ void SchedulerMessaging::stop()
   TRC_LEAVE("");
 }
 
-//void SchedulerMessaging::sendMessageToMq(const std::string& message)
-//{
-//  ustring msg((unsigned char*)message.data(), message.size());
-//  TRC_DBG(FORM_HEX(message.data(), message.size()));
-//  m_toMqMessageQueue->pushToQueue(msg);
-//}
-
 int SchedulerMessaging::handleScheduledRecord(const ScheduleRecord& record)
 {
   TRC_DBG("==================================" << std::endl <<
     "Scheduled msg: " << std::endl << FORM_HEX(record.getTask().data(), record.getTask().size()));
 
-  //to encode output message
-  std::ostringstream os;
-
-  //TOD this will be solved by plug-in approach - get rid of all deps on parser here
-  if (record.getTask()[1] == '{') {
-    std::unique_ptr<DpaTask> dpaTask;
-    try {
-      //bool has = m_jsonFactory.hasClass(record.getTask());
-      dpaTask = m_jsonFactory.parseRequest(record.getTask());
-      if (dpaTask) {
-        DpaTransactionTask trans(*dpaTask);
-        m_daemon->executeDpaTransaction(trans);
-        int result = trans.waitFinish();
-        os << dpaTask->encodeResponse(trans.getErrorStr());
-      }
-      else {
-        os << m_jsonFactory.getLastError();
-      }
-    }
-    catch (std::exception& e) {
-      CATCH_EX("Caught", std::exception, e);
-    }
-  }
-  else {
-    std::unique_ptr<DpaTask> dpaTask = m_simpleFactory.parseRequest(record.getTask());
-    if (dpaTask) {
-      DpaTransactionTask trans(*dpaTask);
-      m_daemon->executeDpaTransaction(trans);
-      int result = trans.waitFinish();
-      os << dpaTask->encodeResponse(trans.getErrorStr());
-    }
-    else {
-      os << m_simpleFactory.getLastError();
-    }
-  }
-
   {
     std::lock_guard<std::mutex> lck(m_messageHandlersMutex);
     auto found = m_messageHandlers.find(record.getClientId());
     if (found != m_messageHandlers.end()) {
-      TRC_DBG(NAME_PAR(Response, os.str()) << " has been passed to: " << NAME_PAR(ClinetId, record.getClientId()));
-      ustring msgu((unsigned char*)os.str().data(), os.str().size());
+      TRC_DBG(NAME_PAR(Response, record.getTask()) << " has been passed to: " << NAME_PAR(ClinetId, record.getClientId()));
+      ustring msgu((unsigned char*)record.getTask().data(), record.getTask().size());
       found->second(msgu);
-      TRC_DBG(NAME_PAR(Response, os.str()) << " has been processed by: " << NAME_PAR(ClinetId, record.getClientId()));
     }
     else {
-      TRC_DBG("Response: " << os.str());
+      TRC_DBG("Unregistered client: " << PAR(record.getClientId()));
     }
   }
 
@@ -301,14 +221,14 @@ void SchedulerMessaging::makeCommand(const std::string& clientId, const std::str
 {
 }
 
-void SchedulerMessaging::registerResponseHandler(const std::string& clientId, MessageHandlerFunc fun)
+void SchedulerMessaging::registerMessageHandler(const std::string& clientId, MessageHandlerFunc fun)
 {
   std::lock_guard<std::mutex> lck(m_messageHandlersMutex);
   //TODO check success
   m_messageHandlers.insert(make_pair(clientId, fun));
 }
 
-void SchedulerMessaging::unregisterResponseHandler(const std::string& clientId)
+void SchedulerMessaging::unregisterMessageHandler(const std::string& clientId)
 {
   std::lock_guard<std::mutex> lck(m_messageHandlersMutex);
   m_messageHandlers.erase(clientId);

@@ -1,20 +1,15 @@
 #pragma once
 
-#include "SimpleSerializer.h"
-#include "JsonSerializer.h"
 #include "TaskQueue.h"
-#include "IMessaging.h"
 #include "IScheduler.h"
 #include <string>
 #include <chrono>
 #include <map>
 #include <memory>
 
-class IDaemon;
-class MqChannel;
 class ScheduleRecord;
 
-typedef std::basic_string<unsigned char> ustring;
+//typedef std::basic_string<unsigned char> ustring;
 
 class SchedulerMessaging : public IScheduler
 {
@@ -22,28 +17,20 @@ public:
   SchedulerMessaging();
   virtual ~SchedulerMessaging();
 
-  virtual void setDaemon(IDaemon* daemon);
-  virtual void start();
-  virtual void stop();
+  void start() override;
+  void stop() override;
 
-  //void registerMessageHandler(MessageHandlerFunc hndl) override {}
-  //void unregisterMessageHandler() override {}
-  //void sendMessage(const ustring& msg) override {}
-
-  virtual void makeCommand(const std::string& clientId, const std::string& command);
-  virtual void registerResponseHandler(const std::string& clientId, MessageHandlerFunc fun);
-  virtual void unregisterResponseHandler(const std::string& clientId);
+  void makeCommand(const std::string& clientId, const std::string& command) override;
+  void registerMessageHandler(const std::string& clientId, MessageHandlerFunc fun) override;
+  void unregisterMessageHandler(const std::string& clientId) override;
 
 private:
-  //void sendMessageToMq(const std::string& message);
   int handleScheduledRecord(const ScheduleRecord& record);
 
   void addScheduleRecord(std::shared_ptr<ScheduleRecord>& record);
   void addScheduleRecords(std::vector<std::shared_ptr<ScheduleRecord>>& records);
   //void removeScheduleRecord(const ScheduleRecord& record);
 
-  IDaemon* m_daemon;
-  
   ////////////////////////////////
   TaskQueue<ScheduleRecord>* m_dpaTaskQueue;
 
@@ -61,8 +48,6 @@ private:
   std::condition_variable m_conditionVariable;
   void timer();
 
-  DpaTaskSimpleSerializerFactory m_simpleFactory;
-  DpaTaskJsonSerializerFactory m_jsonFactory;
 };
 
 class ScheduleRecord {

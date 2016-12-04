@@ -25,9 +25,6 @@ public:
   virtual void unregisterMessaging(IMessaging& messaging);
   virtual IScheduler* getScheduler() { return m_scheduler; }
 
-  void startProtocols();
-  void stopProtocols();
-
   void startClients();
   void stopClients();
 
