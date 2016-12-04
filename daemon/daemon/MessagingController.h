@@ -1,8 +1,9 @@
 #pragma once
 
+#include "IClient.h"
 #include "TaskQueue.h"
 #include "IDaemon.h"
-#include <unordered_map>
+#include <map>
 #include <string>
 #include <atomic>
 
@@ -27,6 +28,9 @@ public:
   void startProtocols();
   void stopProtocols();
 
+  void startClients();
+  void stopClients();
+
   void start();
   void stop();
   void exit();
@@ -43,6 +47,8 @@ private:
   std::atomic_bool m_running;
   std::set<IMessaging*> m_protocols;
   
+  std::map<std::string, IClient*> m_clients;
+
   IScheduler* m_scheduler;
   std::function<void(const DpaMessage&)> m_asyncHandler;
 };

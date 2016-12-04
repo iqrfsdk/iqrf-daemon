@@ -36,6 +36,17 @@ public:
 
   void start();
   void stop();
+  void registerMessageHandler(IMessaging::MessageHandlerFunc hndl) {
+    m_messageHandlerFunc = hndl;
+  }
+
+  void unregisterMessageHandler() {
+    m_messageHandlerFunc = IMessaging::MessageHandlerFunc();
+  }
+
+  void Impl::sendMessage(const ustring& msg) {
+    m_toMqttMessageQueue->pushToQueue(msg);
+  }
 
   static void sdelivered(void *context, MQTTClient_deliveryToken dt) {
     ((Impl*)context)->delivered(dt);
@@ -82,7 +93,6 @@ public:
   void handleSchedulerResponse(const std::string& response);
 
   IDaemon* m_daemon;
-  //MqChannel* m_mqChannel;
   TaskQueue<ustring>* m_toMqttMessageQueue;
   std::atomic_bool m_connected;
   std::atomic<MQTTClient_deliveryToken> m_deliveredtoken;
@@ -90,6 +100,8 @@ public:
   
   IScheduler* m_scheduler;
   DpaTaskSimpleSerializerFactory m_factory;
+
+  IMessaging::MessageHandlerFunc m_messageHandlerFunc;
 };
 
 MqttMessaging::MqttMessaging()
@@ -120,6 +132,22 @@ void MqttMessaging::stop()
   m_impl->stop();
 }
 
+void MqttMessaging::registerMessageHandler(MessageHandlerFunc hndl)
+{
+  m_impl->registerMessageHandler(hndl);
+}
+
+void MqttMessaging::unregisterMessageHandler()
+{
+  m_impl->unregisterMessageHandler();
+}
+
+void MqttMessaging::sendMessage(const ustring& msg)
+{
+  m_impl->sendMessage(msg);
+}
+
+////////////////////// Impl //////////////////
 void Impl::start()
 {
   TRC_ENTER("");
@@ -168,17 +196,20 @@ void Impl::stop()
   TRC_LEAVE("");
 }
 
-void Impl::sendMessageToMqtt(const std::string& message)
-{
-  ustring msg((unsigned char*)message.data(), message.size());
-  TRC_DBG(FORM_HEX(message.data(), message.size()));
-  m_toMqttMessageQueue->pushToQueue(msg);
-}
+//void Impl::sendMessage(const ustring& msg)
+//{
+//  //ustring msg((unsigned char*)message.data(), message.size());
+//  //TRC_DBG(FORM_HEX(message.data(), message.size()));
+//  m_toMqttMessageQueue->pushToQueue(msg);
+//}
 
 int Impl::handleMessageFromMqtt(const ustring& mqMessage)
 {
   TRC_DBG("==================================" << std::endl <<
     "Received from MQTT: " << std::endl << FORM_HEX(mqMessage.data(), mqMessage.size()));
+
+  if (m_messageHandlerFunc)
+    m_messageHandlerFunc(mqMessage);
 
   //to encode output message
   std::ostringstream os;

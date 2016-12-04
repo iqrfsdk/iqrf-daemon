@@ -20,6 +20,10 @@ public:
   virtual void start();
   virtual void stop();
 
+  void registerMessageHandler(MessageHandlerFunc hndl) override {}
+  void unregisterMessageHandler() override {}
+  void sendMessage(const ustring& msg) override {}
+
 private:
   void sendMessageToMq(const std::string& message);
   int handleMessageFromMq(const ustring& mqMessage);

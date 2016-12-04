@@ -65,6 +65,7 @@ add_subdirectory(JsonSerializer)
 add_subdirectory(daemon)
 add_subdirectory(iqrf_ide_dummy)
 add_subdirectory(iqrfapp)
+add_subdirectory(TestClient)
 
 # Configure config file.
 # This file specifies actions performed and variables exported when using find_package on this project.

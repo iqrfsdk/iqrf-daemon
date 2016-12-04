@@ -18,6 +18,10 @@ public:
   virtual void start();
   virtual void stop();
 
+  void registerMessageHandler(MessageHandlerFunc hndl) override;
+  void unregisterMessageHandler() override;
+  void sendMessage(const ustring& msg) override;
+
 private:
   Impl* m_impl;
 };

@@ -26,6 +26,10 @@ public:
   virtual void start();
   virtual void stop();
 
+  void registerMessageHandler(MessageHandlerFunc hndl) override {}
+  void unregisterMessageHandler() override {}
+  void sendMessage(const ustring& msg) override {}
+
   virtual void makeCommand(const std::string& clientId, const std::string& command);
   virtual void registerResponseHandler(const std::string& clientId, ResponseHandlerFunc fun);
   virtual void unregisterResponseHandler(const std::string& clientId);

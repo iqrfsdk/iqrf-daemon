@@ -3,6 +3,10 @@
 #include "IqrfSpiChannel.h"
 #include "DpaHandler.h"
 
+#include "IClient.h"
+//TODO temporary here
+#include "TestClient.h"
+
 //TODO temporary here
 #include "IMessaging.h"
 #include "UdpMessaging.h"
@@ -130,6 +134,33 @@ void MessagingController::stopProtocols()
     prt->stop();
     delete prt;
   }
+  TRC_LEAVE("");
+}
+
+void MessagingController::startClients()
+{
+  TRC_ENTER("");
+
+  //TODO load clients plugins
+  IClient* client1 = ant_new TestClient();
+  client1->setDaemon(this);
+  m_clients.insert(std::make_pair("client1", client1));
+  
+  for (auto cli : m_clients) {
+    cli.second->start();
+  }
+
+  TRC_LEAVE("");
+}
+
+void MessagingController::stopClients()
+{
+  TRC_ENTER("");
+  for (auto cli : m_clients) {
+    cli.second->stop();
+    delete cli.second;
+  }
+  m_clients.clear();
   TRC_LEAVE("");
 }
 

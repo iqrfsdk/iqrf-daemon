@@ -38,6 +38,10 @@ public:
   virtual void start();
   virtual void stop();
 
+  void registerMessageHandler(MessageHandlerFunc hndl) override {}
+  void unregisterMessageHandler() override {}
+  void sendMessage(const ustring& msg) override {}
+
   void sendDpaMessageToUdp(const DpaMessage&  dpaMessage);
 
   void getGwIdent(ustring& message);
