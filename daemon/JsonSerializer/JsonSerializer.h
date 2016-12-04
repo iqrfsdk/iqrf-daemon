@@ -33,20 +33,20 @@ public:
 
   std::string encodeResponse(const std::string& errStr) const override
   {
-    Document doc;
+    rapidjson::Document doc;
     doc.SetObject();
 
     encodeResponseJson(*this, doc, doc.GetAllocator());
 
     rapidjson::Value v;
-    v = getLedState();
+    v = L::getLedState();
     doc.AddMember("LedState", v, doc.GetAllocator());
 
     v.SetString(errStr.c_str(), doc.GetAllocator());
     doc.AddMember("Status", v, doc.GetAllocator());
 
-    StringBuffer buffer;
-    PrettyWriter<StringBuffer> writer(buffer);
+    rapidjson::StringBuffer buffer;
+    rapidjson::PrettyWriter<StringBuffer> writer(buffer);
     doc.Accept(writer);
     return buffer.GetString();
   }
