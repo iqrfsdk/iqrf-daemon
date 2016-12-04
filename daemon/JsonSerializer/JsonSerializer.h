@@ -7,6 +7,9 @@
 #include "PlatformDep.h"
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
+#include "rapidjson/istreamwrapper.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/prettywriter.h"
 #include <memory>
 #include <string>
 
@@ -46,7 +49,7 @@ public:
     doc.AddMember("Status", v, doc.GetAllocator());
 
     rapidjson::StringBuffer buffer;
-    rapidjson::PrettyWriter<StringBuffer> writer(buffer);
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
     doc.Accept(writer);
     return buffer.GetString();
   }
