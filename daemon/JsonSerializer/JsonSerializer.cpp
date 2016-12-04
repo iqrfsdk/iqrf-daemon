@@ -6,6 +6,9 @@
 #include "rapidjson/istreamwrapper.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/prettywriter.h"
+#include <vector>
+#include <utility>
+#include <stdexcept>
 
 //TODO using istream is slower according http://rapidjson.org/md_doc_stream.html
 
@@ -17,14 +20,14 @@ namespace jutils
   {
     std::ifstream ifs(fname);
     if (!ifs.is_open()) {
-      THROW_EX(std::exception, "Cannot open: " << PAR(fname));
+      THROW_EX(std::logic_error, "Cannot open: " << PAR(fname));
     }
 
     IStreamWrapper isw(ifs);
     json.ParseStream(isw);
 
     if (json.HasParseError()) {
-      THROW_EX(std::exception, "Json parse error: " << NAME_PAR(emsg, json.GetParseError()) <<
+      THROW_EX(std::logic_error, "Json parse error: " << NAME_PAR(emsg, json.GetParseError()) <<
         NAME_PAR(eoffset, json.GetErrorOffset()));
     }
   }
@@ -35,7 +38,7 @@ namespace jutils
     json.ParseStream(isw);
 
     if (json.HasParseError()) {
-      THROW_EX(std::exception, "Json parse error: " << NAME_PAR(emsg, json.GetParseError()) <<
+      THROW_EX(std::logic_error, "Json parse error: " << NAME_PAR(emsg, json.GetParseError()) <<
         NAME_PAR(eoffset, json.GetErrorOffset()));
     }
   }
@@ -47,7 +50,7 @@ namespace jutils
     json.ParseStream(s);
 
     if (json.HasParseError()) {
-      THROW_EX(std::exception, "Json parse error: " << NAME_PAR(emsg, json.GetParseError()) <<
+      THROW_EX(std::logic_error, "Json parse error: " << NAME_PAR(emsg, json.GetParseError()) <<
         NAME_PAR(eoffset, json.GetErrorOffset()));
     }
   }
@@ -56,32 +59,32 @@ namespace jutils
   void checkIsObject(const std::string& name, const rapidjson::Value& jsonValue)
   {
     if (!jsonValue.IsObject())
-      THROW_EX(std::exception, "Expected: Json Object, detected: " << PAR(jsonValue.GetType()) << PAR(name));
+      THROW_EX(std::logic_error, "Expected: Json Object, detected: " << PAR(jsonValue.GetType()) << PAR(name));
   }
 
   void checkIsArray(const std::string& name, const rapidjson::Value& jsonValue)
   {
     if (!jsonValue.IsArray())
-      THROW_EX(std::exception, "Expected: Json Array, detected: " << PAR(jsonValue.GetType()) << PAR(name));
+      THROW_EX(std::logic_error, "Expected: Json Array, detected: " << PAR(jsonValue.GetType()) << PAR(name));
   }
 
   void checkIsString(const std::string& name, const rapidjson::Value& jsonValue)
   {
     if (!jsonValue.IsString())
-      THROW_EX(std::exception, "Expected: Json String, detected: " << PAR(jsonValue.GetType()) << PAR(name));
+      THROW_EX(std::logic_error, "Expected: Json String, detected: " << PAR(jsonValue.GetType()) << PAR(name));
   }
 
   void checkIsInt(const std::string& name, const rapidjson::Value& jsonValue)
   {
     if (!jsonValue.IsInt())
-      THROW_EX(std::exception, "Expected: Json Int, detected: " << PAR(jsonValue.GetType()) << PAR(name));
+      THROW_EX(std::logic_error, "Expected: Json Int, detected: " << PAR(jsonValue.GetType()) << PAR(name));
   }
 
   const rapidjson::Value::ConstMemberIterator getMember(const std::string& name, const rapidjson::Value& jsonValue)
   {
     const rapidjson::Value::ConstMemberIterator m = jsonValue.FindMember(name.c_str());
     if (m == jsonValue.MemberEnd()) {
-      THROW_EX(std::exception, "Expected member: " << PAR(name));
+      THROW_EX(std::logic_error, "Expected member: " << PAR(name));
     }
     return m;
   }
@@ -90,7 +93,7 @@ namespace jutils
   {
     const auto m = getMember(name, jsonValue);
     if (!m->value.IsObject())
-      THROW_EX(std::exception, "Expected: Object, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
+      THROW_EX(std::logic_error, "Expected: Object, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
     return m->value;
   }
 
@@ -98,7 +101,7 @@ namespace jutils
   {
     const auto m = getMember(name, jsonValue);
     if (!m->value.IsString())
-      THROW_EX(std::exception, "Expected: Json String, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
+      THROW_EX(std::logic_error, "Expected: Json String, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
     return std::string(m->value.GetString());
   }
 
@@ -106,7 +109,7 @@ namespace jutils
   {
     const auto m = getMember(name, jsonValue);
     if (!m->value.IsBool())
-      THROW_EX(std::exception, "Expected: Json Bool, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
+      THROW_EX(std::logic_error, "Expected: Json Bool, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
     return m->value.GetBool();
   }
 
@@ -114,7 +117,7 @@ namespace jutils
   {
     const auto m = getMember(name, jsonValue);
     if (!m->value.IsInt())
-      THROW_EX(std::exception, "Expected: Json Int, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
+      THROW_EX(std::logic_error, "Expected: Json Int, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
     return m->value.GetInt();
   }
 
@@ -122,7 +125,7 @@ namespace jutils
   {
     const auto m = getMember(name, jsonValue);
     if (!m->value.IsDouble())
-      THROW_EX(std::exception, "Expected: Json Double, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
+      THROW_EX(std::logic_error, "Expected: Json Double, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
     return m->value.GetDouble();
   }
 
@@ -130,7 +133,7 @@ namespace jutils
   {
     const auto m = getMember(name, jsonValue);
     if (!m->value.IsUint())
-      THROW_EX(std::exception, "Expected: Json Uint, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
+      THROW_EX(std::logic_error, "Expected: Json Uint, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
     return m->value.GetUint();
   }
 
@@ -141,7 +144,7 @@ namespace jutils
       return defaultVal;
     }
     if (!m->value.IsBool())
-      THROW_EX(std::exception, "Expected: Json Bool, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
+      THROW_EX(std::logic_error, "Expected: Json Bool, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
     return m->value.GetBool();
   }
 
@@ -152,7 +155,7 @@ namespace jutils
       return defaultVal;
     }
     if (!m->value.IsString())
-      THROW_EX(std::exception, "Expected: Json String, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
+      THROW_EX(std::logic_error, "Expected: Json String, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
     return m->value.GetString();
   }
 
