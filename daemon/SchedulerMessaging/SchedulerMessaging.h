@@ -16,7 +16,7 @@ class ScheduleRecord;
 
 typedef std::basic_string<unsigned char> ustring;
 
-class SchedulerMessaging : public IMessaging, public IScheduler
+class SchedulerMessaging : public IScheduler
 {
 public:
   SchedulerMessaging();
@@ -26,12 +26,12 @@ public:
   virtual void start();
   virtual void stop();
 
-  void registerMessageHandler(MessageHandlerFunc hndl) override {}
-  void unregisterMessageHandler() override {}
-  void sendMessage(const ustring& msg) override {}
+  //void registerMessageHandler(MessageHandlerFunc hndl) override {}
+  //void unregisterMessageHandler() override {}
+  //void sendMessage(const ustring& msg) override {}
 
   virtual void makeCommand(const std::string& clientId, const std::string& command);
-  virtual void registerResponseHandler(const std::string& clientId, ResponseHandlerFunc fun);
+  virtual void registerResponseHandler(const std::string& clientId, MessageHandlerFunc fun);
   virtual void unregisterResponseHandler(const std::string& clientId);
 
 private:
@@ -43,17 +43,12 @@ private:
   //void removeScheduleRecord(const ScheduleRecord& record);
 
   IDaemon* m_daemon;
-  //MqChannel* m_mqChannel;
-  //TaskQueue<ustring>* m_toMqMessageQueue;
-
-  //std::string m_localMqName;
-  //std::string m_remoteMqName;
   
   ////////////////////////////////
   TaskQueue<ScheduleRecord>* m_dpaTaskQueue;
 
-  std::map<std::string, ResponseHandlerFunc> m_responseHandlers;
-  std::mutex m_responseHandlersMutex;
+  std::map<std::string, MessageHandlerFunc> m_messageHandlers;
+  std::mutex m_messageHandlersMutex;
 
   std::vector<std::shared_ptr<ScheduleRecord>> m_scheduleRecords;
   std::multimap<std::chrono::system_clock::time_point, std::shared_ptr<ScheduleRecord>> m_scheduledTasks;

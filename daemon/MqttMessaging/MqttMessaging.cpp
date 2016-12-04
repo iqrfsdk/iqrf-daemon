@@ -60,9 +60,9 @@ public:
     ((Impl*)context)->connlost(cause);
   }
 
-  void sendMessageToMqtt(const std::string& message);
+  //void sendMessageToMqtt(const std::string& message);
   int handleMessageFromMqtt(const ustring& mqMessage);
-  int handleMessageFromMqtt1(const ustring& mqMessage);
+  //int handleMessageFromMqtt1(const ustring& mqMessage);
 
   void delivered(MQTTClient_deliveryToken dt)
   {
@@ -229,7 +229,9 @@ int Impl::handleMessageFromMqtt(const ustring& mqMessage)
     os << m_factory.getLastError();
   }
 
-  sendMessageToMqtt(os.str());
+  ustring msgu((unsigned char*)os.str().data(), os.str().size());
+  sendMessage(msgu);
+  //sendMessageToMqtt(os.str());
 
   return 1;
 }
@@ -255,8 +257,12 @@ void Impl::setScheduler(IScheduler* scheduler)
 {
   m_scheduler = scheduler;
   if (m_scheduler) {
-    m_scheduler->registerResponseHandler("mqtt", [&](const std::string& response) {
-      sendMessageToMqtt(response);
+    //m_scheduler->registerResponseHandler("mqtt", [&](const std::string& response) {
+    //  ustring msgu((unsigned char*)response.data(), response.size());
+    //  sendMessage(msgu);
+    //});
+    m_scheduler->registerResponseHandler("mqtt", [&](const ustring& response) {
+      sendMessage(response);
     });
   }
 }

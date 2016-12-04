@@ -21,13 +21,12 @@ public:
   TestClient();
   virtual ~TestClient();
 
-  virtual void setDaemon(IDaemon* daemon);
-  virtual void start();
-  virtual void stop();
-
-  //virtual void makeCommand(const std::string& clientId, const std::string& command);
-  //virtual void registerResponseHandler(const std::string& clientId, ResponseHandlerFunc fun);
-  //virtual void unregisterResponseHandler(const std::string& clientId);
+  void setDaemon(IDaemon* daemon) override;
+  void start() override;
+  void stop() override;
+  const std::string& getClientName() override {
+    return "TestClient";
+  }
 
 private:
   void handleMsgFromMessaging(const ustring& msg);

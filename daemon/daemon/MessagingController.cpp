@@ -104,11 +104,11 @@ void MessagingController::startProtocols()
 {
   TRC_ENTER("");
 
-  SchedulerMessaging* schdm = ant_new SchedulerMessaging();
-  IMessaging* smsg = schdm;
-  m_scheduler = schdm;
-  smsg->setDaemon(this);
-  smsg->start();
+  //SchedulerMessaging* schdm = ant_new SchedulerMessaging();
+  //IMessaging* smsg = schdm;
+  m_scheduler = ant_new SchedulerMessaging();
+  //m_scheduler->setDaemon(this);
+  //smsg->start();
 
   //TODO plugins?
   IMessaging* udp = ant_new UdpMessaging();

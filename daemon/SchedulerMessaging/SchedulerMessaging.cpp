@@ -29,7 +29,7 @@ SchedulerMessaging::~SchedulerMessaging()
 void SchedulerMessaging::setDaemon(IDaemon* daemon)
 {
   m_daemon = daemon;
-  m_daemon->registerMessaging(*this);
+  //m_daemon->registerMessaging(*this);
 }
 
 void SchedulerMessaging::start()
@@ -182,13 +182,13 @@ int SchedulerMessaging::handleScheduledRecord(const ScheduleRecord& record)
     }
   }
 
-  //sendMessageToMq(os.str());
   {
-    std::lock_guard<std::mutex> lck(m_responseHandlersMutex);
-    auto found = m_responseHandlers.find(record.getClientId());
-    if (found != m_responseHandlers.end()) {
+    std::lock_guard<std::mutex> lck(m_messageHandlersMutex);
+    auto found = m_messageHandlers.find(record.getClientId());
+    if (found != m_messageHandlers.end()) {
       TRC_DBG(NAME_PAR(Response, os.str()) << " has been passed to: " << NAME_PAR(ClinetId, record.getClientId()));
-      found->second(os.str());
+      ustring msgu((unsigned char*)os.str().data(), os.str().size());
+      found->second(msgu);
       TRC_DBG(NAME_PAR(Response, os.str()) << " has been processed by: " << NAME_PAR(ClinetId, record.getClientId()));
     }
     else {
@@ -301,17 +301,17 @@ void SchedulerMessaging::makeCommand(const std::string& clientId, const std::str
 {
 }
 
-void SchedulerMessaging::registerResponseHandler(const std::string& clientId, ResponseHandlerFunc fun)
+void SchedulerMessaging::registerResponseHandler(const std::string& clientId, MessageHandlerFunc fun)
 {
-  std::lock_guard<std::mutex> lck(m_responseHandlersMutex);
+  std::lock_guard<std::mutex> lck(m_messageHandlersMutex);
   //TODO check success
-  m_responseHandlers.insert(make_pair(clientId, fun));
+  m_messageHandlers.insert(make_pair(clientId, fun));
 }
 
 void SchedulerMessaging::unregisterResponseHandler(const std::string& clientId)
 {
-  std::lock_guard<std::mutex> lck(m_responseHandlersMutex);
-  m_responseHandlers.erase(clientId);
+  std::lock_guard<std::mutex> lck(m_messageHandlersMutex);
+  m_messageHandlers.erase(clientId);
 }
 
 /////////////////////////////////////////
