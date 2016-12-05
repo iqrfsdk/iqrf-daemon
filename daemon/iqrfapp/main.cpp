@@ -1,5 +1,4 @@
 #include "MqChannel.h"
-#include "DpaTask.h"
 #include "PlatformDep.h"
 #include "IqrfLogging.h"
 
@@ -15,27 +14,27 @@ int handleMessageFromMq(const ustring& message)
 
 int main(int argc, char** argv)
 {
-  int addrNum = -1;
-  std::string device;
-  std::string addrStr;
+  std::string command;
   bool cmdl = false;
 
   if (argc == 1) {
     cmdl = true;
   }
-  else if (argc != 3 ) {
+  else if (argc < 4 ) {
     std::cerr << "Usage" << std::endl;
-    std::cerr << "  iqrfapp [temp <num>]" << std::endl << std::endl;
+    std::cerr << "  iqrfapp [<perif> <num> <command>]" << std::endl << std::endl;
     std::cerr << "Example" << std::endl;
     std::cerr << "  iqrfapp" << std::endl;
-    std::cerr << "  iqrfapp temp 1" << std::endl;
-    std::cerr << "  iqrfapp pulseG 1" << std::endl;
-    std::cerr << "  iqrfapp pulseR 1" << std::endl;
+    std::cerr << "  iqrfapp Thermometer 1 READ" << std::endl;
+    std::cerr << "  iqrfapp LedG 0 PULSE" << std::endl;
+    std::cerr << "  iqrfapp LedR 1 PULSE" << std::endl;
     exit (-1);
   }
   else {
-    device = argv[1];
-    addrStr = argv[2];
+    std::ostringstream os;
+    for (int i = 1; i < argc; i++)
+      os << argv[i] << " ";
+    command = os.str();
   }
 
   MqChannel* mqChannel = ant_new MqChannel("iqrf-daemon-110", "iqrf-daemon-100", 1024);
@@ -48,35 +47,14 @@ int main(int argc, char** argv)
   while (run)
   {
     if (cmdl) {
-      addrNum = -1;
-      std::string command;
       std::cout << std::endl << ">> ";
-      device = "";
-      addrStr = "";
-
       getline(std::cin, command);
-
-      std::istringstream iscmd(command);
-      iscmd >> device >> addrStr;
     }
 
-    std::istringstream is(addrStr);
-    is >> addrNum;
-    if (addrNum < 0) {
-      std::cerr << "invalid address: " << addrStr;
-      if (cmdl)
-        continue;
-      else
-        break;
-    }
-
-    std::ostringstream os;
-    os << device << " " << addrNum;
-    std::string msgStr(os.str());
-    ustring msg((unsigned char*)msgStr.data(), msgStr.size());
+    ustring msgu((unsigned char*)command.data(), command.size());
 
     try {
-      mqChannel->sendTo(msg);
+      mqChannel->sendTo(msgu);
     }
     catch (std::exception& e) {
       TRC_DBG("sendTo failed: " << e.what());
