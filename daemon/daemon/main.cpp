@@ -141,6 +141,6 @@ int main(int argc, char** argv)
 
   TRC_DBG("deleting msgCtrl");
   delete msgCtrl;
-
+  
   TRC_ENTER("finished");
 }

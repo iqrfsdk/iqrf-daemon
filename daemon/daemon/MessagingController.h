@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ISerializer.h"
+#include "IMessaging.h"
 #include "IClient.h"
 #include "TaskQueue.h"
 #include "IDaemon.h"
@@ -45,6 +47,8 @@ private:
   std::set<IMessaging*> m_protocols;
   
   std::map<std::string, IClient*> m_clients;
+  std::vector<ISerializer*> m_serializers;
+  std::vector<IMessaging*> m_messagings;
 
   IScheduler* m_scheduler;
   std::function<void(const DpaMessage&)> m_asyncHandler;

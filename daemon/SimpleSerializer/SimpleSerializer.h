@@ -53,6 +53,7 @@ typedef PrfLedSimple<PrfLedR> PrfLedRSimple;
 class DpaTaskSimpleSerializerFactory : public ObjectFactory<DpaTask, std::istream>, public ISerializer
 {
 public:
+  virtual ~DpaTaskSimpleSerializerFactory() {}
   DpaTaskSimpleSerializerFactory();
 
   std::unique_ptr<DpaTask> parseRequest(const std::string& request) override;

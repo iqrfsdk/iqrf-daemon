@@ -10,7 +10,6 @@
 //TODO temporary here
 #include "IMessaging.h"
 #include "UdpMessaging.h"
-//#include "MqMessaging.h"
 #include "IqrfappMqMessaging.h"
 #include "MqttMessaging.h"
 #include "SchedulerMessaging.h"
@@ -107,6 +106,7 @@ void MessagingController::startClients()
 {
   TRC_ENTER("");
 
+  
   ////////// TestClient1 //////////////////////////////////
   //TODO load clients plugins
   IClient* client1 = ant_new TestClient("TestClient1");
@@ -115,31 +115,35 @@ void MessagingController::startClients()
  
   //TODO load Messaging plugin
   MqttMessaging* messaging = ant_new MqttMessaging();
-  messaging->start();
   client1->setMessaging(messaging);
+  m_messagings.push_back(messaging);
 
   //TODO load Serializer plugin
   DpaTaskSimpleSerializerFactory* serializer = ant_new DpaTaskSimpleSerializerFactory();
   client1->setSerializer(serializer);
-
-  ////////// TestClient2 //////////////////////////////////
+  m_serializers.push_back(serializer);
+  
+  //////// TestClient2 //////////////////////////////////
   //TODO load clients plugins
   IClient* client2 = ant_new TestClient("TestClient2");
   client2->setDaemon(this);
   m_clients.insert(std::make_pair(client2->getClientName(), client2));
 
   //TODO load Messaging plugin
-  //MqttMessaging* messaging = ant_new MqttMessaging();
-  //messaging->start();
   client2->setMessaging(messaging);
 
   //TODO load Serializer plugin
   DpaTaskJsonSerializerFactory* serializer2 = ant_new DpaTaskJsonSerializerFactory();
   client2->setSerializer(serializer2);
-
+  m_serializers.push_back(serializer2);
+  
   /////////////////////
   for (auto cli : m_clients) {
     cli.second->start();
+  }
+
+  for (auto ms : m_messagings) {
+    ms->start();
   }
 
   TRC_LEAVE("");
@@ -153,6 +157,18 @@ void MessagingController::stopClients()
     delete cli.second;
   }
   m_clients.clear();
+
+  for (auto ms : m_messagings) {
+    ms->stop();
+    delete ms;
+  }
+  m_messagings.clear();
+
+  for (auto sr : m_serializers) {
+    delete sr;
+  }
+  m_serializers.clear();
+
   TRC_LEAVE("");
 }
 
@@ -181,7 +197,6 @@ void MessagingController::start()
 
   m_scheduler = ant_new SchedulerMessaging();
 
-  //startProtocols();
   startClients();
 
   m_scheduler->start();
@@ -195,7 +210,8 @@ void MessagingController::stop()
   TRC_ENTER("");
   std::cout << "daemon stops" << std::endl;
   
-  //stopProtocols();
+  m_scheduler->stop();
+
   stopClients();
 
   delete m_scheduler;

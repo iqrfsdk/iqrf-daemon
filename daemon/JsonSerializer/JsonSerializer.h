@@ -62,6 +62,7 @@ typedef PrfLedJson<PrfLedR> PrfLedRJson;
 class DpaTaskJsonSerializerFactory : public ObjectFactory<DpaTask, rapidjson::Value>, public ISerializer
 {
 public:
+  virtual ~DpaTaskJsonSerializerFactory() {}
   DpaTaskJsonSerializerFactory();
 
   std::unique_ptr<DpaTask> parseRequest(const std::string& request) override;

@@ -8,6 +8,7 @@
 class ISerializer
 {
 public:
+  virtual ~ISerializer() {}
   virtual std::unique_ptr<DpaTask> parseRequest(const std::string& request) = 0;
   virtual std::string getLastError() const = 0;
 };
