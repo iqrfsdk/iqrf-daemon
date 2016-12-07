@@ -6,7 +6,7 @@ TRC_INIT("");
 
 int handleMessageFromMq(const ustring& message)
 {
-  TRC_WAR("Received from MQ: " << std::endl << FORM_HEX(message.data(), message.size()));
+  TRC_DBG("Received from MQ: " << std::endl << FORM_HEX(message.data(), message.size()));
   std::string msg((char*)message.data(), message.size());
   std::cout << msg << std::endl;
   return 0;

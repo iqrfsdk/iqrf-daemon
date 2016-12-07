@@ -47,7 +47,9 @@ std::string PrfRawSimple::encodeResponse(const std::string& errStr) const
   std::ostringstream ostr;
   int len = m_response.Length();
   TRC_DBG(PAR(len));
-  ostr << iqrf::TracerHexString((unsigned char*)m_response.DpaPacket().Buffer, m_response.Length(), true);
+  ostr << getPrfName() << " " <<
+    iqrf::TracerHexString((unsigned char*)m_response.DpaPacket().Buffer, m_response.Length(), true) <<
+    " " << errStr;
   return ostr.str();
 }
 
