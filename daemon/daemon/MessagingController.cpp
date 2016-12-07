@@ -10,7 +10,7 @@
 //TODO temporary here
 #include "IMessaging.h"
 #include "UdpMessaging.h"
-#include "IqrfappMqMessaging.h"
+#include "MqMessaging.h"
 #include "MqttMessaging.h"
 #include "SchedulerMessaging.h"
 
@@ -107,36 +107,42 @@ void MessagingController::startClients()
   TRC_ENTER("");
 
   
-  ////////// TestClient1 //////////////////////////////////
+  ///////// Messagings ///////////////////////////////////
+  //TODO load Messagings plugins
+  MqttMessaging* mqttMessaging = ant_new MqttMessaging();
+  m_messagings.push_back(mqttMessaging);
+
+  MqMessaging* mqMessaging = ant_new MqMessaging();
+  m_messagings.push_back(mqMessaging);
+
+  ///////// Serializers ///////////////////////////////////
+  //TODO load Serializers plugins
+  DpaTaskSimpleSerializerFactory* simpleSerializer = ant_new DpaTaskSimpleSerializerFactory();
+  m_serializers.push_back(simpleSerializer);
+
+  DpaTaskJsonSerializerFactory* jsonSerializer = ant_new DpaTaskJsonSerializerFactory();
+  m_serializers.push_back(jsonSerializer);
+
+  //////// Clients //////////////////////////////////
   //TODO load clients plugins
   IClient* client1 = ant_new TestClient("TestClient1");
   client1->setDaemon(this);
+  client1->setMessaging(mqttMessaging);
+  client1->setSerializer(simpleSerializer);
   m_clients.insert(std::make_pair(client1->getClientName(), client1));
  
-  //TODO load Messaging plugin
-  MqttMessaging* messaging = ant_new MqttMessaging();
-  client1->setMessaging(messaging);
-  m_messagings.push_back(messaging);
-
-  //TODO load Serializer plugin
-  DpaTaskSimpleSerializerFactory* serializer = ant_new DpaTaskSimpleSerializerFactory();
-  client1->setSerializer(serializer);
-  m_serializers.push_back(serializer);
-  
-  //////// TestClient2 //////////////////////////////////
-  //TODO load clients plugins
   IClient* client2 = ant_new TestClient("TestClient2");
   client2->setDaemon(this);
+  client2->setMessaging(mqttMessaging);
+  client2->setSerializer(jsonSerializer);
   m_clients.insert(std::make_pair(client2->getClientName(), client2));
 
-  //TODO load Messaging plugin
-  client2->setMessaging(messaging);
+  IClient* clientIqrfapp = ant_new TestClient("TestClientIqrfapp");
+  clientIqrfapp->setDaemon(this);
+  clientIqrfapp->setMessaging(mqMessaging);
+  clientIqrfapp->setSerializer(simpleSerializer);
+  m_clients.insert(std::make_pair(clientIqrfapp->getClientName(), clientIqrfapp));
 
-  //TODO load Serializer plugin
-  DpaTaskJsonSerializerFactory* serializer2 = ant_new DpaTaskJsonSerializerFactory();
-  client2->setSerializer(serializer2);
-  m_serializers.push_back(serializer2);
-  
   /////////////////////
   for (auto cli : m_clients) {
     cli.second->start();

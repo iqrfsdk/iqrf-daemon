@@ -1,34 +1,15 @@
 #pragma once
 
 #include "TaskQueue.h"
-#include "DpaTransaction.h"
-#include "MqChannel.h"
-#include "IDaemon.h"
 #include "IMessaging.h"
 #include <string>
-#include <atomic>
+
+class IDaemon;
+class MqChannel;
 
 typedef std::basic_string<unsigned char> ustring;
 
-class MqMessaging;
-
-class MqMessagingTransaction : public DpaTransaction
-{
-public:
-  MqMessagingTransaction(MqMessaging* mqMessaging);
-  virtual ~MqMessagingTransaction();
-  virtual const DpaMessage& getMessage() const;
-  virtual void processConfirmationMessage(const DpaMessage& confirmation);
-  virtual void processResponseMessage(const DpaMessage& response);
-  virtual void processFinish(DpaRequest::DpaRequestStatus status);
-  void setMessage(ustring message);
-private:
-  DpaMessage m_message;
-  MqMessaging* m_mqMessaging;
-  bool m_success;
-};
-
-class MqMessaging: public IMessaging
+class MqMessaging : public IMessaging
 {
 public:
   MqMessaging();
@@ -38,20 +19,19 @@ public:
   virtual void start();
   virtual void stop();
 
-  void sendDpaMessageToMq(const DpaMessage&  dpaMessage);
-
-  int handleMessageFromMq(const ustring& mqMessage);
+  void registerMessageHandler(MessageHandlerFunc hndl) override;
+  void unregisterMessageHandler() override;
+  void sendMessage(const ustring& msg) override;
 
 private:
-  IDaemon *m_daemon;
-  MqMessagingTransaction* m_transaction;
+  int handleMessageFromMq(const ustring& mqMessage);
 
-  MqChannel *m_mqChannel;
-  TaskQueue<ustring> *m_toMqMessageQueue;
+  IDaemon* m_daemon;
+  MqChannel* m_mqChannel;
+  TaskQueue<ustring>* m_toMqMessageQueue;
 
   std::string m_localMqName;
   std::string m_remoteMqName;
 
-  std::atomic_bool m_running;
-
+  IMessaging::MessageHandlerFunc m_messageHandlerFunc;
 };

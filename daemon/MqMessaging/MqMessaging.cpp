@@ -1,39 +1,9 @@
-#include "DpaTask.h"
-#include "DpaMessage.h"
 #include "MqMessaging.h"
+#include "MqChannel.h"
+#include "IDaemon.h"
 #include "IqrfLogging.h"
-#include "PlatformDep.h"
-#include <climits>
-#include <ctime>
-#include <ratio>
-#include <chrono>
 
 const unsigned IQRF_MQ_BUFFER_SIZE = 1024;
-
-void MqMessaging::sendDpaMessageToMq(const DpaMessage&  dpaMessage)
-{
-  ustring message(dpaMessage.DpaPacketData(), dpaMessage.Length());
-  TRC_DBG(FORM_HEX(message.data(), message.size()));
-  
-  m_toMqMessageQueue->pushToQueue(message);
-}
-
-void MqMessaging::setDaemon(IDaemon* daemon)
-{
-  m_daemon = daemon;
-  m_daemon->registerMessaging(*this);
-}
-
-int MqMessaging::handleMessageFromMq(const ustring& mqMessage)
-{
-  TRC_DBG("==================================" << std::endl <<
-    "Received from MQ: " << std::endl << FORM_HEX(mqMessage.data(), mqMessage.size()));
-
-  m_transaction->setMessage(mqMessage);
-  m_daemon->executeDpaTransaction(*m_transaction);
-
-  return 0;
-}
 
 MqMessaging::MqMessaging()
   :m_daemon(nullptr)
@@ -48,11 +18,17 @@ MqMessaging::~MqMessaging()
 {
 }
 
+void MqMessaging::setDaemon(IDaemon* daemon)
+{
+  m_daemon = daemon;
+  m_daemon->registerMessaging(*this);
+}
+
 void MqMessaging::start()
 {
   TRC_ENTER("");
 
-  m_mqChannel = ant_new MqChannel(m_remoteMqName, m_localMqName, IQRF_MQ_BUFFER_SIZE);
+  m_mqChannel = ant_new MqChannel(m_remoteMqName, m_localMqName, IQRF_MQ_BUFFER_SIZE, true);
 
   m_toMqMessageQueue = ant_new TaskQueue<ustring>([&](const ustring& msg) {
     m_mqChannel->sendTo(msg);
@@ -60,8 +36,6 @@ void MqMessaging::start()
 
   m_mqChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) -> int {
     return handleMessageFromMq(msg); });
-
-  m_transaction = ant_new MqMessagingTransaction(this);
 
   std::cout << "daemon-MQ-protocol started" << std::endl;
 
@@ -71,44 +45,35 @@ void MqMessaging::start()
 void MqMessaging::stop()
 {
   TRC_ENTER("");
-  std::cout << "udp-daemon-protocol stops" << std::endl;
-  delete m_transaction;
   delete m_mqChannel;
   delete m_toMqMessageQueue;
+  std::cout << "daemon-MQ-protocol stopped" << std::endl;
   TRC_LEAVE("");
 }
 
-////////////////////////////////////
-MqMessagingTransaction::MqMessagingTransaction(MqMessaging* mqMessaging)
-  :m_mqMessaging(mqMessaging)
+void MqMessaging::registerMessageHandler(MessageHandlerFunc hndl)
 {
+  m_messageHandlerFunc = hndl;
 }
 
-MqMessagingTransaction::~MqMessagingTransaction()
+void MqMessaging::unregisterMessageHandler()
 {
+  m_messageHandlerFunc = IMessaging::MessageHandlerFunc();
 }
 
-const DpaMessage& MqMessagingTransaction::getMessage() const
+void MqMessaging::sendMessage(const ustring& msg)
 {
-  return m_message;
+  TRC_DBG(FORM_HEX(msg.data(), msg.size()));
+  m_toMqMessageQueue->pushToQueue(msg);
 }
 
-void MqMessagingTransaction::processConfirmationMessage(const DpaMessage& confirmation)
+int MqMessaging::handleMessageFromMq(const ustring& mqMessage)
 {
-  m_mqMessaging->sendDpaMessageToMq(confirmation);
-}
+  TRC_DBG("==================================" << std::endl <<
+    "Received from MQ: " << std::endl << FORM_HEX(mqMessage.data(), mqMessage.size()));
 
-void MqMessagingTransaction::processResponseMessage(const DpaMessage& response)
-{
-  m_mqMessaging->sendDpaMessageToMq(response);
-}
+  if (m_messageHandlerFunc)
+    m_messageHandlerFunc(mqMessage);
 
-void MqMessagingTransaction::processFinish(DpaRequest::DpaRequestStatus status)
-{
-  m_success = this->isProcessed(status);
-}
-
-void MqMessagingTransaction::setMessage(ustring message)
-{
-  m_message.DataToBuffer(message.data(), message.length());
+  return 0;
 }
