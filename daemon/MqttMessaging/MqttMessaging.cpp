@@ -35,7 +35,7 @@ public:
     m_messageHandlerFunc = IMessaging::MessageHandlerFunc();
   }
 
-  void Impl::sendMessage(const ustring& msg) {
+  void sendMessage(const ustring& msg) {
     m_toMqttMessageQueue->pushToQueue(msg);
   }
 
