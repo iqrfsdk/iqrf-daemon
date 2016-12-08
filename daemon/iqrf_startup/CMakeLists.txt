@@ -1,16 +1,14 @@
-project(daemon)
+project(iqrf_startup)
 
 FIND_PACKAGE(clibcdc REQUIRED)
 FIND_PACKAGE(clibspi REQUIRED)
 FIND_PACKAGE(clibdpa REQUIRED)
 
-set(daemon_SRC_FILES
+set(iqrf_startup_SRC_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/MessagingController.cpp
 )
 
-set(daemon_INC_FILES
-	${CMAKE_CURRENT_SOURCE_DIR}/MessagingController.h
+set(iqrf_startup_INC_FILES
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -27,19 +25,57 @@ include_directories(${CMAKE_SOURCE_DIR}/SimpleSerializer)
 include_directories(${CMAKE_SOURCE_DIR}/JsonSerializer)
 include_directories(${CMAKE_SOURCE_DIR}/JsonSerializer/include)
 include_directories(${CMAKE_SOURCE_DIR}/TestClient)
+include_directories(${CMAKE_SOURCE_DIR}/MessagingController)
 include_directories(${clibcdc_INCLUDE_DIRS})
 include_directories(${clibspi_INCLUDE_DIRS})
 include_directories(${clibdpa_INCLUDE_DIRS})
 include_directories(${PAHO_INCLUDE_DIRS})
 
-add_executable(${PROJECT_NAME} ${daemon_SRC_FILES} ${daemon_INC_FILES})
+add_executable(${PROJECT_NAME} ${iqrf_startup_SRC_FILES} ${iqrf_startup_INC_FILES})
 
 if (WIN32) 
- 	target_link_libraries(${PROJECT_NAME} TestClient JsonSerializer SimpleSerializer SchedulerMessaging MqttMessaging ${PAHO_LIBRARIES} MqMessaging DpaExtension
-		MqChannel IqrfCdcChannel IqrfSpiChannel dpa UdpMessaging UdpChannel cdc spi_iqrf sysfs_gpio Ws2_32)
+ 	target_link_libraries(${PROJECT_NAME}
+	MessagingController
+	TestClient
+	JsonSerializer
+	SimpleSerializer
+	SchedulerMessaging
+	MqttMessaging
+	${PAHO_LIBRARIES}
+	MqMessaging
+	DpaExtension
+	MqChannel
+	IqrfCdcChannel
+	IqrfSpiChannel
+	dpa
+	UdpMessaging
+	UdpChannel
+	cdc
+	spi_iqrf
+	sysfs_gpio
+	Ws2_32
+	)
 else()
-	target_link_libraries(${PROJECT_NAME} TestClient JsonSerializer SimpleSerializer SchedulerMessaging MqttMessaging ${PAHO_LIBRARIES} MqMessaging DpaExtension
-		MqChannel IqrfCdcChannel IqrfSpiChannel dpa UdpMessaging UdpChannel cdc spi_iqrf sysfs_gpio pthread rt)
+	target_link_libraries(${PROJECT_NAME}
+	MessagingController
+	TestClient
+	JsonSerializer
+	SimpleSerializer
+	SchedulerMessaging
+	MqttMessaging
+	${PAHO_LIBRARIES}
+	MqMessaging
+	DpaExtension
+	MqChannel
+	IqrfCdcChannel
+	IqrfSpiChannel
+	dpa
+	UdpMessaging
+	UdpChannel
+	cdc
+	spi_iqrf
+	sysfs_gpio
+	pthread
+	rt
+	)
 endif()
-
-#install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/sbin)
