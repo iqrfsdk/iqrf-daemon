@@ -13,7 +13,8 @@
 #include <dlfcn.h>
 #endif
 
-TRC_INIT("iqrf_startup_bg.log");
+//TRC_INIT("iqrf_startup_bg.log");
+TRC_INIT("");
 
 std::unique_ptr<MessagingController> msgCtrl;
 

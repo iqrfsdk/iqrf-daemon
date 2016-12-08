@@ -6,13 +6,18 @@
 #include <iomanip>
 #include <mutex>
 
-//TODO more detailed comments ;-)
-
 //initialize tracing
-#define TRC_INIT(stream) \
+//if stream == "" => tracing to std::cout else stream value is taken as the trace file name
+//if the file exceeds the filesize, the file is reset and overwritten by next trace outputs
+
+#define TRC_INIT_FILE_MAXSIZE(stream, filesize) \
 namespace iqrf { \
-  Tracer& Tracer::getTracer() { static Tracer tracer(stream); return tracer; }\
+  Tracer& Tracer::getTracer() { static Tracer tracer(stream, filesize); return tracer; }\
   static Tracer& iqrfTracer(Tracer::getTracer()); }
+
+static const long TRC_DEFAULT_FILE_MAXSIZE(10 * 1024 * 1024);
+
+#define TRC_INIT(stream) TRC_INIT_FILE_MAXSIZE(stream, TRC_DEFAULT_FILE_MAXSIZE)
 
 //convenient trace macros
 #ifdef _DEBUG
@@ -143,23 +148,54 @@ namespace iqrf {
     void write(const std::string& msg)
     {
       std::lock_guard<std::recursive_mutex> lck(m_mtx);
-      if (m_ofstream.is_open())
-        m_ofstream << msg;
-      else
+
+      if (m_cout)
         std::cout << msg;
+      else {
+        if (m_ofstream.is_open()) {
+          m_ofstream << msg;
+          if (m_ofstream.tellp() > m_maxSize)
+          {
+            resetFile();
+          }
+        }
+      }
     }
 
     static Tracer& getTracer();
 
   private:
-    Tracer(const std::string& fname)
+    Tracer(const std::string& fname, long maxSize)
       :m_fname(fname)
+      ,m_cout(fname.empty())
+      ,m_maxSize(maxSize)
     {
-      if (!m_fname.empty()) {
-        m_ofstream.open(m_fname);
+      if (!m_fname.empty())
+        openFile();
+    }
+
+    void openFile()
+    {
+      static unsigned count = 0;
+      if (!m_ofstream.is_open())
+      {
+        m_ofstream.open(m_fname, std::ofstream::out | std::ofstream::trunc);
         if (!m_ofstream.is_open())
           std::cerr << std::endl << "Cannot open: " << PAR(m_fname) << std::endl;
+        m_ofstream << "file: " << count++ << " opened/reset" << std::endl;
       }
+    }
+
+    void closeFile()
+    {
+      m_ofstream.flush();
+      m_ofstream.close();
+    }
+
+    void resetFile()
+    {
+      closeFile();
+      openFile();
     }
 
     Tracer & operator = (const Tracer& t);
@@ -168,6 +204,8 @@ namespace iqrf {
     std::recursive_mutex m_mtx;
     std::string m_fname;
     std::ofstream m_ofstream;
+    bool m_cout;
+    long m_maxSize;
   };
 
   class TracerHexString
