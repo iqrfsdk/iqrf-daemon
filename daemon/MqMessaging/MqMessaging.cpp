@@ -37,7 +37,7 @@ void MqMessaging::start()
   m_mqChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) -> int {
     return handleMessageFromMq(msg); });
 
-  std::cout << "daemon-MQ-protocol started" << std::endl;
+  TRC_INF("daemon-MQ-protocol started");
 
   TRC_LEAVE("");
 }
@@ -47,7 +47,7 @@ void MqMessaging::stop()
   TRC_ENTER("");
   delete m_mqChannel;
   delete m_toMqMessageQueue;
-  std::cout << "daemon-MQ-protocol stopped" << std::endl;
+  TRC_INF("daemon-MQ-protocol stopped");
   TRC_LEAVE("");
 }
 

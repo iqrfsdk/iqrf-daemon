@@ -13,7 +13,7 @@
 #include <dlfcn.h>
 #endif
 
-TRC_INIT("");
+TRC_INIT("iqrf_startup_bg.log");
 
 std::unique_ptr<MessagingController> msgCtrl;
 
@@ -66,6 +66,7 @@ int main(int argc, char** argv)
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
   TRC_ENTER("started");
+  std::cout << "iqrf_startup_bg started ..." << std::endl;
 
   std::string iqrf_port_name;
 
@@ -96,11 +97,11 @@ int main(int argc, char** argv)
 
   if (argc < 2) {
     std::cerr << "Usage" << std::endl;
-    std::cerr << "  daemon <iqrf_port_name>" << std::endl << std::endl;
+    std::cerr << "  iqrf_startup <iqrf_interface>" << std::endl << std::endl;
     std::cerr << "Example" << std::endl;
-    std::cerr << "  daemon COM5" << std::endl;
-    std::cerr << "  daemon /dev/ttyACM0" << std::endl;
-    std::cerr << "  daemon /dev/spidev0.0" << std::endl;
+    std::cerr << "  iqrf_startup COM5" << std::endl;
+    std::cerr << "  iqrf_startup /dev/ttyACM0" << std::endl;
+    std::cerr << "  iqrf_startup /dev/spidev0.0" << std::endl;
     return (-1);
   }
   else {
@@ -112,5 +113,7 @@ int main(int argc, char** argv)
   msgCtrl = std::unique_ptr<MessagingController>(ant_new MessagingController(iqrf_port_name));
   msgCtrl->watchDog();
 
-  TRC_ENTER("finished");
+  TRC_LEAVE("finished");
+  std::cout << "... iqrf_startup_bg finished" << std::endl;
+
 }

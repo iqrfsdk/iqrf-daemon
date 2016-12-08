@@ -41,7 +41,7 @@ void TestClient::start()
     handleMsgFromMessaging(msg);
   });
 
-  std::cout << "TestClient started" << std::endl;
+  TRC_INF("TestClient started");
 
   TRC_LEAVE("");
 }
@@ -50,7 +50,7 @@ void TestClient::stop()
 {
   TRC_ENTER("");
 
-  std::cout << "TestClient stopped" << std::endl;
+  TRC_INF("TestClient stopped");
   TRC_LEAVE("");
 }
 

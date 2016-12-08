@@ -194,7 +194,7 @@ void MessagingController::start()
     m_dpaHandler->Timeout(100);    // Default timeout is infinite
   }
   catch (std::exception& ae) {
-    std::cout << "There was an error during DPA handler creation: " << ae.what() << std::endl;
+    TRC_ERR("There was an error during DPA handler creation: " << ae.what());
   }
 
   m_dpaTransactionQueue = ant_new TaskQueue<DpaTransaction*>([&](DpaTransaction* trans) {
@@ -207,14 +207,14 @@ void MessagingController::start()
 
   m_scheduler->start();
 
-  std::cout << "daemon started" << std::endl;
+  TRC_INF("daemon started");
   TRC_LEAVE("");
 }
 
 void MessagingController::stop()
 {
   TRC_ENTER("");
-  std::cout << "daemon stops" << std::endl;
+  TRC_INF("daemon stops");
   
   m_scheduler->stop();
 
@@ -232,7 +232,6 @@ void MessagingController::stop()
 
 void MessagingController::exit()
 {
-  TRC_WAR("exiting ...");
-  std::cout << "daemon exits" << std::endl;
+  TRC_INF("exiting ...");
   m_running = false;
 }

@@ -74,7 +74,7 @@ void SchedulerMessaging::start()
   m_runTimerThread = true;
   m_timerThread = std::thread(&SchedulerMessaging::timer, this);
 
-  std::cout << "Scheduler started" << std::endl;
+  TRC_INF("Scheduler started");
 
   TRC_LEAVE("");
 }
@@ -94,7 +94,7 @@ void SchedulerMessaging::stop()
 
   delete m_dpaTaskQueue;
 
-  std::cout << "Scheduler stopped" << std::endl;
+  TRC_INF("Scheduler stopped");
   TRC_LEAVE("");
 }
 
@@ -189,7 +189,7 @@ void SchedulerMessaging::timer()
       if (begin->first < timePoint) {
         
         // fire
-        std::cout << "Task fired at: " << ScheduleRecord::asString(timePoint) << std::endl;
+    	TRC_INF("Task fired at: " << ScheduleRecord::asString(timePoint));
         m_dpaTaskQueue->pushToQueue(*record); //copy record
 
         // erase fired

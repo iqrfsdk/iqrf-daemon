@@ -222,7 +222,7 @@ void UdpMessaging::start()
 
   m_transaction = ant_new UdpMessagingTransaction(this);
 
-  std::cout << "daemon-UDP-protocol started" << std::endl;
+  TRC_INF("daemon-UDP-protocol started");
 
   TRC_LEAVE("");
 }
@@ -230,7 +230,7 @@ void UdpMessaging::start()
 void UdpMessaging::stop()
 {
   TRC_ENTER("");
-  std::cout << "udp-daemon-protocol stops" << std::endl;
+  TRC_INF("udp-daemon-protocol stops");
   delete m_transaction;
   delete m_udpChannel;
   delete m_toUdpMessageQueue;
