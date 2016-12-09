@@ -11,10 +11,12 @@
 #include <Windows.h>
 #else
 #include <dlfcn.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #endif
 
-//TRC_INIT("iqrf_startup_bg.log");
-TRC_INIT("");
+TRC_INIT("iqrf_startup_bg.log");
 
 std::unique_ptr<MessagingController> msgCtrl;
 
@@ -65,6 +67,33 @@ int main(int argc, char** argv)
 {
 #if defined(WIN) && defined(_DEBUG)
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#else
+  pid_t pid, sid;
+
+  //Fork the Parent Process
+  pid = fork();
+
+  if (pid < 0) { exit(EXIT_FAILURE); }
+
+  //We got a good pid, Close the Parent Process
+  if (pid > 0) { exit(EXIT_SUCCESS); }
+
+  //Change File Mask
+  umask(0);
+
+  //Create a new Signature Id for our child
+  sid = setsid();
+  if (sid < 0) { exit(EXIT_FAILURE); }
+
+  //Change Directory
+  //If we cant find the directory we exit with failure.
+  if ((chdir("/tmp")) < 0) { exit(EXIT_FAILURE); }
+
+  //Close Standard File Descriptors
+  close(STDIN_FILENO);
+  close(STDOUT_FILENO);
+  close(STDERR_FILENO);
+
 #endif
   TRC_ENTER("started");
   std::cout << "iqrf_startup_bg started ..." << std::endl;
@@ -96,19 +125,20 @@ int main(int argc, char** argv)
   }
 #endif
 
-  if (argc < 2) {
-    std::cerr << "Usage" << std::endl;
-    std::cerr << "  iqrf_startup <iqrf_interface>" << std::endl << std::endl;
-    std::cerr << "Example" << std::endl;
-    std::cerr << "  iqrf_startup COM5" << std::endl;
-    std::cerr << "  iqrf_startup /dev/ttyACM0" << std::endl;
-    std::cerr << "  iqrf_startup /dev/spidev0.0" << std::endl;
-    return (-1);
-  }
-  else {
-    iqrf_port_name = argv[1];
-  }
+//  if (argc < 2) {
+//    std::cerr << "Usage" << std::endl;
+//    std::cerr << "  iqrf_startup <iqrf_interface>" << std::endl << std::endl;
+//    std::cerr << "Example" << std::endl;
+//    std::cerr << "  iqrf_startup COM5" << std::endl;
+//    std::cerr << "  iqrf_startup /dev/ttyACM0" << std::endl;
+//    std::cerr << "  iqrf_startup /dev/spidev0.0" << std::endl;
+//    return (-1);
+//  }
+//  else {
+//    iqrf_port_name = argv[1];
+//  }
 
+  iqrf_port_name = "/dev/ttyACM0";
   TRC_DBG(PAR(iqrf_port_name));
 
   msgCtrl = std::unique_ptr<MessagingController>(ant_new MessagingController(iqrf_port_name));

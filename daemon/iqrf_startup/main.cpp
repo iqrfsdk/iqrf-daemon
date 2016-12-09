@@ -96,11 +96,11 @@ int main(int argc, char** argv)
 
   if (argc < 2) {
     std::cerr << "Usage" << std::endl;
-    std::cerr << "  daemon <iqrf_port_name>" << std::endl << std::endl;
+    std::cerr << "  iqrf_startup <iqrf_interface>" << std::endl << std::endl;
     std::cerr << "Example" << std::endl;
-    std::cerr << "  daemon COM5" << std::endl;
-    std::cerr << "  daemon /dev/ttyACM0" << std::endl;
-    std::cerr << "  daemon /dev/spidev0.0" << std::endl;
+    std::cerr << "  iqrf_startup COM5" << std::endl;
+    std::cerr << "  iqrf_startup /dev/ttyACM0" << std::endl;
+    std::cerr << "  iqrf_startup /dev/spidev0.0" << std::endl;
     return (-1);
   }
   else {
