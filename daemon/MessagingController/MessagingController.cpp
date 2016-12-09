@@ -115,6 +115,10 @@ void MessagingController::startClients()
   MqMessaging* mqMessaging = ant_new MqMessaging();
   m_messagings.push_back(mqMessaging);
 
+  UdpMessaging* udpMessaging = ant_new UdpMessaging();
+  udpMessaging->setDaemon(this);
+  m_messagings.push_back(udpMessaging);
+
   ///////// Serializers ///////////////////////////////////
   //TODO load Serializers plugins
   DpaTaskSimpleSerializerFactory* simpleSerializer = ant_new DpaTaskSimpleSerializerFactory();
