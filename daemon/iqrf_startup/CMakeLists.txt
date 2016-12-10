@@ -79,3 +79,8 @@ else()
 	rt
 	)
 endif()
+
+INSTALL(TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib)
+

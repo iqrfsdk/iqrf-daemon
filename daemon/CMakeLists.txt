@@ -67,7 +67,6 @@ add_subdirectory(iqrfapp)
 add_subdirectory(TestClient)
 add_subdirectory(MessagingController)
 add_subdirectory(iqrf_startup)
-add_subdirectory(iqrf_startup_bg)
 
 # Configure config file.
 # This file specifies actions performed and variables exported when using find_package on this project.
