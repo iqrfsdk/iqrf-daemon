@@ -139,12 +139,18 @@ void Impl::start()
   MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
   int retval;
 
-  MQTTClient_create(&m_client, MQTT_BROKER_ADDRESS.c_str(), MQTT_CLIENTID.c_str(), MQTTCLIENT_PERSISTENCE_NONE, NULL);
+  if ((retval = MQTTClient_create(&m_client, MQTT_BROKER_ADDRESS.c_str(),
+    MQTT_CLIENTID.c_str(), MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS) {
+    THROW_EX(MqttChannelException, "MQTTClient_create() failed: " << PAR(retval));
+  }
+  
   conn_opts.keepAliveInterval = 20;
   conn_opts.cleansession = 1;
   conn_opts.connectTimeout = 5;
 
-  MQTTClient_setCallbacks(m_client, this, sconnlost, smsgarrvd, sdelivered);
+  if ((retval = MQTTClient_setCallbacks(m_client, this, sconnlost, smsgarrvd, sdelivered)) != MQTTCLIENT_SUCCESS) {
+    THROW_EX(MqttChannelException, "MQTTClient_setCallbacks() failed: " << PAR(retval));
+  }
 
   if ((retval = MQTTClient_connect(m_client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
     THROW_EX(MqttChannelException, "MQTTClient_connect() failed: " << PAR(retval));
