@@ -143,7 +143,7 @@ void Impl::start()
     MQTT_CLIENTID.c_str(), MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS) {
     THROW_EX(MqttChannelException, "MQTTClient_create() failed: " << PAR(retval));
   }
-  
+
   conn_opts.keepAliveInterval = 20;
   conn_opts.cleansession = 1;
   conn_opts.connectTimeout = 5;
@@ -152,11 +152,12 @@ void Impl::start()
     THROW_EX(MqttChannelException, "MQTTClient_setCallbacks() failed: " << PAR(retval));
   }
 
+  TRC_DBG("Connecting: " << PAR(MQTT_BROKER_ADDRESS) << PAR(MQTT_CLIENTID));
   if ((retval = MQTTClient_connect(m_client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
     THROW_EX(MqttChannelException, "MQTTClient_connect() failed: " << PAR(retval));
   }
 
-  TRC_DBG("Subscribing: " << PAR(MQTT_TOPIC_DPA_REQUEST) << PAR(MQTT_CLIENTID) << PAR(MQTT_QOS));
+  TRC_DBG("Subscribing: " << PAR(MQTT_TOPIC_DPA_REQUEST) << PAR(MQTT_QOS));
   if ((retval = MQTTClient_subscribe(m_client, MQTT_TOPIC_DPA_REQUEST.c_str(), MQTT_QOS)) != MQTTCLIENT_SUCCESS) {
     THROW_EX(MqttChannelException, "MQTTClient_subscribe() failed: " << PAR(retval));
   }
