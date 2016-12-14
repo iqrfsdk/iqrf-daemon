@@ -5,12 +5,16 @@
 # sudo service IQRF start/stop/status
 #
 # Tested on Raspberry PI 3, Raspbian Lite
+# Tested on AAEON UP, UbiLinux
 
 #BIN
 DAEMON_BIN=/usr/local/bin/iqrf_startup
 
-#SPI
-INTERFACE=/dev/spidev0.0
+#SPI RPI
+#INTERFACE=/dev/spidev0.0
+
+#SPI UP
+INTERFACE=/dev/spidev2.0
 
 #CDC
 #INTERFACE=/dev/ttyACM0
@@ -19,4 +23,6 @@ INTERFACE=/dev/spidev0.0
 if [ -s "${DAEMON_BIN}" ]; then
         echo "Running daemon ..."
         sudo ./daemonize.sh IQRF ${DAEMON_BIN} ${INTERFACE}
+else
+	echo "IQRF daemon binary is not installed yet!"
 fi
