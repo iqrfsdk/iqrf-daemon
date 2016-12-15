@@ -7,8 +7,7 @@
 #include <string.h>
 #include <atomic>
 
-const std::string MQTT_BROKER_ADDRESS("tcp://192.168.1.26:1883");
-//const std::string MQTT_BROKER_ADDRESS("tcp://192.168.1.27:1883");
+const std::string MQTT_BROKER_ADDRESS("tcp://localhost:1883");
 const std::string MQTT_CLIENTID("IqrfDpaMessaging");
 const std::string MQTT_TOPIC_DPA_REQUEST("Iqrf/DpaRequest");
 const std::string MQTT_TOPIC_DPA_RESPONSE("Iqrf/DpaResponse");

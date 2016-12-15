@@ -41,7 +41,7 @@ if (WIN32)
 	SimpleSerializer
 	SchedulerMessaging
 	MqttMessaging
-	${PAHO_LIBRARIES}
+	${PAHO_C_LIBRARY}
 	MqMessaging
 	DpaExtension
 	MqChannel
@@ -63,7 +63,7 @@ else()
 	SimpleSerializer
 	SchedulerMessaging
 	MqttMessaging
-	${PAHO_LIBRARIES}
+	${PAHO_C_LIBRARY}
 	MqMessaging
 	DpaExtension
 	MqChannel
