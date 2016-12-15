@@ -1,18 +1,18 @@
-#include "SchedulerMessaging.h"
+#include "Scheduler.h"
 #include "IqrfLogging.h"
 #include "PlatformDep.h"
 
 using namespace std::chrono;
 
-SchedulerMessaging::SchedulerMessaging()
+Scheduler::Scheduler()
 {
 }
 
-SchedulerMessaging::~SchedulerMessaging()
+Scheduler::~Scheduler()
 {
 }
 
-void SchedulerMessaging::start()
+void Scheduler::start()
 {
   TRC_ENTER("");
 
@@ -21,46 +21,41 @@ void SchedulerMessaging::start()
   });
 
   //sec mnt hrs day mon year dow
+  std::vector<std::string> temp = {
+    "00 * * * * * * ClientService LedR 0 PULSE",
+    "05 * * * * * * ClientService LedR 0 PULSE",
+    "10 * * * * * * ClientService LedG 0 PULSE",
+    "15 * * * * * * ClientService LedR 0 PULSE",
+    "20 * * * * * * ClientService LedG 0 PULSE",
+    "25 * * * * * * ClientService LedR 0 PULSE",
+    "30 * * * * * * ClientService LedG 0 PULSE",
+    "35 * * * * * * ClientService LedR 0 PULSE",
+    "40 * * * * * * ClientService LedG 0 PULSE",
+    "45 * * * * * * ClientService LedR 0 PULSE",
+    "50 * * * * * * ClientService LedG 0 PULSE",
+    "55 * * * * * * ClientService LedR 0 PULSE",
+  };
+
+  //    "0 * * * * * * mqtt {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+  
   //std::vector<std::string> temp = {
   //  "20 30 11 * * * 6",
-  //  "0 * * * * * * TestClient1 Thermometer 1 READ",
-  //  "5 * * * * * * TestClient1 LedR 0 PULSE",
-  //  "10 * * * * * * TestClient1 LedG 0 PULSE",
-  //  "15 * * * * * * TestClient1 LedR 0 PULSE",
-  //  "20 * * * * * * TestClient1 LedG 0 PULSE",
-  //  "25 * * * * * * TestClient1 LedR 0 PULSE",
-  //  "30 * * * * * * TestClient1 LedG 0 PULSE",
-  //  "35 * * * * * * TestClient1 LedR 0 PULSE",
-  //  "40 * * * * * * TestClient1 LedG 0 PULSE",
-  //  "45 * * * * * * TestClient1 LedR 0 PULSE",
-  //  "50 * * * * * * TestClient1 LedG 0 PULSE",
-  //  "55 * * * * * * TestClient1 LedR 0 PULSE",
-  //  "00 * * * * * * TestClient1 LedG 0 PULSE",
+  //  "0 * * * * * * TestClient1 LedR 0 PULSE",
+  //  "5 * * * * * * TestClient1 LedG 0 PULSE",
+  //  "10 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+  //  "15 * * * * * * TestClient2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+  //  "20 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
+  //  "25 * * * * * * TestClient1 Raw 00 00 07 03 ff ff",
+  //  "30 * * * * * * TestClient1 LedR 0 PULSE",
+  //  "35 * * * * * * TestClient1 LedG 0 PULSE",
+  //  "40 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+  //  "45 * * * * * * TestClient2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+  //  "50 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
+  //  "55 * * * * * * TestClient1 Raw 00 00 07 03 ff ff",
   //  "00 00 09 10 11 * *",
   //  "00 00 * * * * *",
   //  "00 00 00 * * * 1"
   //};
-
-  //    "0 * * * * * * mqtt {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
-  
-  std::vector<std::string> temp = {
-    "20 30 11 * * * 6",
-    "0 * * * * * * TestClient1 LedR 0 PULSE",
-    "5 * * * * * * TestClient1 LedG 0 PULSE",
-    "10 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "15 * * * * * * TestClient2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "20 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
-    "25 * * * * * * TestClient1 Raw 00 00 07 03 ff ff",
-    "30 * * * * * * TestClient1 LedR 0 PULSE",
-    "35 * * * * * * TestClient1 LedG 0 PULSE",
-    "40 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "45 * * * * * * TestClient2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "50 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
-    "55 * * * * * * TestClient1 Raw 00 00 07 03 ff ff",
-    "00 00 09 10 11 * *",
-    "00 00 * * * * *",
-    "00 00 00 * * * 1"
-  };
   
   std::vector<std::shared_ptr<ScheduleRecord>> tempRecords;
   int i = 0;
@@ -72,14 +67,14 @@ void SchedulerMessaging::start()
 
   m_scheduledTaskPushed = false;
   m_runTimerThread = true;
-  m_timerThread = std::thread(&SchedulerMessaging::timer, this);
+  m_timerThread = std::thread(&Scheduler::timer, this);
 
   TRC_INF("Scheduler started");
 
   TRC_LEAVE("");
 }
 
-void SchedulerMessaging::stop()
+void Scheduler::stop()
 {
   TRC_ENTER("");
   {
@@ -98,7 +93,7 @@ void SchedulerMessaging::stop()
   TRC_LEAVE("");
 }
 
-int SchedulerMessaging::handleScheduledRecord(const ScheduleRecord& record)
+int Scheduler::handleScheduledRecord(const ScheduleRecord& record)
 {
   TRC_DBG("==================================" << std::endl <<
     "Scheduled msg: " << std::endl << FORM_HEX(record.getTask().data(), record.getTask().size()));
@@ -119,7 +114,7 @@ int SchedulerMessaging::handleScheduledRecord(const ScheduleRecord& record)
   return 0;
 }
 
-void SchedulerMessaging::addScheduleRecord(std::shared_ptr<ScheduleRecord>& record)
+void Scheduler::addScheduleRecord(std::shared_ptr<ScheduleRecord>& record)
 {
   system_clock::time_point timePoint;
   std::tm timeStr;
@@ -138,7 +133,7 @@ void SchedulerMessaging::addScheduleRecord(std::shared_ptr<ScheduleRecord>& reco
   m_conditionVariable.notify_one();
 }
 
-void SchedulerMessaging::addScheduleRecords(std::vector<std::shared_ptr<ScheduleRecord>>& records)
+void Scheduler::addScheduleRecords(std::vector<std::shared_ptr<ScheduleRecord>>& records)
 {
   system_clock::time_point timePoint;
   std::tm timeStr;
@@ -160,7 +155,7 @@ void SchedulerMessaging::addScheduleRecords(std::vector<std::shared_ptr<Schedule
 }
 
 //thread function
-void SchedulerMessaging::timer()
+void Scheduler::timer()
 {
   system_clock::time_point timePoint;
   std::tm timeStr;
@@ -217,18 +212,18 @@ void SchedulerMessaging::timer()
   }
 }
 
-void SchedulerMessaging::makeCommand(const std::string& clientId, const std::string& command)
+void Scheduler::makeCommand(const std::string& clientId, const std::string& command)
 {
 }
 
-void SchedulerMessaging::registerMessageHandler(const std::string& clientId, MessageHandlerFunc fun)
+void Scheduler::registerMessageHandler(const std::string& clientId, TaskHandlerFunc fun)
 {
   std::lock_guard<std::mutex> lck(m_messageHandlersMutex);
   //TODO check success
   m_messageHandlers.insert(make_pair(clientId, fun));
 }
 
-void SchedulerMessaging::unregisterMessageHandler(const std::string& clientId)
+void Scheduler::unregisterMessageHandler(const std::string& clientId)
 {
   std::lock_guard<std::mutex> lck(m_messageHandlersMutex);
   m_messageHandlers.erase(clientId);

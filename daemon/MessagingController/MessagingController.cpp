@@ -6,13 +6,14 @@
 #include "IClient.h"
 //TODO temporary here
 #include "TestClient.h"
+#include "ClientService.h"
 
 //TODO temporary here
 #include "IMessaging.h"
 #include "UdpMessaging.h"
 #include "MqMessaging.h"
 #include "MqttMessaging.h"
-#include "SchedulerMessaging.h"
+#include "Scheduler.h"
 
 #include "SimpleSerializer.h"
 #include "JsonSerializer.h"
@@ -147,6 +148,12 @@ void MessagingController::startClients()
   clientIqrfapp->setSerializer(simpleSerializer);
   m_clients.insert(std::make_pair(clientIqrfapp->getClientName(), clientIqrfapp));
 
+  IClient* clientService = ant_new ClientService("ClientService");
+  clientIqrfapp->setDaemon(this);
+  clientIqrfapp->setMessaging(mqMessaging);
+  clientIqrfapp->setSerializer(simpleSerializer);
+  m_clients.insert(std::make_pair(clientIqrfapp->getClientName(), clientIqrfapp));
+
   /////////////////////
   for (auto cli : m_clients) {
     cli.second->start();
@@ -205,7 +212,7 @@ void MessagingController::start()
     executeDpaTransactionFunc(trans);
   });
 
-  m_scheduler = ant_new SchedulerMessaging();
+  m_scheduler = ant_new Scheduler();
 
   startClients();
 

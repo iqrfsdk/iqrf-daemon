@@ -9,19 +9,17 @@
 
 class ScheduleRecord;
 
-//typedef std::basic_string<unsigned char> ustring;
-
-class SchedulerMessaging : public IScheduler
+class Scheduler : public IScheduler
 {
 public:
-  SchedulerMessaging();
-  virtual ~SchedulerMessaging();
+  Scheduler();
+  virtual ~Scheduler();
 
   void start() override;
   void stop() override;
 
   void makeCommand(const std::string& clientId, const std::string& command) override;
-  void registerMessageHandler(const std::string& clientId, MessageHandlerFunc fun) override;
+  void registerMessageHandler(const std::string& clientId, TaskHandlerFunc fun) override;
   void unregisterMessageHandler(const std::string& clientId) override;
 
 private:
@@ -34,7 +32,7 @@ private:
   ////////////////////////////////
   TaskQueue<ScheduleRecord>* m_dpaTaskQueue;
 
-  std::map<std::string, MessageHandlerFunc> m_messageHandlers;
+  std::map<std::string, TaskHandlerFunc> m_messageHandlers;
   std::mutex m_messageHandlersMutex;
 
   std::vector<std::shared_ptr<ScheduleRecord>> m_scheduleRecords;

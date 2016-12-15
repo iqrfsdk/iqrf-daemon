@@ -17,7 +17,7 @@ include_directories(${CMAKE_SOURCE_DIR}/MqChannel)
 include_directories(${CMAKE_SOURCE_DIR}/UdpMessaging)
 include_directories(${CMAKE_SOURCE_DIR}/MqMessaging)
 include_directories(${CMAKE_SOURCE_DIR}/MqttMessaging)
-include_directories(${CMAKE_SOURCE_DIR}/SchedulerMessaging)
+include_directories(${CMAKE_SOURCE_DIR}/Scheduler)
 include_directories(${CMAKE_SOURCE_DIR}/DpaExtension)
 include_directories(${CMAKE_SOURCE_DIR}/IqrfCdcChannel)
 include_directories(${CMAKE_SOURCE_DIR}/IqrfSpiChannel)
@@ -37,9 +37,10 @@ if (WIN32)
  	target_link_libraries(${PROJECT_NAME}
 	MessagingController
 	TestClient
+	ClientService
 	JsonSerializer
 	SimpleSerializer
-	SchedulerMessaging
+	Scheduler
 	MqttMessaging
 	${PAHO_C_LIBRARY}
 	MqMessaging
@@ -59,9 +60,10 @@ else()
 	target_link_libraries(${PROJECT_NAME}
 	MessagingController
 	TestClient
+	ClientService
 	JsonSerializer
 	SimpleSerializer
-	SchedulerMessaging
+	Scheduler
 	MqttMessaging
 	${PAHO_C_LIBRARY}
 	MqMessaging
