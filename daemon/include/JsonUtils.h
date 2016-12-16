@@ -115,7 +115,7 @@ namespace jutils
     if (m == v.MemberEnd()) {
       return defaultVal;
     }
-    checkIs<T>(m->value);
+    assertIs<T>(m->value);
     return m->value.Get<T>();
   }
 
@@ -123,15 +123,15 @@ namespace jutils
   inline std::vector<T> getPossibleMemberAsVector(const std::string& name, const rapidjson::Value& v, std::vector<T> defaultVal = std::vector<T>())
   {
     const auto m = v.FindMember(name.c_str());
-    if (m == jsonValue.MemberEnd())
+    if (m == v.MemberEnd())
       return defaultVal;
 
     const rapidjson::Value& vct = m->value;
-    checkIsArray(name, vct);
+    assertIsArray(name, vct);
     defaultVal.clear();
 
     for (auto itr = vct.Begin(); itr != vct.End(); ++itr) {
-      checkIs<T>(name, *itr);
+      assertIs<T>(name, *itr);
       defaultVal.push_back(itr->Get<T>());
     }
 
