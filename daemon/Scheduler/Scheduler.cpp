@@ -12,6 +12,17 @@ Scheduler::~Scheduler()
 {
 }
 
+void Scheduler::updateConfiguration(rapidjson::Value& cfg)
+{
+  TRC_ENTER("");
+  jutils::assertIsObject("", cfg);
+
+  //dpaTask.setAddress(jutils::getMemberAs<int>("Addr", val));
+  //dpaTask.parseCommand(jutils::getMemberAsString("Comd", val));
+
+  TRC_LEAVE("");
+}
+
 void Scheduler::start()
 {
   TRC_ENTER("");
@@ -21,41 +32,41 @@ void Scheduler::start()
   });
 
   //sec mnt hrs day mon year dow
-  std::vector<std::string> temp = {
-    "00 * * * * * * ClientService LedR 0 PULSE",
-    "05 * * * * * * ClientService LedR 0 PULSE",
-    "10 * * * * * * ClientService LedG 0 PULSE",
-    "15 * * * * * * ClientService LedR 0 PULSE",
-    "20 * * * * * * ClientService LedG 0 PULSE",
-    "25 * * * * * * ClientService LedR 0 PULSE",
-    "30 * * * * * * ClientService LedG 0 PULSE",
-    "35 * * * * * * ClientService LedR 0 PULSE",
-    "40 * * * * * * ClientService LedG 0 PULSE",
-    "45 * * * * * * ClientService LedR 0 PULSE",
-    "50 * * * * * * ClientService LedG 0 PULSE",
-    "55 * * * * * * ClientService LedR 0 PULSE",
-  };
+  //std::vector<std::string> temp = {
+  //  "00 * * * * * * ClientService LedR 0 PULSE",
+  //  "05 * * * * * * ClientService LedR 0 PULSE",
+  //  "10 * * * * * * ClientService LedG 0 PULSE",
+  //  "15 * * * * * * ClientService LedR 0 PULSE",
+  //  "20 * * * * * * ClientService LedG 0 PULSE",
+  //  "25 * * * * * * ClientService LedR 0 PULSE",
+  //  "30 * * * * * * ClientService LedG 0 PULSE",
+  //  "35 * * * * * * ClientService LedR 0 PULSE",
+  //  "40 * * * * * * ClientService LedG 0 PULSE",
+  //  "45 * * * * * * ClientService LedR 0 PULSE",
+  //  "50 * * * * * * ClientService LedG 0 PULSE",
+  //  "55 * * * * * * ClientService LedR 0 PULSE",
+  //};
 
   //    "0 * * * * * * mqtt {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
   
-  //std::vector<std::string> temp = {
-  //  "20 30 11 * * * 6",
-  //  "0 * * * * * * TestClient1 LedR 0 PULSE",
-  //  "5 * * * * * * TestClient1 LedG 0 PULSE",
-  //  "10 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-  //  "15 * * * * * * TestClient2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-  //  "20 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
-  //  "25 * * * * * * TestClient1 Raw 00 00 07 03 ff ff",
-  //  "30 * * * * * * TestClient1 LedR 0 PULSE",
-  //  "35 * * * * * * TestClient1 LedG 0 PULSE",
-  //  "40 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-  //  "45 * * * * * * TestClient2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-  //  "50 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
-  //  "55 * * * * * * TestClient1 Raw 00 00 07 03 ff ff",
-  //  "00 00 09 10 11 * *",
-  //  "00 00 * * * * *",
-  //  "00 00 00 * * * 1"
-  //};
+  std::vector<std::string> temp = {
+    "20 30 11 * * * 6",
+    "0 * * * * * * TestClient1 LedR 0 PULSE",
+    "5 * * * * * * TestClient1 LedG 0 PULSE",
+    "10 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "15 * * * * * * TestClient2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "20 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
+    "25 * * * * * * TestClient1 Raw 00 00 07 03 ff ff",
+    "30 * * * * * * TestClient1 LedR 0 PULSE",
+    "35 * * * * * * TestClient1 LedG 0 PULSE",
+    "40 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "45 * * * * * * TestClient2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "50 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
+    "55 * * * * * * TestClient1 Raw 00 00 07 03 ff ff",
+    "00 00 09 10 11 * *",
+    "00 00 * * * * *",
+    "00 00 00 * * * 1"
+  };
   
   std::vector<std::shared_ptr<ScheduleRecord>> tempRecords;
   int i = 0;
@@ -103,8 +114,7 @@ int Scheduler::handleScheduledRecord(const ScheduleRecord& record)
     auto found = m_messageHandlers.find(record.getClientId());
     if (found != m_messageHandlers.end()) {
       TRC_DBG(NAME_PAR(Response, record.getTask()) << " has been passed to: " << NAME_PAR(ClinetId, record.getClientId()));
-      ustring msgu((unsigned char*)record.getTask().data(), record.getTask().size());
-      found->second(msgu);
+      found->second(record.getTask());
     }
     else {
       TRC_DBG("Unregistered client: " << PAR(record.getClientId()));
@@ -123,7 +133,6 @@ void Scheduler::addScheduleRecord(std::shared_ptr<ScheduleRecord>& record)
 
   // lock and insert
   std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
-  m_scheduleRecords.push_back(record);
   system_clock::time_point tp = record->getNext(timeStr);
   m_scheduledTasks.insert(std::make_pair(tp, record));
 
@@ -142,7 +151,6 @@ void Scheduler::addScheduleRecords(std::vector<std::shared_ptr<ScheduleRecord>>&
 
   // lock and insert
   std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
-  m_scheduleRecords.insert(m_scheduleRecords.end(), records.begin(), records.end());
   for (auto & record : records) {
     system_clock::time_point tp = record->getNext(timeStr);
     m_scheduledTasks.insert(std::make_pair(tp, record));
@@ -212,10 +220,6 @@ void Scheduler::timer()
   }
 }
 
-void Scheduler::makeCommand(const std::string& clientId, const std::string& command)
-{
-}
-
 void Scheduler::registerMessageHandler(const std::string& clientId, TaskHandlerFunc fun)
 {
   std::lock_guard<std::mutex> lck(m_messageHandlersMutex);
@@ -227,6 +231,30 @@ void Scheduler::unregisterMessageHandler(const std::string& clientId)
 {
   std::lock_guard<std::mutex> lck(m_messageHandlersMutex);
   m_messageHandlers.erase(clientId);
+}
+
+std::vector<std::string> Scheduler::getMyTasks(const std::string& clientId)
+{
+  std::vector<std::string> retval;
+  // lock and copy
+  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
+  for (auto & task : m_scheduledTasks) {
+    if (task.second->getClientId() == clientId) {
+      retval.push_back(task.second->getTask());
+    }
+  }
+  return retval;
+}
+
+void Scheduler::removeAllMyTasks(const std::string& clientId)
+{
+  // lock and remove
+  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
+  for (auto it = m_scheduledTasks.begin(); it != m_scheduledTasks.end(); ++it) {
+    if (it->second->getClientId() == clientId) {
+      it = m_scheduledTasks.erase(it);
+    }
+  }
 }
 
 /////////////////////////////////////////

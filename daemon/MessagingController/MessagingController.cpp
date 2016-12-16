@@ -55,14 +55,14 @@ void MessagingController::registerAsyncDpaMessageHandler(std::function<void(cons
 
 MessagingController::MessagingController(const std::string& iqrfPortName)
   :m_iqrfInterface(nullptr)
-  ,m_dpaHandler(nullptr)
-  ,m_dpaTransactionQueue(nullptr)
-  ,m_iqrfPortName(iqrfPortName)
-  ,m_scheduler(nullptr)
+  , m_dpaHandler(nullptr)
+  , m_dpaTransactionQueue(nullptr)
+  , m_iqrfPortName(iqrfPortName)
+  , m_scheduler(nullptr)
 {
 }
 
-MessagingController::~MessagingController ()
+MessagingController::~MessagingController()
 {
 }
 
@@ -107,18 +107,36 @@ void MessagingController::startClients()
 {
   TRC_ENTER("");
 
-  
+
   ///////// Messagings ///////////////////////////////////
   //TODO load Messagings plugins
-  MqttMessaging* mqttMessaging = ant_new MqttMessaging();
-  m_messagings.push_back(mqttMessaging);
+  MqttMessaging* mqttMessaging(nullptr);
+  try {
+    mqttMessaging = ant_new MqttMessaging();
+    m_messagings.push_back(mqttMessaging);
+  }
+  catch (std::exception &e) {
+    CATCH_EX("Cannot create MqttMessaging ", std::exception, e);
+  }
 
-  MqMessaging* mqMessaging = ant_new MqMessaging();
-  m_messagings.push_back(mqMessaging);
+  MqMessaging* mqMessaging(nullptr);
+  try {
+    mqMessaging = ant_new MqMessaging();
+    m_messagings.push_back(mqMessaging);
+  }
+  catch (std::exception &e) {
+    CATCH_EX("Cannot create MqMessaging ", std::exception, e);
+  }
 
-  UdpMessaging* udpMessaging = ant_new UdpMessaging();
-  udpMessaging->setDaemon(this);
-  m_messagings.push_back(udpMessaging);
+  UdpMessaging* udpMessaging(nullptr);
+  try {
+    udpMessaging = ant_new UdpMessaging();
+    udpMessaging->setDaemon(this);
+    m_messagings.push_back(udpMessaging);
+  }
+  catch (std::exception &e) {
+    CATCH_EX("Cannot create UdpMessaging ", std::exception, e);
+  }
 
   ///////// Serializers ///////////////////////////////////
   //TODO load Serializers plugins
@@ -135,7 +153,7 @@ void MessagingController::startClients()
   client1->setMessaging(mqttMessaging);
   client1->setSerializer(simpleSerializer);
   m_clients.insert(std::make_pair(client1->getClientName(), client1));
- 
+
   IClient* client2 = ant_new TestClient("TestClient2");
   client2->setDaemon(this);
   client2->setMessaging(mqttMessaging);
@@ -156,11 +174,21 @@ void MessagingController::startClients()
 
   /////////////////////
   for (auto cli : m_clients) {
-    cli.second->start();
+    try {
+      cli.second->start();
+    }
+    catch (std::exception &e) {
+      CATCH_EX("Cannot start " << NAME_PAR(client, cli.second->getClientName()), std::exception, e);
+    }
   }
 
   for (auto ms : m_messagings) {
-    ms->start();
+    try {
+      ms->start();
+    }
+    catch (std::exception &e) {
+      CATCH_EX("Cannot start messaging ", std::exception, e);
+    }
   }
 
   TRC_LEAVE("");
@@ -226,7 +254,7 @@ void MessagingController::stop()
 {
   TRC_ENTER("");
   TRC_INF("daemon stops");
-  
+
   m_scheduler->stop();
 
   stopClients();

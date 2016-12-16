@@ -6,6 +6,7 @@
 #include "rapidjson/istreamwrapper.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/prettywriter.h"
+#include "JsonUtils.h"
 #include <vector>
 #include <utility>
 #include <stdexcept>
@@ -14,178 +15,14 @@
 
 using namespace rapidjson;
 
-namespace jutils
-{
-  void parseJsonFile(const std::string& fname, rapidjson::Document& json)
-  {
-    std::ifstream ifs(fname);
-    if (!ifs.is_open()) {
-      THROW_EX(std::logic_error, "Cannot open: " << PAR(fname));
-    }
-
-    IStreamWrapper isw(ifs);
-    json.ParseStream(isw);
-
-    if (json.HasParseError()) {
-      THROW_EX(std::logic_error, "Json parse error: " << NAME_PAR(emsg, json.GetParseError()) <<
-        NAME_PAR(eoffset, json.GetErrorOffset()));
-    }
-  }
-
-  void parseIstream(std::istream& istr, rapidjson::Document& json)
-  {
-    IStreamWrapper isw(istr);
-    json.ParseStream(isw);
-
-    if (json.HasParseError()) {
-      THROW_EX(std::logic_error, "Json parse error: " << NAME_PAR(emsg, json.GetParseError()) <<
-        NAME_PAR(eoffset, json.GetErrorOffset()));
-    }
-  }
-
-  void parseString(const std::string& str, rapidjson::Document& json)
-  {
-    StringStream s(str.data());
-    Document doc;
-    json.ParseStream(s);
-
-    if (json.HasParseError()) {
-      THROW_EX(std::logic_error, "Json parse error: " << NAME_PAR(emsg, json.GetParseError()) <<
-        NAME_PAR(eoffset, json.GetErrorOffset()));
-    }
-  }
-
-
-  void checkIsObject(const std::string& name, const rapidjson::Value& jsonValue)
-  {
-    if (!jsonValue.IsObject())
-      THROW_EX(std::logic_error, "Expected: Json Object, detected: " << PAR(jsonValue.GetType()) << PAR(name));
-  }
-
-  void checkIsArray(const std::string& name, const rapidjson::Value& jsonValue)
-  {
-    if (!jsonValue.IsArray())
-      THROW_EX(std::logic_error, "Expected: Json Array, detected: " << PAR(jsonValue.GetType()) << PAR(name));
-  }
-
-  void checkIsString(const std::string& name, const rapidjson::Value& jsonValue)
-  {
-    if (!jsonValue.IsString())
-      THROW_EX(std::logic_error, "Expected: Json String, detected: " << PAR(jsonValue.GetType()) << PAR(name));
-  }
-
-  void checkIsInt(const std::string& name, const rapidjson::Value& jsonValue)
-  {
-    if (!jsonValue.IsInt())
-      THROW_EX(std::logic_error, "Expected: Json Int, detected: " << PAR(jsonValue.GetType()) << PAR(name));
-  }
-
-  const rapidjson::Value::ConstMemberIterator getMember(const std::string& name, const rapidjson::Value& jsonValue)
-  {
-    const rapidjson::Value::ConstMemberIterator m = jsonValue.FindMember(name.c_str());
-    if (m == jsonValue.MemberEnd()) {
-      THROW_EX(std::logic_error, "Expected member: " << PAR(name));
-    }
-    return m;
-  }
-
-  const rapidjson::Value& getMemberAsObject(const std::string& name, const rapidjson::Value& jsonValue)
-  {
-    const auto m = getMember(name, jsonValue);
-    if (!m->value.IsObject())
-      THROW_EX(std::logic_error, "Expected: Object, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
-    return m->value;
-  }
-
-  std::string getMemberAsString(const std::string& name, const rapidjson::Value& jsonValue)
-  {
-    const auto m = getMember(name, jsonValue);
-    if (!m->value.IsString())
-      THROW_EX(std::logic_error, "Expected: Json String, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
-    return std::string(m->value.GetString());
-  }
-
-  bool getMemberAsBool(const std::string& name, const rapidjson::Value& jsonValue)
-  {
-    const auto m = getMember(name, jsonValue);
-    if (!m->value.IsBool())
-      THROW_EX(std::logic_error, "Expected: Json Bool, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
-    return m->value.GetBool();
-  }
-
-  int getMemberAsInt(const std::string& name, const rapidjson::Value& jsonValue)
-  {
-    const auto m = getMember(name, jsonValue);
-    if (!m->value.IsInt())
-      THROW_EX(std::logic_error, "Expected: Json Int, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
-    return m->value.GetInt();
-  }
-
-  double getMemberAsDouble(const std::string& name, const rapidjson::Value& jsonValue)
-  {
-    const auto m = getMember(name, jsonValue);
-    if (!m->value.IsDouble())
-      THROW_EX(std::logic_error, "Expected: Json Double, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
-    return m->value.GetDouble();
-  }
-
-  unsigned getMemberAsUint(const std::string& name, const rapidjson::Value& jsonValue)
-  {
-    const auto m = getMember(name, jsonValue);
-    if (!m->value.IsUint())
-      THROW_EX(std::logic_error, "Expected: Json Uint, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
-    return m->value.GetUint();
-  }
-
-  bool getPossibleMemberAsBool(const std::string& name, const rapidjson::Value& jsonValue, bool defaultVal = false)
-  {
-    const auto m = jsonValue.FindMember(name.c_str());
-    if (m == jsonValue.MemberEnd()) {
-      return defaultVal;
-    }
-    if (!m->value.IsBool())
-      THROW_EX(std::logic_error, "Expected: Json Bool, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
-    return m->value.GetBool();
-  }
-
-  std::string getPossibleMemberAsString(const std::string& name, const rapidjson::Value& jsonValue, std::string defaultVal = "")
-  {
-    const auto m = jsonValue.FindMember(name.c_str());
-    if (m == jsonValue.MemberEnd()) {
-      return defaultVal;
-    }
-    if (!m->value.IsString())
-      THROW_EX(std::logic_error, "Expected: Json String, detected: " << PAR(name) << NAME_PAR(type, m->value.GetType()));
-    return m->value.GetString();
-  }
-
-  std::vector<int> getPossibleMemberAsVectorInt(const std::string& name, const rapidjson::Value& jsonValue,
-    std::vector<int> defaultVal = std::vector<int>())
-  {
-    const auto m = jsonValue.FindMember(name.c_str());
-    if (m == jsonValue.MemberEnd())
-      return defaultVal;
-
-    const rapidjson::Value& vct = m->value;
-    checkIsArray(name, vct);
-    defaultVal.clear();
-
-    for (auto itr = vct.Begin(); itr != vct.End(); ++itr) {
-      checkIsInt(name, *itr);
-      defaultVal.push_back(itr->GetInt());
-    }
-
-    return defaultVal;
-  }
-
-} //jutils
-
 //////////////////////////////////////////
 void parseRequestJson(DpaTask& dpaTask, rapidjson::Value& val)
 {
-  jutils::checkIsObject("", val);
-  dpaTask.setAddress(jutils::getMemberAsInt("Addr", val));
-  dpaTask.parseCommand(jutils::getMemberAsString("Comd", val));
+  jutils::assertIsObject("", val);
+  //dpaTask.setAddress(jutils::getMemberAsInt("Addr", val));
+  //dpaTask.parseCommand(jutils::getMemberAsString("Comd", val));
+  dpaTask.setAddress(jutils::getMemberAs<int>("Addr", val));
+  dpaTask.parseCommand(jutils::getMemberAs<std::string>("Comd", val));
 }
 
 void encodeResponseJson(const DpaTask& dpaTask, rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc)
@@ -240,8 +77,9 @@ std::unique_ptr<DpaTask> DpaTaskJsonSerializerFactory::parseRequest(const std::s
   Document doc;
   jutils::parseString(request, doc);
 
-  jutils::checkIsObject("", doc);
-  std::string perif = jutils::getMemberAsString("Type", doc);
+  jutils::assertIsObject("", doc);
+  //std::string perif = jutils::getMemberAsString("Type", doc);
+  std::string perif = jutils::getMemberAs<std::string>("Type", doc);
 
   auto obj = createObject(perif, doc);
   return std::move(obj);

@@ -4,7 +4,6 @@
 #include "ISerializer.h"
 #include "IMessaging.h"
 #include "IScheduler.h"
-#include "TaskQueue.h"
 #include <string>
 #include <chrono>
 #include <map>

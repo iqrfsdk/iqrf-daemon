@@ -37,8 +37,9 @@ void TestClient::start()
 {
   TRC_ENTER("");
 
-  m_daemon->getScheduler()->registerMessageHandler(m_name, [&](const ustring& msg) {
-    handleMsgFromMessaging(msg);
+  m_daemon->getScheduler()->registerMessageHandler(m_name, [&](const std::string& msg) {
+    ustring msgu((unsigned char*)msg.data(), msg.size());
+    handleMsgFromMessaging(msgu);
   });
 
   TRC_INF("TestClient :" << PAR(m_name) << " started");

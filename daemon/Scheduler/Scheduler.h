@@ -1,5 +1,6 @@
 #pragma once
 
+#include "JsonUtils.h"
 #include "TaskQueue.h"
 #include "IScheduler.h"
 #include <string>
@@ -18,9 +19,13 @@ public:
   void start() override;
   void stop() override;
 
-  void makeCommand(const std::string& clientId, const std::string& command) override;
   void registerMessageHandler(const std::string& clientId, TaskHandlerFunc fun) override;
   void unregisterMessageHandler(const std::string& clientId) override;
+
+  std::vector<std::string> getMyTasks(const std::string& clientId) override;
+  void removeAllMyTasks(const std::string& clientId) override;
+
+  void updateConfiguration(rapidjson::Value& cfg);
 
 private:
   int handleScheduledRecord(const ScheduleRecord& record);
@@ -35,7 +40,9 @@ private:
   std::map<std::string, TaskHandlerFunc> m_messageHandlers;
   std::mutex m_messageHandlersMutex;
 
-  std::vector<std::shared_ptr<ScheduleRecord>> m_scheduleRecords;
+  // Scheduled tasks contains [time_point, ScheduleRecords] pairs.
+  // When the time_point is reached, the task is fired and removed. Another pair is added with the next time_point
+  // generated from required time matrice
   std::multimap<std::chrono::system_clock::time_point, std::shared_ptr<ScheduleRecord>> m_scheduledTasks;
   bool m_scheduledTaskPushed;
   std::mutex m_scheduledTasksMutex;
