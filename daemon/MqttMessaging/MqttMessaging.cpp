@@ -190,6 +190,9 @@ void Impl::handleMessageFromMqtt(const ustring& mqMessage)
 
 void Impl::sendTo(const ustring& msg)
 {
+  TRC_DBG("Sending to MQTT: " << NAME_PAR(topic, MQTT_TOPIC_DPA_RESPONSE) << std::endl <<
+    FORM_HEX(msg.data(), msg.size()));
+
   MQTTClient_deliveryToken token;
   MQTTClient_message pubmsg = MQTTClient_message_initializer;
   int retval;

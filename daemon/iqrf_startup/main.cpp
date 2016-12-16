@@ -110,7 +110,7 @@ int main(int argc, char** argv)
 
   TRC_DBG(PAR(iqrf_port_name));
 
-  msgCtrl = std::unique_ptr<MessagingController>(ant_new MessagingController(iqrf_port_name));
+  msgCtrl = std::unique_ptr<MessagingController>(ant_new MessagingController(iqrf_port_name, "test.json"));
   msgCtrl->watchDog();
 
   TRC_ENTER("finished");

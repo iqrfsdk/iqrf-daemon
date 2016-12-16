@@ -47,26 +47,41 @@ void Scheduler::start()
   //  "55 * * * * * * ClientService LedR 0 PULSE",
   //};
 
+  std::vector<std::string> temp = {
+    "00 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
+    "05 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
+    "10 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
+    "15 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
+    "20 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
+    "25 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
+    "30 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
+    "35 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
+    "40 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
+    "45 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
+    "50 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
+    "55 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}"
+  };
+
   //    "0 * * * * * * mqtt {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
   
-  std::vector<std::string> temp = {
-    "20 30 11 * * * 6",
-    "0 * * * * * * TestClient1 LedR 0 PULSE",
-    "5 * * * * * * TestClient1 LedG 0 PULSE",
-    "10 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "15 * * * * * * TestClient2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "20 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
-    "25 * * * * * * TestClient1 Raw 00 00 07 03 ff ff",
-    "30 * * * * * * TestClient1 LedR 0 PULSE",
-    "35 * * * * * * TestClient1 LedG 0 PULSE",
-    "40 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "45 * * * * * * TestClient2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "50 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
-    "55 * * * * * * TestClient1 Raw 00 00 07 03 ff ff",
-    "00 00 09 10 11 * *",
-    "00 00 * * * * *",
-    "00 00 00 * * * 1"
-  };
+  //std::vector<std::string> temp = {
+  //  "20 30 11 * * * 6",
+  //  "0 * * * * * * TestClient1 LedR 0 PULSE",
+  //  "5 * * * * * * TestClient1 LedG 0 PULSE",
+  //  "10 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+  //  "15 * * * * * * TestClient2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+  //  "20 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
+  //  "25 * * * * * * TestClient1 Raw 00 00 07 03 ff ff",
+  //  "30 * * * * * * TestClient1 LedR 0 PULSE",
+  //  "35 * * * * * * TestClient1 LedG 0 PULSE",
+  //  "40 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+  //  "45 * * * * * * TestClient2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+  //  "50 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
+  //  "55 * * * * * * TestClient1 Raw 00 00 07 03 ff ff",
+  //  "00 00 09 10 11 * *",
+  //  "00 00 * * * * *",
+  //  "00 00 00 * * * 1"
+  //};
   
   std::vector<std::shared_ptr<ScheduleRecord>> tempRecords;
   int i = 0;

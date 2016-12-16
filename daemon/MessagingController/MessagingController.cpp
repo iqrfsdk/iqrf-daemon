@@ -53,7 +53,7 @@ void MessagingController::registerAsyncDpaMessageHandler(std::function<void(cons
   });
 }
 
-MessagingController::MessagingController(const std::string& iqrfPortName)
+MessagingController::MessagingController(const std::string& iqrfPortName, const std::string& cfgFileName)
   :m_iqrfInterface(nullptr)
   , m_dpaHandler(nullptr)
   , m_dpaTransactionQueue(nullptr)

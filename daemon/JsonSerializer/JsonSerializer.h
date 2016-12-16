@@ -16,6 +16,14 @@
 void parseRequestJson(DpaTask& dpaTask, rapidjson::Value& val);
 void encodeResponseJson(DpaTask& dpaTask, rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc);
 
+class PrfRawJson : public DpaRawTask
+{
+public:
+  explicit PrfRawJson(rapidjson::Value& val);
+  virtual ~PrfRawJson() {}
+  std::string encodeResponse(const std::string& errStr) const  override;
+};
+
 class PrfThermometerJson : public PrfThermometer
 {
 public:
@@ -67,4 +75,6 @@ public:
 
   std::unique_ptr<DpaTask> parseRequest(const std::string& request) override;
   std::string getLastError() const override;
+private:
+  std::string m_lastError;
 };

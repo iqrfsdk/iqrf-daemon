@@ -17,7 +17,7 @@ class DpaHandler;
 class MessagingController : public IDaemon
 {
 public:
-  MessagingController(const std::string& iqrfPortName);
+  MessagingController(const std::string& iqrfPortName, const std::string& cfgFileName);
   virtual ~MessagingController();
   virtual void executeDpaTransaction(DpaTransaction& dpaTransaction);
   //TODO unregister

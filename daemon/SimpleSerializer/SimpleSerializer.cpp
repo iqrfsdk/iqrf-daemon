@@ -87,5 +87,6 @@ std::unique_ptr<DpaTask> DpaTaskSimpleSerializerFactory::parseRequest(const std:
 
 std::string DpaTaskSimpleSerializerFactory::getLastError() const
 {
+  //TODO
   return "OK";
 }
