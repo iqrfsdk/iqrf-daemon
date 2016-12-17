@@ -7,7 +7,7 @@
 #include <sstream>
 #include <thread>
 
-TRC_INIT("");
+TRC_INIT()
 
 void encodeMessageUdp(unsigned char command, unsigned char subcommand, const ustring& message, ustring& udpMessage)
 {

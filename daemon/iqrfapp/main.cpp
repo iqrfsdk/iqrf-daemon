@@ -2,7 +2,7 @@
 #include "PlatformDep.h"
 #include "IqrfLogging.h"
 
-TRC_INIT("");
+TRC_INIT()
 
 int handleMessageFromMq(const ustring& message)
 {

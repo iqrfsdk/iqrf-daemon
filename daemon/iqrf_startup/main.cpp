@@ -13,9 +13,6 @@
 #include <dlfcn.h>
 #endif
 
-//TRC_INIT("/tmp/iqrf_startup.log");
-TRC_INIT("");
-
 std::unique_ptr<MessagingController> msgCtrl;
 
 //-------------------------------------------------
@@ -66,31 +63,31 @@ int main(int argc, char** argv)
 #if defined(WIN) && defined(_DEBUG)
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
-  TRC_ENTER("started");
+  std::cout << std::endl << argv[0] << " started";
 
   std::string iqrf_port_name;
 
   if (SIG_ERR == signal(SIGINT, SignalHandler)) {
-    TRC_ERR("Could not set control handler for SIGINT");
+    std::cerr << std::endl << "Could not set control handler for SIGINT";
     return -1;
   }
 
   if (SIG_ERR == signal(SIGTERM, SignalHandler)) {
-    TRC_ERR("Could not set control handler for SIGTERM");
+    std::cerr << std::endl << "Could not set control handler for SIGTERM";
     return -1;
   }
   if (SIG_ERR == signal(SIGABRT, SignalHandler)) {
-    TRC_ERR("Could not set control handler for SIGABRT");
+    std::cerr << std::endl << "Could not set control handler for SIGABRT";
     return -1;
   }
 #ifndef WIN
   if (SIG_ERR == signal(SIGQUIT, SignalHandler)) {
-    TRC_ERR("Could not set control handler for SIGQUIT");
+    std::cerr << std::endl << "Could not set control handler for SIGQUIT";
     return -1;
   }
 #else
   if (SetConsoleCtrlHandler(ConsoleHandlerRoutine, TRUE) == 0) {
-    TRC_ERR("SetConsoleCtrlHandler failed: GetLastError: " << GetLastError());
+    std::cerr << std::endl << "SetConsoleCtrlHandler failed: GetLastError: " << GetLastError();
     return -1;
   }
 #endif
@@ -108,15 +105,13 @@ int main(int argc, char** argv)
     iqrf_port_name = argv[1];
   }
 
-  TRC_DBG(PAR(iqrf_port_name));
-
   try {
-    msgCtrl = std::unique_ptr<MessagingController>(ant_new MessagingController(iqrf_port_name, "config.json"));
+    msgCtrl = std::unique_ptr<MessagingController>(ant_new MessagingController("config.json"));
     msgCtrl->watchDog();
   }
   catch (std::exception &e) {
-    CATCH_EX("", std::exception, e);
+    std::cerr << std::endl << "Fatal error: " << e.what();
   }
 
-  TRC_ENTER("finished");
+  std::cout << std::endl << argv[0] << " finished";
 }

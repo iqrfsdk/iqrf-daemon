@@ -22,7 +22,7 @@
 #include "IqrfLogging.h"
 #include "PlatformDep.h"
 
-const std::string CFG_VERSION("v0.0");
+TRC_INIT()
 
 using namespace rapidjson;
 
@@ -58,27 +58,37 @@ void MessagingController::registerAsyncDpaMessageHandler(std::function<void(cons
   });
 }
 
-MessagingController::MessagingController(const std::string& iqrfPortName, const std::string& cfgFileName)
+MessagingController::MessagingController(const std::string& cfgFileName)
   :m_iqrfInterface(nullptr)
   , m_dpaHandler(nullptr)
   , m_dpaTransactionQueue(nullptr)
-  , m_iqrfPortName(iqrfPortName)
   , m_scheduler(nullptr)
+  , m_cfgFileName(cfgFileName)
 {
-  //try {
-    jutils::parseJsonFile(cfgFileName, m_configuration);
+    std::cout << std::endl << "Loading configuration file: " << PAR(cfgFileName);
+
+    jutils::parseJsonFile(m_cfgFileName, m_configuration);
     jutils::assertIsObject("", m_configuration);
     
     // check cfg version
     // TODO major.minor ...
     std::string cfgVersion = jutils::getMemberAs<std::string>("Configuration", m_configuration);
-    if (cfgVersion != CFG_VERSION) {
-      THROW_EX(std::logic_error, "Unexpected configuration: " << PAR(cfgVersion) << "expected: " << PAR(CFG_VERSION));
+    if (cfgVersion != m_cfgVersion) {
+      THROW_EX(std::logic_error, "Unexpected configuration: " << PAR(cfgVersion) << "expected: " << m_cfgVersion);
     }
-  //}
-  //catch (std::exception &e) {
-  //  m_lastError = e.what();
-  //}
+
+    m_traceFileName = jutils::getPossibleMemberAs<std::string>("TraceFileName", m_configuration, "");
+    m_traceFileSize = jutils::getPossibleMemberAs<int>("TraceFileSize", m_configuration, 0);
+    if (m_traceFileSize <= 0)
+      m_traceFileSize = TRC_DEFAULT_FILE_MAXSIZE;
+
+    TRC_START(m_traceFileName, m_traceFileSize);
+    TRC_INF("Loaded configuration file: " << PAR(cfgFileName));
+    TRC_INF("Opened trace file: " << PAR(m_traceFileName) << PAR(m_traceFileSize) );
+
+    m_iqrfInterfaceName = jutils::getMemberAs<std::string>("IqrfInterface", m_configuration);
+    TRC_INF(PAR(m_iqrfInterfaceName));
+
 }
 
 MessagingController::~MessagingController()
@@ -185,11 +195,11 @@ void MessagingController::startClients()
   clientIqrfapp->setSerializer(simpleSerializer);
   m_clients.insert(std::make_pair(clientIqrfapp->getClientName(), clientIqrfapp));
 
-  IClient* clientService = ant_new ClientService("ClientService");
-  clientIqrfapp->setDaemon(this);
-  clientIqrfapp->setMessaging(mqMessaging);
-  clientIqrfapp->setSerializer(simpleSerializer);
-  m_clients.insert(std::make_pair(clientIqrfapp->getClientName(), clientIqrfapp));
+  //IClient* clientService = ant_new ClientService("ClientService");
+  //clientIqrfapp->setDaemon(this);
+  //clientIqrfapp->setMessaging(mqMessaging);
+  //clientIqrfapp->setSerializer(simpleSerializer);
+  //m_clients.insert(std::make_pair(clientService->getClientName(), clientService));
 
   /////////////////////
   for (auto cli : m_clients) {
@@ -241,11 +251,11 @@ void MessagingController::start()
   TRC_ENTER("");
 
   try {
-    size_t found = m_iqrfPortName.find("spi");
+    size_t found = m_iqrfInterfaceName.find("spi");
     if (found != std::string::npos)
-      m_iqrfInterface = ant_new IqrfSpiChannel(m_iqrfPortName);
+      m_iqrfInterface = ant_new IqrfSpiChannel(m_iqrfInterfaceName);
     else
-      m_iqrfInterface = ant_new IqrfCdcChannel(m_iqrfPortName);
+      m_iqrfInterface = ant_new IqrfCdcChannel(m_iqrfInterfaceName);
 
     m_dpaHandler = ant_new DpaHandler(m_iqrfInterface);
 
@@ -259,7 +269,9 @@ void MessagingController::start()
     executeDpaTransactionFunc(trans);
   });
 
-  m_scheduler = ant_new Scheduler();
+  Scheduler* schd = ant_new Scheduler();
+  m_scheduler = schd;
+  schd->updateConfiguration(m_configuration);
 
   startClients();
 

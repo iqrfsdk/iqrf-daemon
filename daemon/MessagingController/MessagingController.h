@@ -18,7 +18,7 @@ class DpaHandler;
 class MessagingController : public IDaemon
 {
 public:
-  MessagingController(const std::string& iqrfPortName, const std::string& cfgFileName);
+  MessagingController(const std::string& cfgFileName);
   virtual ~MessagingController();
   virtual void executeDpaTransaction(DpaTransaction& dpaTransaction);
   //TODO unregister
@@ -43,7 +43,6 @@ private:
   void executeDpaTransactionFunc(DpaTransaction* dpaTransaction);
 
   TaskQueue<DpaTransaction*> *m_dpaTransactionQueue;
-  std::string m_iqrfPortName;
   std::atomic_bool m_running;
   std::set<IMessaging*> m_protocols;
   
@@ -54,5 +53,11 @@ private:
   IScheduler* m_scheduler;
   std::function<void(const DpaMessage&)> m_asyncHandler;
 
+  //configuration
   rapidjson::Document m_configuration;
+  std::string m_cfgFileName;
+  const std::string m_cfgVersion = "v0.0";
+  std::string m_traceFileName;
+  int m_traceFileSize = 0;
+  std::string m_iqrfInterfaceName;
 };

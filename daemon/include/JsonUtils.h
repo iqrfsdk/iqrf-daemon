@@ -108,6 +108,38 @@ namespace jutils
     return m->value;
   }
 
+  template<typename T>
+  inline std::vector<T> getMemberAsVector(const std::string& name, const rapidjson::Value& v)
+  {
+    std::vector<T> retval;
+    const auto m = getMember(name, v);
+    const rapidjson::Value& vct = m->value;
+    assertIsArray(name, vct);
+
+    for (auto itr = vct.Begin(); itr != vct.End(); ++itr) {
+      assertIs<T>(name, *itr);
+      retval.push_back(itr->Get<T>());
+    }
+
+    return retval;
+  }
+
+  template<>
+  inline std::vector<std::string> getMemberAsVector<std::string>(const std::string& name, const rapidjson::Value& v)
+  {
+    std::vector<std::string> retval;
+    const auto m = getMember(name, v);
+    const rapidjson::Value& vct = m->value;
+    assertIsArray(name, vct);
+
+    for (auto itr = vct.Begin(); itr != vct.End(); ++itr) {
+      assertIs<std::string>(name, *itr);
+      retval.push_back(std::string(itr->GetString()));
+    }
+
+    return retval;
+  }
+
   //////////////////////////////////////
   template<typename T>
   inline T getPossibleMemberAs(const std::string& name, const rapidjson::Value& v, T defaultVal) {
@@ -115,8 +147,18 @@ namespace jutils
     if (m == v.MemberEnd()) {
       return defaultVal;
     }
-    assertIs<T>(m->value);
+    assertIs<T>(name, m->value);
     return m->value.Get<T>();
+  }
+
+  template<>
+  inline std::string getPossibleMemberAs<std::string>(const std::string& name, const rapidjson::Value& v, std::string defaultVal) {
+    const auto m = v.FindMember(name.c_str());
+    if (m == v.MemberEnd()) {
+      return defaultVal;
+    }
+    assertIs<std::string>(name, m->value);
+    return std::string(m->value.GetString());
   }
 
   template<typename T>

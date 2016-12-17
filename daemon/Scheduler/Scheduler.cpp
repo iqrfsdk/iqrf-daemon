@@ -5,6 +5,7 @@
 using namespace std::chrono;
 
 Scheduler::Scheduler()
+  :m_dpaTaskQueue(nullptr)
 {
 }
 
@@ -17,8 +18,16 @@ void Scheduler::updateConfiguration(rapidjson::Value& cfg)
   TRC_ENTER("");
   jutils::assertIsObject("", cfg);
 
-  //dpaTask.setAddress(jutils::getMemberAs<int>("Addr", val));
-  //dpaTask.parseCommand(jutils::getMemberAsString("Comd", val));
+  const rapidjson::Value& sch = jutils::getMemberAsObject("Scheduler", cfg);
+  std::vector<std::string> records = jutils::getMemberAsVector<std::string>("Tasks", sch);
+
+  std::vector<std::shared_ptr<ScheduleRecord>> tempRecords;
+  int i = 0;
+  for (auto & it : records) {
+    tempRecords.push_back(std::shared_ptr<ScheduleRecord>(ant_new ScheduleRecord(it)));
+  }
+
+  addScheduleRecords(tempRecords);
 
   TRC_LEAVE("");
 }
@@ -31,20 +40,21 @@ void Scheduler::start()
     handleScheduledRecord(record);
   });
 
+  /*
   //sec mnt hrs day mon year dow
   //std::vector<std::string> temp = {
-  //  "00 * * * * * * ClientService LedR 0 PULSE",
-  //  "05 * * * * * * ClientService LedR 0 PULSE",
-  //  "10 * * * * * * ClientService LedG 0 PULSE",
-  //  "15 * * * * * * ClientService LedR 0 PULSE",
-  //  "20 * * * * * * ClientService LedG 0 PULSE",
-  //  "25 * * * * * * ClientService LedR 0 PULSE",
-  //  "30 * * * * * * ClientService LedG 0 PULSE",
-  //  "35 * * * * * * ClientService LedR 0 PULSE",
-  //  "40 * * * * * * ClientService LedG 0 PULSE",
-  //  "45 * * * * * * ClientService LedR 0 PULSE",
-  //  "50 * * * * * * ClientService LedG 0 PULSE",
-  //  "55 * * * * * * ClientService LedR 0 PULSE",
+    "00 * * * * * * ClientService LedR 0 PULSE",
+    "05 * * * * * * ClientService LedR 0 PULSE",
+    "10 * * * * * * ClientService LedG 0 PULSE",
+    "15 * * * * * * ClientService LedR 0 PULSE",
+    "20 * * * * * * ClientService LedG 0 PULSE",
+    "25 * * * * * * ClientService LedR 0 PULSE",
+    "30 * * * * * * ClientService LedG 0 PULSE",
+    "35 * * * * * * ClientService LedR 0 PULSE",
+    "40 * * * * * * ClientService LedG 0 PULSE",
+    "45 * * * * * * ClientService LedR 0 PULSE",
+    "50 * * * * * * ClientService LedG 0 PULSE",
+    "55 * * * * * * ClientService LedR 0 PULSE",
   //};
 
   std::vector<std::string> temp = {
@@ -90,7 +100,7 @@ void Scheduler::start()
   }
 
   addScheduleRecords(tempRecords);
-
+  */
   m_scheduledTaskPushed = false;
   m_runTimerThread = true;
   m_timerThread = std::thread(&Scheduler::timer, this);
