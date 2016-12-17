@@ -2,6 +2,7 @@
 #include "IqrfCdcChannel.h"
 #include "IqrfSpiChannel.h"
 #include "DpaHandler.h"
+#include "JsonUtils.h"
 
 #include "IClient.h"
 //TODO temporary here
@@ -20,6 +21,10 @@
 
 #include "IqrfLogging.h"
 #include "PlatformDep.h"
+
+const std::string CFG_VERSION("v0.0");
+
+using namespace rapidjson;
 
 void MessagingController::executeDpaTransaction(DpaTransaction& dpaTransaction)
 {
@@ -60,6 +65,20 @@ MessagingController::MessagingController(const std::string& iqrfPortName, const 
   , m_iqrfPortName(iqrfPortName)
   , m_scheduler(nullptr)
 {
+  //try {
+    jutils::parseJsonFile(cfgFileName, m_configuration);
+    jutils::assertIsObject("", m_configuration);
+    
+    // check cfg version
+    // TODO major.minor ...
+    std::string cfgVersion = jutils::getMemberAs<std::string>("Configuration", m_configuration);
+    if (cfgVersion != CFG_VERSION) {
+      THROW_EX(std::logic_error, "Unexpected configuration: " << PAR(cfgVersion) << "expected: " << PAR(CFG_VERSION));
+    }
+  //}
+  //catch (std::exception &e) {
+  //  m_lastError = e.what();
+  //}
 }
 
 MessagingController::~MessagingController()

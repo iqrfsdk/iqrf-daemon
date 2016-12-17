@@ -26,7 +26,9 @@ else()
 	target_link_libraries(${PROJECT_NAME} MqChannel DpaExtension dpa pthread rt)
 endif()
 
-#install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/sbin)
+if (WIN32)
+else()
 INSTALL(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib)
+endif()

@@ -6,6 +6,7 @@ FIND_PACKAGE(clibdpa REQUIRED)
 
 set(iqrf_startup_SRC_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/config.json
 )
 
 set(iqrf_startup_INC_FILES
@@ -82,7 +83,16 @@ else()
 	)
 endif()
 
+install(
+    FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.json
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+    #DESTINATION $<TARGET_FILE_DIR:${PROJECT_NAME}>)
+
+if (WIN32)
+else()
 INSTALL(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib)
+endif()
 

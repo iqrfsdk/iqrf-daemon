@@ -5,6 +5,7 @@
 #include "IClient.h"
 #include "TaskQueue.h"
 #include "IDaemon.h"
+#include "JsonUtils.h"
 #include <map>
 #include <string>
 #include <atomic>
@@ -52,4 +53,6 @@ private:
 
   IScheduler* m_scheduler;
   std::function<void(const DpaMessage&)> m_asyncHandler;
+
+  rapidjson::Document m_configuration;
 };

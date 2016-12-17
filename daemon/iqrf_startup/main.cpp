@@ -110,8 +110,13 @@ int main(int argc, char** argv)
 
   TRC_DBG(PAR(iqrf_port_name));
 
-  msgCtrl = std::unique_ptr<MessagingController>(ant_new MessagingController(iqrf_port_name, "test.json"));
-  msgCtrl->watchDog();
+  try {
+    msgCtrl = std::unique_ptr<MessagingController>(ant_new MessagingController(iqrf_port_name, "config.json"));
+    msgCtrl->watchDog();
+  }
+  catch (std::exception &e) {
+    CATCH_EX("", std::exception, e);
+  }
 
   TRC_ENTER("finished");
 }

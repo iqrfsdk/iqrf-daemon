@@ -1,3 +1,5 @@
+#pragma once
+
 #include "IqrfLogging.h"
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
@@ -8,8 +10,6 @@
 #include <utility>
 #include <stdexcept>
 
-using namespace rapidjson;
-
 namespace jutils
 {
   inline void parseJsonFile(const std::string& fname, rapidjson::Document& json)
@@ -19,8 +19,8 @@ namespace jutils
     if (!ifs.is_open()) {
       THROW_EX(std::logic_error, "Cannot open: " << PAR(fname));
     }
-
-    IStreamWrapper isw(ifs);
+    
+    rapidjson::IStreamWrapper isw(ifs);
     json.ParseStream(isw);
 
     if (json.HasParseError()) {
@@ -31,7 +31,7 @@ namespace jutils
 
   inline void parseIstream(std::istream& istr, rapidjson::Document& json)
   {
-    IStreamWrapper isw(istr);
+    rapidjson::IStreamWrapper isw(istr);
     json.ParseStream(isw);
 
     if (json.HasParseError()) {
@@ -42,8 +42,8 @@ namespace jutils
 
   inline void parseString(const std::string& str, rapidjson::Document& json)
   {
-    StringStream s(str.data());
-    Document doc;
+    rapidjson::StringStream s(str.data());
+    rapidjson::Document doc;
     json.ParseStream(s);
 
     if (json.HasParseError()) {
