@@ -41,6 +41,7 @@ private:
   DpaHandler* m_dpaHandler;
 
   void executeDpaTransactionFunc(DpaTransaction* dpaTransaction);
+  void insertMessaging(std::unique_ptr<IMessaging> messaging);
 
   TaskQueue<DpaTransaction*> *m_dpaTransactionQueue;
   std::atomic_bool m_running;
@@ -48,7 +49,7 @@ private:
   
   std::map<std::string, IClient*> m_clients;
   std::vector<ISerializer*> m_serializers;
-  std::vector<IMessaging*> m_messagings;
+  std::map<std::string, std::unique_ptr<IMessaging>> m_messagings;
 
   IScheduler* m_scheduler;
   std::function<void(const DpaMessage&)> m_asyncHandler;

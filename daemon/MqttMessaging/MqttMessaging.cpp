@@ -31,6 +31,10 @@ public:
     m_messageHandlerFunc = hndl;
   }
 
+  const std::string& getName() const { return m_mqttClientId; }
+
+  void updateConfiguration(const rapidjson::Value& cfg);
+
   void unregisterMessageHandler() {
     m_messageHandlerFunc = IMessaging::MessageHandlerFunc();
   }
@@ -84,6 +88,16 @@ public:
   MQTTClient m_client;
   
   IMessaging::MessageHandlerFunc m_messageHandlerFunc;
+
+  //configuration
+  std::string m_mqttBrokerAddr;
+  std::string m_mqttClientId;
+  bool m_enabled = false;
+  std::string m_mqttTopicRequest;
+  std::string m_mqttTopicResponse;
+  int m_mqttQos;
+  unsigned long m_mqttTimeout;
+
 };
 
 MqttMessaging::MqttMessaging()
@@ -94,6 +108,11 @@ MqttMessaging::MqttMessaging()
 MqttMessaging::~MqttMessaging()
 {
   delete m_impl;
+}
+
+void MqttMessaging::updateConfiguration(const rapidjson::Value& cfg)
+{
+  m_impl->updateConfiguration(cfg);
 }
 
 void MqttMessaging::setDaemon(IDaemon* daemon)
@@ -127,7 +146,54 @@ void MqttMessaging::sendMessage(const ustring& msg)
   m_impl->sendMessage(msg);
 }
 
+const std::string& MqttMessaging::getName() const
+{
+  return m_impl->getName();
+}
+
+
 ////////////////////// Impl //////////////////
+//const std::string MQTT_BROKER_ADDRESS("tcp://localhost:1883");
+//const std::string MQTT_BROKER_ADDRESS("tcp://192.168.1.26:1883");
+//const std::string MQTT_CLIENTID("IqrfDpaMessaging");
+//const std::string MQTT_TOPIC_DPA_REQUEST("Iqrf/DpaRequest");
+//const std::string MQTT_TOPIC_DPA_RESPONSE("Iqrf/DpaResponse");
+//const int MQTT_QOS(1);
+//const unsigned long MQTT_TIMEOUT(10000);
+
+//std::string m_mqttBrokerAddr;
+//std::string m_mqttClientId;
+//std::string m_mqttTopicRequest;
+//std::string m_mqttTopicResponse;
+//int m_mqttQos;
+//unsigned long m_mqttTimeout;
+
+//{
+//  "BrokerAddr": "tcp://192.168.1.26:1883",
+//    "ClientId" : "IqrfDpaMessaging",
+//    "Enabled" : true,
+//    "Qos" : 1,
+//    "Timeout:" : 10000,
+//    "TopicRequest" : "Iqrf/DpaRequest",
+//    "TopicResponse" : "Iqrf/DpaResponse"
+//}
+
+void Impl::updateConfiguration(const rapidjson::Value& cfg)
+{
+  TRC_ENTER("");
+  jutils::assertIsObject("", cfg);
+
+  m_mqttBrokerAddr = jutils::getMemberAs<std::string>("BrokerAddr", cfg);
+  m_mqttClientId = jutils::getMemberAs<std::string>("ClientId", cfg);
+  m_enabled = jutils::getMemberAs<bool>("Enabled", cfg);
+  m_mqttQos = jutils::getMemberAs<int>("Qos", cfg);
+  m_mqttTimeout = (unsigned long)jutils::getMemberAs<int>("Timeout:", cfg);
+  m_mqttTopicRequest = jutils::getMemberAs<std::string>("TopicRequest", cfg);
+  m_mqttTopicResponse = jutils::getMemberAs<std::string>("TopicResponse", cfg);
+
+  TRC_LEAVE("");
+}
+
 void Impl::start()
 {
   TRC_ENTER("");

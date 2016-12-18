@@ -1,5 +1,6 @@
 #pragma once
 
+#include "JsonUtils.h"
 #include "IMessaging.h"
 #include <string>
 
@@ -21,6 +22,9 @@ public:
   void registerMessageHandler(MessageHandlerFunc hndl) override;
   void unregisterMessageHandler() override;
   void sendMessage(const ustring& msg) override;
+  const std::string& getName() const override;
+
+  void updateConfiguration(const rapidjson::Value& cfg);
 
 private:
   Impl* m_impl;

@@ -41,6 +41,7 @@ public:
   void registerMessageHandler(MessageHandlerFunc hndl) override {}
   void unregisterMessageHandler() override {}
   void sendMessage(const ustring& msg) override {}
+  const std::string& getName() const override { return m_name; }
 
   void sendDpaMessageToUdp(const DpaMessage&  dpaMessage);
 
@@ -58,6 +59,8 @@ private:
   UdpChannel *m_udpChannel;
   TaskQueue<ustring> *m_toUdpMessageQueue;
 
+  //configuration
+  std::string m_name;
   unsigned long int m_remotePort;
   unsigned long int m_localPort;
 

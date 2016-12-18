@@ -50,6 +50,14 @@ void MessagingController::executeDpaTransactionFunc(DpaTransaction* dpaTransacti
   }
 }
 
+void MessagingController::insertMessaging(std::unique_ptr<IMessaging> messaging)
+{
+  auto ret = m_messagings.insert(std::make_pair(messaging->getName(), std::move(messaging)));
+  if (!ret.second) {
+    THROW_EX(std::logic_error, "Duplicit Messaging configuration: " << NAME_PAR(name,ret.first->first));
+  }
+}
+
 void MessagingController::registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> asyncHandler)
 {
   m_asyncHandler = asyncHandler;
@@ -136,22 +144,31 @@ void MessagingController::startClients()
 {
   TRC_ENTER("");
 
-
   ///////// Messagings ///////////////////////////////////
   //TODO load Messagings plugins
   MqttMessaging* mqttMessaging(nullptr);
-  try {
-    mqttMessaging = ant_new MqttMessaging();
-    m_messagings.push_back(mqttMessaging);
-  }
-  catch (std::exception &e) {
-    CATCH_EX("Cannot create MqttMessaging ", std::exception, e);
+
+  const auto m = jutils::getMember("MqttMessaging", m_configuration);
+  const rapidjson::Value& vct = m->value;
+  jutils::assertIsArray("MqttMessaging", vct);
+
+  for (auto itr = vct.Begin(); itr != vct.End(); ++itr) {
+    jutils::assertIsObject("", *itr);
+    try {
+      std::unique_ptr<MqttMessaging> uptr(ant_new MqttMessaging());
+      uptr->updateConfiguration(*itr);
+      mqttMessaging = uptr.get(); //TODO
+      insertMessaging(std::move(uptr));
+    }
+    catch (std::exception &e) {
+      CATCH_EX("Cannot create MqttMessaging ", std::exception, e);
+    }
   }
 
   MqMessaging* mqMessaging(nullptr);
   try {
     mqMessaging = ant_new MqMessaging();
-    m_messagings.push_back(mqMessaging);
+    m_messagings.insert(std::make_pair("TODO", mqMessaging));
   }
   catch (std::exception &e) {
     CATCH_EX("Cannot create MqMessaging ", std::exception, e);
@@ -161,7 +178,7 @@ void MessagingController::startClients()
   try {
     udpMessaging = ant_new UdpMessaging();
     udpMessaging->setDaemon(this);
-    m_messagings.push_back(udpMessaging);
+    m_messagings.insert(std::make_pair("TODO",udpMessaging));
   }
   catch (std::exception &e) {
     CATCH_EX("Cannot create UdpMessaging ", std::exception, e);
@@ -211,9 +228,9 @@ void MessagingController::startClients()
     }
   }
 
-  for (auto ms : m_messagings) {
+  for (auto & ms : m_messagings) {
     try {
-      ms->start();
+      ms.second->start();
     }
     catch (std::exception &e) {
       CATCH_EX("Cannot start messaging ", std::exception, e);
@@ -232,9 +249,8 @@ void MessagingController::stopClients()
   }
   m_clients.clear();
 
-  for (auto ms : m_messagings) {
-    ms->stop();
-    delete ms;
+  for (auto & ms : m_messagings) {
+    ms.second->stop();
   }
   m_messagings.clear();
 

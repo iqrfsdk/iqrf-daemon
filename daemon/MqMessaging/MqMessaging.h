@@ -22,6 +22,7 @@ public:
   void registerMessageHandler(MessageHandlerFunc hndl) override;
   void unregisterMessageHandler() override;
   void sendMessage(const ustring& msg) override;
+  const std::string& getName() const override { return m_name; }
 
 private:
   int handleMessageFromMq(const ustring& mqMessage);
@@ -30,6 +31,8 @@ private:
   MqChannel* m_mqChannel;
   TaskQueue<ustring>* m_toMqMessageQueue;
 
+  //configuration
+  std::string m_name;
   std::string m_localMqName;
   std::string m_remoteMqName;
 

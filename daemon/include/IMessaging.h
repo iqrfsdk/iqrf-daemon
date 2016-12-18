@@ -18,4 +18,5 @@ public:
   virtual void registerMessageHandler(MessageHandlerFunc hndl) = 0;
   virtual void unregisterMessageHandler() = 0;
   virtual void sendMessage(const ustring& msg) = 0;
+  virtual const std::string& getName() const = 0;
 };
