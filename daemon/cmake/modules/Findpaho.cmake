@@ -34,11 +34,11 @@ find_path(PAHO_INC_DIR
 )
 
 find_library(PAHO_A_LIBRARY 
-    paho-mqtt3a 
+    paho-mqtt3as
 )
 
 find_library(PAHO_C_LIBRARY 
-    paho-mqtt3c 
+    paho-mqtt3cs
 )
 
 find_path(PAHO_LIB_DIR 
