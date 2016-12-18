@@ -146,8 +146,6 @@ void MessagingController::startClients()
 
   ///////// Messagings ///////////////////////////////////
   //TODO load Messagings plugins
-  MqttMessaging* mqttMessaging(nullptr);
-
   const auto m = jutils::getMember("MqttMessaging", m_configuration);
   const rapidjson::Value& vct = m->value;
   jutils::assertIsArray("MqttMessaging", vct);
@@ -157,7 +155,6 @@ void MessagingController::startClients()
     try {
       std::unique_ptr<MqttMessaging> uptr(ant_new MqttMessaging());
       uptr->updateConfiguration(*itr);
-      mqttMessaging = uptr.get(); //TODO
       insertMessaging(std::move(uptr));
     }
     catch (std::exception &e) {
@@ -197,15 +194,25 @@ void MessagingController::startClients()
   //TODO load clients plugins
   IClient* client1 = ant_new TestClient("TestClient1");
   client1->setDaemon(this);
-  client1->setMessaging(mqttMessaging);
-  client1->setSerializer(simpleSerializer);
-  m_clients.insert(std::make_pair(client1->getClientName(), client1));
+
+  //TODO will be solved by TestClient cfg
+  auto found1 = m_messagings.find("IqrfDpaMessaging");
+  if(found1 != m_messagings.end()) {
+    client1->setMessaging(found1->second.get());
+    client1->setSerializer(simpleSerializer);
+    m_clients.insert(std::make_pair(client1->getClientName(), client1));
+  }
 
   IClient* client2 = ant_new TestClient("TestClient2");
   client2->setDaemon(this);
-  client2->setMessaging(mqttMessaging);
-  client2->setSerializer(jsonSerializer);
-  m_clients.insert(std::make_pair(client2->getClientName(), client2));
+
+  //TODO will be solved by TestClient cfg
+  auto found2 = m_messagings.find("IqrfDpaMessaging");
+  if (found2 != m_messagings.end()) {
+    client2->setMessaging(found2->second.get());
+    client2->setSerializer(simpleSerializer);
+    m_clients.insert(std::make_pair(client2->getClientName(), client2));
+  }
 
   IClient* clientIqrfapp = ant_new TestClient("TestClientIqrfapp");
   clientIqrfapp->setDaemon(this);

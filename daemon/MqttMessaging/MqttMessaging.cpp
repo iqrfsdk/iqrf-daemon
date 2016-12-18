@@ -8,22 +8,22 @@
 #include <atomic>
 
 //const std::string MQTT_BROKER_ADDRESS("tcp://localhost:1883");
-const std::string MQTT_BROKER_ADDRESS("tcp://192.168.1.26:1883");
-const std::string MQTT_BROKER_ADDRESS_AZURE("ssl://iqrf-test.azure-devices.net:8883");
+//const std::string MQTT_BROKER_ADDRESS("tcp://192.168.1.26:1883");
+//const std::string MQTT_BROKER_ADDRESS_AZURE("ssl://iqrf-test.azure-devices.net:8883");
 
-const std::string MQTT_CLIENTID("IqrfDpaMessaging");
-const std::string MQTT_CLIENTID_AZURE("12345");
-
-const std::string MQTT_TOPIC_DPA_REQUEST("Iqrf/DpaRequest");
-const std::string MQTT_TOPIC_DPA_RESPONSE("Iqrf/DpaResponse");
-const std::string MQTT_TOPIC_DPA_REQUEST_AZURE("devices/12345/messages/devicebound/#");
-const std::string MQTT_TOPIC_DPA_RESPONSE_AZURE("devices/12345/messages/events/");
-
-const std::string MQTT_USERNAME_AZURE("iqrf-test.azure-devices.net/12345");
-const std::string MQTT_PASSWORD_AZURE("SharedAccessSignature sr=iqrf-test.azure-devices.net%2Fdevices%2F12345&sig=Xo6zrdRMcXT84zB941fTUT3WBvgn7LW3C355wOPmGNM%3D&se=1510560471");
-
-const int MQTT_QOS(1);
-const unsigned long MQTT_TIMEOUT(10000);
+//const std::string MQTT_CLIENTID("IqrfDpaMessaging");
+//const std::string MQTT_CLIENTID_AZURE("12345");
+//
+//const std::string MQTT_TOPIC_DPA_REQUEST("Iqrf/DpaRequest");
+//const std::string MQTT_TOPIC_DPA_RESPONSE("Iqrf/DpaResponse");
+//const std::string MQTT_TOPIC_DPA_REQUEST_AZURE("devices/12345/messages/devicebound/#");
+//const std::string MQTT_TOPIC_DPA_RESPONSE_AZURE("devices/12345/messages/events/");
+//
+//const std::string MQTT_USERNAME_AZURE("iqrf-test.azure-devices.net/12345");
+//const std::string MQTT_PASSWORD_AZURE("SharedAccessSignature sr=iqrf-test.azure-devices.net%2Fdevices%2F12345&sig=Xo6zrdRMcXT84zB941fTUT3WBvgn7LW3C355wOPmGNM%3D&se=1510560471");
+//
+//const int MQTT_QOS(1);
+//const unsigned long MQTT_TIMEOUT(10000);
 
 class Impl {
 public:
@@ -76,7 +76,7 @@ public:
   int msgarrvd(char *topicName, int topicLen, MQTTClient_message *message)
   {
     ustring msg((unsigned char*)message->payload, message->payloadlen);
-    if (!strncmp(topicName, MQTT_TOPIC_DPA_REQUEST.c_str(), topicLen))
+    if (!strncmp(topicName, m_mqttTopicRequest.c_str(), topicLen))
       handleMessageFromMqtt(msg);
     MQTTClient_freeMessage(&message);
     MQTTClient_free(topicName);
@@ -103,11 +103,14 @@ public:
   std::string m_mqttBrokerAddr;
   std::string m_mqttClientId;
   bool m_enabled = false;
+  int m_mqttPersistence = 0;
   std::string m_mqttTopicRequest;
   std::string m_mqttTopicResponse;
-  int m_mqttQos;
-  unsigned long m_mqttTimeout;
-
+  int m_mqttQos = 0;
+  unsigned long m_mqttTimeout = 10000;
+  std::string m_mqttUser;
+  std::string m_mqttPassword;
+  bool m_mqttEnabledSSL = false;
 };
 
 MqttMessaging::MqttMessaging()
@@ -161,33 +164,6 @@ const std::string& MqttMessaging::getName() const
   return m_impl->getName();
 }
 
-
-////////////////////// Impl //////////////////
-//const std::string MQTT_BROKER_ADDRESS("tcp://localhost:1883");
-//const std::string MQTT_BROKER_ADDRESS("tcp://192.168.1.26:1883");
-//const std::string MQTT_CLIENTID("IqrfDpaMessaging");
-//const std::string MQTT_TOPIC_DPA_REQUEST("Iqrf/DpaRequest");
-//const std::string MQTT_TOPIC_DPA_RESPONSE("Iqrf/DpaResponse");
-//const int MQTT_QOS(1);
-//const unsigned long MQTT_TIMEOUT(10000);
-
-//std::string m_mqttBrokerAddr;
-//std::string m_mqttClientId;
-//std::string m_mqttTopicRequest;
-//std::string m_mqttTopicResponse;
-//int m_mqttQos;
-//unsigned long m_mqttTimeout;
-
-//{
-//  "BrokerAddr": "tcp://192.168.1.26:1883",
-//    "ClientId" : "IqrfDpaMessaging",
-//    "Enabled" : true,
-//    "Qos" : 1,
-//    "Timeout:" : 10000,
-//    "TopicRequest" : "Iqrf/DpaRequest",
-//    "TopicResponse" : "Iqrf/DpaResponse"
-//}
-
 void Impl::updateConfiguration(const rapidjson::Value& cfg)
 {
   TRC_ENTER("");
@@ -196,10 +172,13 @@ void Impl::updateConfiguration(const rapidjson::Value& cfg)
   m_mqttBrokerAddr = jutils::getMemberAs<std::string>("BrokerAddr", cfg);
   m_mqttClientId = jutils::getMemberAs<std::string>("ClientId", cfg);
   m_enabled = jutils::getMemberAs<bool>("Enabled", cfg);
+  m_mqttPersistence = jutils::getMemberAs<int>("Persistence", cfg);
   m_mqttQos = jutils::getMemberAs<int>("Qos", cfg);
   m_mqttTimeout = (unsigned long)jutils::getMemberAs<int>("Timeout:", cfg);
   m_mqttTopicRequest = jutils::getMemberAs<std::string>("TopicRequest", cfg);
   m_mqttTopicResponse = jutils::getMemberAs<std::string>("TopicResponse", cfg);
+  m_mqttUser = jutils::getMemberAs<std::string>("User", cfg);
+  m_mqttPassword = jutils::getMemberAs<std::string>("Password", cfg);
 
   TRC_LEAVE("");
 }
@@ -207,6 +186,12 @@ void Impl::updateConfiguration(const rapidjson::Value& cfg)
 void Impl::start()
 {
   TRC_ENTER("");
+
+  if (!m_enabled) {
+    TRC_WAR("MqttMessaging DISABLED:" << PAR(m_mqttClientId));
+    TRC_LEAVE("");
+    return;
+  }
 
   m_toMqttMessageQueue = ant_new TaskQueue<ustring>([&](const ustring& msg) {
     sendTo(msg);
@@ -216,30 +201,33 @@ void Impl::start()
   MQTTClient_SSLOptions ssl_opts = MQTTClient_SSLOptions_initializer;
   int retval;
 
-  if ((retval = MQTTClient_create(&m_client, MQTT_BROKER_ADDRESS_AZURE.c_str(),
-    MQTT_CLIENTID_AZURE.c_str(), MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS) {
+  if ((retval = MQTTClient_create(&m_client, m_mqttBrokerAddr.c_str(),
+    m_mqttClientId.c_str(), m_mqttPersistence, NULL)) != MQTTCLIENT_SUCCESS) {
     THROW_EX(MqttChannelException, "MQTTClient_create() failed: " << PAR(retval));
   }
 
   conn_opts.keepAliveInterval = 20;
   conn_opts.cleansession = 1;
   conn_opts.connectTimeout = 5;
-  conn_opts.username = "iqrf-test.azure-devices.net/12345";
-  conn_opts.password = "SharedAccessSignature sr=iqrf-test.azure-devices.net%2Fdevices%2F12345&sig=Xo6zrdRMcXT84zB941fTUT3WBvgn7LW3C355wOPmGNM%3D&se=1510560471";
-  ssl_opts.enableServerCertAuth = true;
-  conn_opts.ssl = &ssl_opts;
+  conn_opts.username = m_mqttUser.c_str();
+  conn_opts.password = m_mqttPassword.c_str();
+  
+  if (m_mqttEnabledSSL) {
+    ssl_opts.enableServerCertAuth = true;
+    conn_opts.ssl = &ssl_opts;
+  }
 
   if ((retval = MQTTClient_setCallbacks(m_client, this, sconnlost, smsgarrvd, sdelivered)) != MQTTCLIENT_SUCCESS) {
     THROW_EX(MqttChannelException, "MQTTClient_setCallbacks() failed: " << PAR(retval));
   }
 
-  TRC_DBG("Connecting: " << PAR(MQTT_BROKER_ADDRESS_AZURE) << PAR(MQTT_CLIENTID_AZURE));
+  TRC_DBG("Connecting: " << PAR(m_mqttBrokerAddr) << PAR(m_mqttClientId));
   if ((retval = MQTTClient_connect(m_client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
     THROW_EX(MqttChannelException, "MQTTClient_connect() failed: " << PAR(retval));
   }
 
-  TRC_DBG("Subscribing: " << PAR(MQTT_TOPIC_DPA_REQUEST_AZURE) << PAR(MQTT_QOS));
-  if ((retval = MQTTClient_subscribe(m_client, MQTT_TOPIC_DPA_REQUEST_AZURE.c_str(), MQTT_QOS)) != MQTTCLIENT_SUCCESS) {
+  TRC_DBG("Subscribing: " << PAR(m_mqttTopicRequest) << PAR(m_mqttQos));
+  if ((retval = MQTTClient_subscribe(m_client, m_mqttTopicRequest.c_str(), m_mqttQos)) != MQTTCLIENT_SUCCESS) {
     THROW_EX(MqttChannelException, "MQTTClient_subscribe() failed: " << PAR(retval));
   }
 
@@ -253,10 +241,12 @@ void Impl::start()
 void Impl::stop()
 {
   TRC_ENTER("");
-  MQTTClient_disconnect(m_client, 10000);
-  MQTTClient_destroy(&m_client);
-  delete m_toMqttMessageQueue;
-  std::cout << "daemon-MQTT-protocol stopped" << std::endl;
+  if (m_enabled) {
+    MQTTClient_disconnect(m_client, 10000);
+    MQTTClient_destroy(&m_client);
+    delete m_toMqttMessageQueue;
+    std::cout << "daemon-MQTT-protocol stopped" << std::endl;
+  }
   TRC_LEAVE("");
 }
 
@@ -271,7 +261,7 @@ void Impl::handleMessageFromMqtt(const ustring& mqMessage)
 
 void Impl::sendTo(const ustring& msg)
 {
-  TRC_DBG("Sending to MQTT: " << NAME_PAR(topic, MQTT_TOPIC_DPA_RESPONSE) << std::endl <<
+  TRC_DBG("Sending to MQTT: " << NAME_PAR(topic, m_mqttTopicResponse) << std::endl <<
     FORM_HEX(msg.data(), msg.size()));
 
   MQTTClient_deliveryToken token;
@@ -280,10 +270,10 @@ void Impl::sendTo(const ustring& msg)
 
   pubmsg.payload = (void*)msg.data();
   pubmsg.payloadlen = (int)msg.size();
-  pubmsg.qos = MQTT_QOS;
+  pubmsg.qos = m_mqttQos;
   pubmsg.retained = 0;
   
-  MQTTClient_publishMessage(m_client, MQTT_TOPIC_DPA_RESPONSE_AZURE.c_str(), &pubmsg, &token);
-  TRC_DBG("Waiting for publication: " << PAR(MQTT_TIMEOUT));
-  retval = MQTTClient_waitForCompletion(m_client, token, MQTT_TIMEOUT);
+  MQTTClient_publishMessage(m_client, m_mqttTopicResponse.c_str(), &pubmsg, &token);
+  TRC_DBG("Waiting for publication: " << PAR(m_mqttTimeout));
+  retval = MQTTClient_waitForCompletion(m_client, token, m_mqttTimeout);
 }
