@@ -83,14 +83,21 @@ else()
 	)
 endif()
 
-install(
-    FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/config.json
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-    #DESTINATION $<TARGET_FILE_DIR:${PROJECT_NAME}>)
-
 if (WIN32)
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_SOURCE_DIR}/config.json
+        ${CMAKE_CURRENT_BINARY_DIR}/config.json
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/config.json)
 else()
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_SOURCE_DIR}/config.json
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>/config.json
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/config.json)
+
 INSTALL(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib)

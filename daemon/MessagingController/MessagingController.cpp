@@ -167,8 +167,9 @@ void MessagingController::startClients()
 
   MqMessaging* mqMessaging(nullptr);
   try {
-    mqMessaging = ant_new MqMessaging();
-    m_messagings.insert(std::make_pair("TODO", mqMessaging));
+    std::unique_ptr<MqMessaging> uptr = std::unique_ptr<MqMessaging>(ant_new MqMessaging());
+    mqMessaging = uptr.get();
+    insertMessaging(std::move(uptr));
   }
   catch (std::exception &e) {
     CATCH_EX("Cannot create MqMessaging ", std::exception, e);
@@ -176,9 +177,9 @@ void MessagingController::startClients()
 
   UdpMessaging* udpMessaging(nullptr);
   try {
-    udpMessaging = ant_new UdpMessaging();
-    udpMessaging->setDaemon(this);
-    m_messagings.insert(std::make_pair("TODO",udpMessaging));
+    std::unique_ptr<UdpMessaging> uptr = std::unique_ptr<UdpMessaging>(ant_new UdpMessaging());
+    udpMessaging = uptr.get();
+    insertMessaging(std::move(uptr));
   }
   catch (std::exception &e) {
     CATCH_EX("Cannot create UdpMessaging ", std::exception, e);
