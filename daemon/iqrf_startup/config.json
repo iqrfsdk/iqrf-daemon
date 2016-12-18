@@ -3,7 +3,7 @@
   "TraceFileName": "",
   "TraceFileName1": "iqrf.log",
   "TraceFileSize": 0,
-  "IqrfInterface": "/dev/ttyACM0",
+  "IqrfInterface": "COM6",
   
   "MqttMessaging": [
     {
