@@ -210,7 +210,7 @@ void MessagingController::startClients()
   auto found2 = m_messagings.find("IqrfDpaMessaging");
   if (found2 != m_messagings.end()) {
     client2->setMessaging(found2->second.get());
-    client2->setSerializer(simpleSerializer);
+    client2->setSerializer(jsonSerializer);
     m_clients.insert(std::make_pair(client2->getClientName(), client2));
   }
 

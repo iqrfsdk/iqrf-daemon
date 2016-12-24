@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 #endif
   std::cout << std::endl << argv[0] << " started";
 
-  std::string iqrf_port_name;
+  std::string configFile;
 
   if (SIG_ERR == signal(SIGINT, SignalHandler)) {
     std::cerr << std::endl << "Could not set control handler for SIGINT";
@@ -94,19 +94,17 @@ int main(int argc, char** argv)
 
   if (argc < 2) {
     std::cerr << "Usage" << std::endl;
-    std::cerr << "  iqrf_startup <iqrf_interface>" << std::endl << std::endl;
+    std::cerr << "  iqrf_startup <config file>" << std::endl << std::endl;
     std::cerr << "Example" << std::endl;
-    std::cerr << "  iqrf_startup COM5" << std::endl;
-    std::cerr << "  iqrf_startup /dev/ttyACM0" << std::endl;
-    std::cerr << "  iqrf_startup /dev/spidev0.0" << std::endl;
+    std::cerr << "  iqrf_startup config.json" << std::endl;
     return (-1);
   }
   else {
-    iqrf_port_name = argv[1];
+    configFile = argv[1];
   }
 
   try {
-    msgCtrl = std::unique_ptr<MessagingController>(ant_new MessagingController("config.json"));
+    msgCtrl = std::unique_ptr<MessagingController>(ant_new MessagingController(configFile));
     msgCtrl->watchDog();
   }
   catch (std::exception &e) {

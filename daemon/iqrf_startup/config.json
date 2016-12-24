@@ -3,7 +3,7 @@
   "TraceFileName": "",
   "TraceFileName1": "iqrf.log",
   "TraceFileSize": 0,
-  "IqrfInterface": "COM6",
+  "IqrfInterface": "COM5",
   
   "MqttMessaging": [
     {
@@ -35,7 +35,7 @@
   ],
 
   "Scheduler": {
-    "Tasks": [
+    "Tasks0": [
       "0 * * * * * * TestClient1 LedR 0 PULSE",
       "5 * * * * * * TestClient1 LedG 0 PULSE",
       "10 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
@@ -76,6 +76,20 @@
       "45 * * * * * * ClientService LedR 0 PULSE",
       "50 * * * * * * ClientService LedG 0 PULSE",
       "55 * * * * * * ClientService LedR 0 PULSE"
+    ],
+    "Tasks": [
+      "00 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+      "05 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+      "10 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+      "15 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+      "20 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+      "25 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+      "30 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+      "35 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+      "40 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+      "45 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+      "50 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+      "55 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}"
     ],
     "TasksTest": [
       "20 30 11 * * * 6 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
