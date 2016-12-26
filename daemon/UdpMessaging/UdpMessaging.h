@@ -58,13 +58,7 @@ private:
   void setExclusiveAccess();
   void resetExclusiveAccess();
 
-  std::atomic_bool m_exclusiveAccess = false;
-  //std::mutex m_watcherMutex;
-  //std::mutex m_conditionVariableMutex;
-  //std::condition_variable m_conditionVariable;
-  //std::thread m_watcherThread;
-  //void exclusiveAccessWatcher();
-  //std::atomic_bool m_watcherRunning;
+  std::atomic_bool m_exclusiveAccess;
   WatchDog<std::function<void()>> m_watchDog;
 
   MessagingController *m_messagingController;

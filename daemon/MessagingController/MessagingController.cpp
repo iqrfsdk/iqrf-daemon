@@ -94,6 +94,8 @@ MessagingController::MessagingController(const std::string& cfgFileName)
 {
     std::cout << std::endl << "Loading configuration file: " << PAR(cfgFileName);
 
+    m_exclusiveMode = false;
+
     jutils::parseJsonFile(m_cfgFileName, m_configuration);
     jutils::assertIsObject("", m_configuration);
     

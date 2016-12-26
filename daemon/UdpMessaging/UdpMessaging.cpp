@@ -178,6 +178,7 @@ UdpMessaging::UdpMessaging(MessagingController* messagingController)
   , m_udpChannel(nullptr)
   , m_toUdpMessageQueue(nullptr)
 {
+  m_exclusiveAccess = false;
   m_remotePort = 55000;
   m_localPort = 55300;
 

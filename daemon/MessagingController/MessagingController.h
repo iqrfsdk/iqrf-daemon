@@ -55,7 +55,7 @@ private:
 
   IChannel* m_iqrfInterface;
   DpaHandler* m_dpaHandler;
-  std::atomic_bool m_exclusiveMode = false;
+  std::atomic_bool m_exclusiveMode;
 
   void executeDpaTransactionFunc(DpaTransaction* dpaTransaction);
 
