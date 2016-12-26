@@ -35,7 +35,7 @@
   ],
 
   "Scheduler": {
-    "Tasks0": [
+    "Tasks": [
       "0 * * * * * * TestClient1 LedR 0 PULSE",
       "5 * * * * * * TestClient1 LedG 0 PULSE",
       "10 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
@@ -77,7 +77,7 @@
       "50 * * * * * * ClientService LedG 0 PULSE",
       "55 * * * * * * ClientService LedR 0 PULSE"
     ],
-    "Tasks": [
+    "Tasks3": [
       "00 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
       "05 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
       "10 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",

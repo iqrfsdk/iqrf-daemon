@@ -1,16 +1,17 @@
 #pragma once
 
-#include "TaskQueue.h"
 #include "DpaTransaction.h"
 #include "UdpChannel.h"
-#include "IDaemon.h"
 #include "IMessaging.h"
+#include "TaskQueue.h"
+#include "WatchDog.h"
 #include <string>
 #include <atomic>
 
 typedef std::basic_string<unsigned char> ustring;
 
 class UdpMessaging;
+class MessagingController;
 
 class UdpMessagingTransaction : public DpaTransaction
 {
@@ -28,10 +29,11 @@ private:
   bool m_success;
 };
 
-class UdpMessaging: public IMessaging
+class UdpMessaging : public IMessaging
 {
 public:
-  UdpMessaging();
+  UdpMessaging() = delete;
+  UdpMessaging(MessagingController* messagingController);
   virtual ~UdpMessaging();
 
   virtual void setDaemon(IDaemon* daemon);
@@ -53,7 +55,19 @@ public:
   void decodeMessageUdp(const ustring& udpMessage, ustring& message);
 
 private:
-  IDaemon *m_daemon;
+  void setExclusiveAccess();
+  void resetExclusiveAccess();
+
+  std::atomic_bool m_exclusiveAccess = false;
+  //std::mutex m_watcherMutex;
+  //std::mutex m_conditionVariableMutex;
+  //std::condition_variable m_conditionVariable;
+  //std::thread m_watcherThread;
+  //void exclusiveAccessWatcher();
+  //std::atomic_bool m_watcherRunning;
+  WatchDog<std::function<void()>> m_watchDog;
+
+  MessagingController *m_messagingController;
   UdpMessagingTransaction* m_transaction;
 
   UdpChannel *m_udpChannel;
@@ -63,7 +77,4 @@ private:
   std::string m_name;
   unsigned long int m_remotePort;
   unsigned long int m_localPort;
-
-  std::atomic_bool m_running;
-
 };

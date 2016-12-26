@@ -63,6 +63,7 @@ void Scheduler::stop()
     m_timerThread.join();
 
   delete m_dpaTaskQueue;
+  m_dpaTaskQueue = nullptr;
 
   TRC_INF("Scheduler stopped");
   TRC_LEAVE("");

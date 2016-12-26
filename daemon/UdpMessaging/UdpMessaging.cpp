@@ -1,6 +1,7 @@
 #include "DpaTask.h"
 #include "DpaMessage.h"
 #include "UdpMessaging.h"
+#include "MessagingController.h"
 #include "UdpMessage.h"
 #include "helpers.h"
 #include "IqrfLogging.h"
@@ -23,14 +24,41 @@ void UdpMessaging::sendDpaMessageToUdp(const DpaMessage&  dpaMessage)
 
 void UdpMessaging::setDaemon(IDaemon* daemon)
 {
-  m_daemon = daemon;
-  m_daemon->registerMessaging(*this);
+  //m_daemon = daemon;
+  //m_daemon->registerMessaging(*this);
+}
+
+void UdpMessaging::setExclusiveAccess()
+{
+  if (!m_exclusiveAccess) {
+    m_exclusiveAccess = true;
+    m_watchDog.start(30000, [&]() {resetExclusiveAccess(); });
+    m_messagingController->exclusiveAccess(true);
+    m_messagingController->getIqrfInterface()->registerReceiveFromHandler([&](const ustring& received)->int {
+      sendDpaMessageToUdp(received);
+      return 0;
+    });
+  }
+}
+
+void UdpMessaging::resetExclusiveAccess()
+{
+  if (m_exclusiveAccess) {
+    m_exclusiveAccess = false;
+    //m_watchDog.stop();
+    m_messagingController->exclusiveAccess(false);
+  }
 }
 
 int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
 {
   TRC_DBG("==================================" << std::endl <<
     "Received from UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
+
+  if (!m_exclusiveAccess)
+    setExclusiveAccess();
+  else
+    m_watchDog.pet();
 
   size_t msgSize = udpMessage.size();
   std::basic_string<unsigned char> message;
@@ -58,6 +86,11 @@ int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
 
   case IQRF_UDP_GET_GW_STATUS:          // --- Returns GW status ---
   {
+    if (!m_exclusiveAccess)
+      setExclusiveAccess();
+    else
+      m_watchDog.pet();
+
     ustring udpResponse(udpMessage);
     udpResponse[cmd] = udpResponse[cmd] | 0x80;
     ustring msg;
@@ -69,6 +102,8 @@ int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
 
   case IQRF_UDP_WRITE_IQRF:       // --- Writes data to the TR module ---
   {
+    m_messagingController->getIqrfInterface()->sendTo(message);
+    
     //send response
     ustring udpResponse(udpMessage.substr(0, IQRF_UDP_HEADER_SIZE));
     udpResponse[cmd] = udpResponse[cmd] | 0x80;
@@ -77,8 +112,8 @@ int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
     //TODO it is required to send back via subcmd write result - implement sync write with appropriate ret code
     m_toUdpMessageQueue->pushToQueue(udpResponse);
 
-    m_transaction->setMessage(message);
-    m_daemon->executeDpaTransaction(*m_transaction);
+    //m_transaction->setMessage(message);
+    //m_messagingController->executeDpaTransaction(*m_transaction);
   }
   return 0;
 
@@ -138,13 +173,15 @@ void UdpMessaging::decodeMessageUdp(const ustring& udpMessage, ustring& message)
   message = udpMessage.substr(IQRF_UDP_HEADER_SIZE, dlen);
 }
 
-UdpMessaging::UdpMessaging()
-  :m_daemon(nullptr)
+UdpMessaging::UdpMessaging(MessagingController* messagingController)
+  :m_messagingController(messagingController)
   , m_udpChannel(nullptr)
   , m_toUdpMessageQueue(nullptr)
 {
   m_remotePort = 55000;
   m_localPort = 55300;
+
+  m_messagingController->registerMessaging(*this);
 
   //m_remotePort = strtoul(remote_ip_port.c_str(), nullptr, 0);
   //if (0 == m_remotePort || ULONG_MAX == m_remotePort)

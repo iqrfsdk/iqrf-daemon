@@ -29,13 +29,22 @@ using namespace rapidjson;
 void MessagingController::executeDpaTransaction(DpaTransaction& dpaTransaction)
 {
   m_dpaTransactionQueue->pushToQueue(&dpaTransaction);
-  //TODO wait here for something
+}
+
+void MessagingController::abortAllDpaTransactions()
+{
+  TRC_ENTER("");
+  TRC_LEAVE("");
 }
 
 //called from task queue thread passed by lambda in task queue ctor
 void MessagingController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
 {
-  if (m_dpaHandler) {
+  if (m_exclusiveMode) {
+    TRC_DBG("Dpa interface is in exclusiveMode");
+    dpaTransaction->processFinish(DpaRequest::kCreated);
+  }
+  else if (m_dpaHandler) {
     try {
       m_dpaHandler->ExecuteDpaTransaction(*dpaTransaction);
     }
@@ -62,8 +71,18 @@ void MessagingController::registerAsyncDpaMessageHandler(std::function<void(cons
 {
   m_asyncHandler = asyncHandler;
   m_dpaHandler->RegisterAsyncMessageHandler([&](const DpaMessage& dpaMessage) {
-    m_asyncHandler(dpaMessage);
+    if (m_asyncHandler) {
+      m_asyncHandler(dpaMessage);
+    }
+    else {
+      TRC_WAR("Unregistered asyncHandler()");
+    }
   });
+}
+
+void MessagingController::unregisterAsyncDpaMessageHandler()
+{
+  m_asyncHandler = nullptr;
 }
 
 MessagingController::MessagingController(const std::string& cfgFileName)
@@ -140,6 +159,90 @@ void MessagingController::watchDog()
   TRC_LEAVE("");
 }
 
+void MessagingController::exclusiveAccess(bool mode)
+{
+  TRC_ENTER(PAR(mode));
+  if (mode == m_exclusiveMode)
+    return;
+  m_exclusiveMode = mode;
+  if (mode) {
+    TRC_INF("Exclusive mode enabled");
+    m_exclusiveMode = mode;
+    //stopClients();
+    //stopScheduler();
+    stopDpa();
+  }
+  else {
+    TRC_INF("Exclusive mode disabled");
+    startDpa();
+    //startScheduler();
+    //startClients();
+  }
+  TRC_LEAVE("");
+}
+
+IChannel* MessagingController::getIqrfInterface()
+{
+  return m_iqrfInterface;
+}
+
+///////// STARTS ////////////////////////////
+
+void MessagingController::startIqrfIf()
+{
+  try {
+    size_t found = m_iqrfInterfaceName.find("spi");
+    if (found != std::string::npos)
+      m_iqrfInterface = ant_new IqrfSpiChannel(m_iqrfInterfaceName);
+    else
+      m_iqrfInterface = ant_new IqrfCdcChannel(m_iqrfInterfaceName);
+  }
+  catch (std::exception& ae) {
+    TRC_ERR("There was an error during IqrfIf start: " << ae.what());
+  }
+
+  m_dpaTransactionQueue = ant_new TaskQueue<DpaTransaction*>([&](DpaTransaction* trans) {
+    executeDpaTransactionFunc(trans);
+  });
+
+}
+
+void MessagingController::startUdp()
+{
+  try {
+    m_udpMessaging = ant_new UdpMessaging(this);
+    m_udpMessaging->setDaemon(this);
+    m_udpMessaging->start();
+  }
+  catch (std::exception &e) {
+    CATCH_EX("Cannot create UdpMessaging ", std::exception, e);
+  }
+}
+
+void MessagingController::startDpa()
+{
+  try {
+    m_dpaHandler = ant_new DpaHandler(m_iqrfInterface);
+    m_dpaHandler->Timeout(100);    // Default timeout is infinite
+  }
+  catch (std::exception& ae) {
+    TRC_ERR("There was an error during DPA handler creation: " << ae.what());
+  }
+
+  //m_dpaTransactionQueue = ant_new TaskQueue<DpaTransaction*>([&](DpaTransaction* trans) {
+  //  executeDpaTransactionFunc(trans);
+  //});
+}
+
+void MessagingController::startScheduler()
+{
+  Scheduler* schd = ant_new Scheduler();
+  m_scheduler = schd;
+  schd->updateConfiguration(m_configuration);
+
+  m_scheduler->start();
+}
+
 void MessagingController::startClients()
 {
   TRC_ENTER("");
@@ -172,16 +275,6 @@ void MessagingController::startClients()
     CATCH_EX("Cannot create MqMessaging ", std::exception, e);
   }
 
-  UdpMessaging* udpMessaging(nullptr);
-  try {
-    std::unique_ptr<UdpMessaging> uptr = std::unique_ptr<UdpMessaging>(ant_new UdpMessaging());
-    udpMessaging = uptr.get();
-    insertMessaging(std::move(uptr));
-  }
-  catch (std::exception &e) {
-    CATCH_EX("Cannot create UdpMessaging ", std::exception, e);
-  }
-
   ///////// Serializers ///////////////////////////////////
   //TODO load Serializers plugins
   DpaTaskSimpleSerializerFactory* simpleSerializer = ant_new DpaTaskSimpleSerializerFactory();
@@ -197,7 +290,7 @@ void MessagingController::startClients()
 
   //TODO will be solved by TestClient cfg
   auto found1 = m_messagings.find("IqrfDpaMessaging");
-  if(found1 != m_messagings.end()) {
+  if (found1 != m_messagings.end()) {
     client1->setMessaging(found1->second.get());
     client1->setSerializer(simpleSerializer);
     m_clients.insert(std::make_pair(client1->getClientName(), client1));
@@ -248,6 +341,46 @@ void MessagingController::startClients()
   TRC_LEAVE("");
 }
 
+void MessagingController::start()
+{
+  TRC_ENTER("");
+
+  startIqrfIf();
+  startUdp();
+  startDpa();
+  startScheduler();
+  startClients();
+
+  TRC_INF("daemon started");
+  TRC_LEAVE("");
+}
+
+///////// STOPS ////////////////////////////
+
+void MessagingController::stopIqrfIf()
+{
+  delete m_dpaTransactionQueue;
+  m_dpaTransactionQueue = nullptr;
+  
+  delete m_iqrfInterface;
+  m_iqrfInterface = nullptr;
+}
+
+void MessagingController::stopUdp()
+{
+  m_udpMessaging->stop();
+  delete m_udpMessaging;
+  m_udpMessaging = nullptr;
+}
+
+void MessagingController::stopDpa()
+{
+  //delete m_dpaTransactionQueue;
+  delete m_dpaHandler;
+  //m_dpaTransactionQueue = nullptr;
+  m_dpaHandler = nullptr;
+}
+
 void MessagingController::stopClients()
 {
   TRC_ENTER("");
@@ -270,39 +403,11 @@ void MessagingController::stopClients()
   TRC_LEAVE("");
 }
 
-void MessagingController::start()
+
+void MessagingController::stopScheduler()
 {
-  TRC_ENTER("");
-
-  try {
-    size_t found = m_iqrfInterfaceName.find("spi");
-    if (found != std::string::npos)
-      m_iqrfInterface = ant_new IqrfSpiChannel(m_iqrfInterfaceName);
-    else
-      m_iqrfInterface = ant_new IqrfCdcChannel(m_iqrfInterfaceName);
-
-    m_dpaHandler = ant_new DpaHandler(m_iqrfInterface);
-
-    m_dpaHandler->Timeout(100);    // Default timeout is infinite
-  }
-  catch (std::exception& ae) {
-    TRC_ERR("There was an error during DPA handler creation: " << ae.what());
-  }
-
-  m_dpaTransactionQueue = ant_new TaskQueue<DpaTransaction*>([&](DpaTransaction* trans) {
-    executeDpaTransactionFunc(trans);
-  });
-
-  Scheduler* schd = ant_new Scheduler();
-  m_scheduler = schd;
-  schd->updateConfiguration(m_configuration);
-
-  startClients();
-
-  m_scheduler->start();
-
-  TRC_INF("daemon started");
-  TRC_LEAVE("");
+  m_scheduler->stop();
+  delete m_scheduler;
 }
 
 void MessagingController::stop()
@@ -310,19 +415,16 @@ void MessagingController::stop()
   TRC_ENTER("");
   TRC_INF("daemon stops");
 
-  m_scheduler->stop();
-
   stopClients();
-
-  delete m_scheduler;
-
-  //TODO unregister call-backs first ?
-  delete m_iqrfInterface;
-  delete m_dpaTransactionQueue;
-  delete m_dpaHandler;
+  stopScheduler();
+  stopDpa();
+  stopUdp();
+  stopIqrfIf();
 
   TRC_LEAVE("");
 }
+
+/////////////////////////////////////
 
 void MessagingController::exit()
 {

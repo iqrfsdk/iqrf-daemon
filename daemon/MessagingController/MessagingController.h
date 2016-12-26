@@ -14,6 +14,7 @@ typedef std::basic_string<unsigned char> ustring;
 
 class IChannel;
 class DpaHandler;
+class UdpMessaging;
 
 class MessagingController : public IDaemon
 {
@@ -21,26 +22,43 @@ public:
   MessagingController(const std::string& cfgFileName);
   virtual ~MessagingController();
   virtual void executeDpaTransaction(DpaTransaction& dpaTransaction);
+  void abortAllDpaTransactions();
   //TODO unregister
   virtual void registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> message_handler);
+  virtual void unregisterAsyncDpaMessageHandler();
   virtual std::set<IMessaging*>& getSetOfMessaging();
   virtual void registerMessaging(IMessaging& messaging);
   virtual void unregisterMessaging(IMessaging& messaging);
   virtual IScheduler* getScheduler() { return m_scheduler; }
 
-  void startClients();
-  void stopClients();
-
-  void start();
-  void stop();
   void exit();
   void watchDog();
 
+  void exclusiveAccess(bool mode); 
+  IChannel* getIqrfInterface();
+
 private:
+  void startIqrfIf();
+  void startUdp();
+  void startDpa();
+  void startClients();
+  void startScheduler();
+
+  void stopIqrfIf();
+  void stopUdp();
+  void stopDpa();
+  void stopClients();
+  void stopScheduler();
+
+  void start();
+  void stop();
+
   IChannel* m_iqrfInterface;
   DpaHandler* m_dpaHandler;
+  std::atomic_bool m_exclusiveMode = false;
 
   void executeDpaTransactionFunc(DpaTransaction* dpaTransaction);
+
   void insertMessaging(std::unique_ptr<IMessaging> messaging);
 
   TaskQueue<DpaTransaction*> *m_dpaTransactionQueue;
@@ -51,7 +69,9 @@ private:
   std::vector<ISerializer*> m_serializers;
   std::map<std::string, std::unique_ptr<IMessaging>> m_messagings;
 
-  IScheduler* m_scheduler;
+  UdpMessaging* m_udpMessaging = nullptr;
+  IScheduler* m_scheduler = nullptr;
+
   std::function<void(const DpaMessage&)> m_asyncHandler;
 
   //configuration
