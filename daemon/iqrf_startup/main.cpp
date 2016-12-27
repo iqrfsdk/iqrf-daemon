@@ -63,7 +63,6 @@ int main(int argc, char** argv)
 #if defined(WIN) && defined(_DEBUG)
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
-  std::cout << std::endl << argv[0] << " started";
 
   std::string configFile;
 
@@ -93,7 +92,7 @@ int main(int argc, char** argv)
 #endif
 
   if (argc < 2) {
-    std::cerr << "Usage" << std::endl;
+    std::cerr << std::endl << "Usage" << std::endl;
     std::cerr << "  iqrf_startup <config file>" << std::endl << std::endl;
     std::cerr << "Example" << std::endl;
     std::cerr << "  iqrf_startup config.json" << std::endl;
@@ -102,6 +101,8 @@ int main(int argc, char** argv)
   else {
     configFile = argv[1];
   }
+
+  std::cout << std::endl << argv[0] << " started";
 
   try {
     msgCtrl = std::unique_ptr<MessagingController>(ant_new MessagingController(configFile));
