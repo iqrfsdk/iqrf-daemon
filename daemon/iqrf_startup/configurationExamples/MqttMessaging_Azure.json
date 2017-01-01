@@ -1,0 +1,13 @@
+{
+  "BrokerAddr": "ssl://iqrf-test.azure-devices.net:8883",
+  "ClientId": "12345",
+  "Enabled": false,
+  "Persistence": 1,
+  "Qos": 1,
+  "Timeout:": 10000,
+  "TopicRequest": "devices/12345/messages/devicebound/#",
+  "TopicResponse": "devices/12345/messages/events/",
+  "User": "iqrf-test.azure-devices.net/12345",
+  "Password": "SharedAccessSignature sr=iqrf-test.azure-devices.net%2Fdevices%2F12345&sig=Xo6zrdRMcXT84zB941fTUT3WBvgn7LW3C355wOPmGNM%3D&se=1510560471",
+  "EnabledSSL": true
+}

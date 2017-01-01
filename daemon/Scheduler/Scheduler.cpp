@@ -18,8 +18,7 @@ void Scheduler::updateConfiguration(rapidjson::Value& cfg)
   TRC_ENTER("");
   jutils::assertIsObject("", cfg);
 
-  const rapidjson::Value& sch = jutils::getMemberAsObject("Scheduler", cfg);
-  std::vector<std::string> records = jutils::getMemberAsVector<std::string>("Tasks", sch);
+  std::vector<std::string> records = jutils::getMemberAsVector<std::string>("Tasks", cfg);
 
   std::vector<std::shared_ptr<ScheduleRecord>> tempRecords;
   int i = 0;

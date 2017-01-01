@@ -1,0 +1,22 @@
+{
+  "Configuration": "v0.0",
+  "ConfigurationDir": "configuration",
+  "Components": [
+    {
+      "ComponentName": "TracerFile",
+      "Enabled":  true
+    },
+    {
+      "ComponentName": "IqrfInterface",
+      "Enabled":  true
+    },
+    {
+      "ComponentName": "MqttMessaging",
+      "Enabled":  true
+    },
+    {
+      "ComponentName": "Scheduler",
+      "Enabled":  true
+    }
+  ]
+}

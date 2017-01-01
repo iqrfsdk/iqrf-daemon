@@ -1,0 +1,16 @@
+{
+  "Tasks": [
+    "0 * * * * * * TestClient1 LedR 0 PULSE",
+    "5 * * * * * * TestClient1 LedG 0 PULSE",
+    "10 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "15 * * * * * * TestClient2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "20 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
+    "25 * * * * * * TestClient1 Raw 00 00 07 03 ff ff",
+    "30 * * * * * * TestClient1 LedR 0 PULSE",
+    "35 * * * * * * TestClient1 LedG 0 PULSE",
+    "40 * * * * * * TestClient2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "45 * * * * * * TestClient2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "50 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
+    "55 * * * * * * TestClient1 Raw 00 00 07 03 ff ff"
+  ]
+}

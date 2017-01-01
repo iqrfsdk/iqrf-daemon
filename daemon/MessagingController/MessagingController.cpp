@@ -106,18 +106,22 @@ MessagingController::MessagingController(const std::string& cfgFileName)
       THROW_EX(std::logic_error, "Unexpected configuration: " << PAR(cfgVersion) << "expected: " << m_cfgVersion);
     }
 
-    m_traceFileName = jutils::getPossibleMemberAs<std::string>("TraceFileName", m_configuration, "");
-    m_traceFileSize = jutils::getPossibleMemberAs<int>("TraceFileSize", m_configuration, 0);
-    if (m_traceFileSize <= 0)
-      m_traceFileSize = TRC_DEFAULT_FILE_MAXSIZE;
+    //m_iqrfInterfaceName = jutils::getMemberAs<std::string>("IqrfInterface", m_configuration);
+    //TRC_INF(PAR(m_iqrfInterfaceName));
 
-    TRC_START(m_traceFileName, m_traceFileSize);
-    TRC_INF("Loaded configuration file: " << PAR(cfgFileName));
-    TRC_INF("Opened trace file: " << PAR(m_traceFileName) << PAR(m_traceFileSize) );
+    //prepare list
+    m_configurationDir = jutils::getMemberAs<std::string>("ConfigurationDir", m_configuration);
+    const auto m = jutils::getMember("Components", m_configuration);
+    const rapidjson::Value& vct = m->value;
+    jutils::assertIsArray("Components", vct);
 
-    m_iqrfInterfaceName = jutils::getMemberAs<std::string>("IqrfInterface", m_configuration);
-    TRC_INF(PAR(m_iqrfInterfaceName));
-
+    for (auto itr = vct.Begin(); itr != vct.End(); ++itr) {
+      jutils::assertIsObject("Components[]", *itr);
+      std::string componentName = jutils::getMemberAs<std::string>("ComponentName", *itr);
+      bool enabled = jutils::getMemberAs<bool>("Enabled", *itr);
+      auto inserted = m_componentMap.insert(make_pair(componentName, ComponentDescriptor(componentName,enabled)));
+      inserted.first->second.loadConfiguration(m_configurationDir);
+    }
 }
 
 MessagingController::~MessagingController()
@@ -189,19 +193,63 @@ IChannel* MessagingController::getIqrfInterface()
 }
 
 ///////// STARTS ////////////////////////////
+void MessagingController::startTrace()
+{
+  auto fnd = m_componentMap.find("TracerFile");
+  if (fnd != m_componentMap.end() && fnd->second.m_enabled) {
+    try {
+      jutils::assertIsObject("", fnd->second.m_doc);
+
+      m_traceFileName = jutils::getPossibleMemberAs<std::string>("TraceFileName", fnd->second.m_doc, "");
+      m_traceFileSize = jutils::getPossibleMemberAs<int>("TraceFileSize", fnd->second.m_doc, 0);
+      if (m_traceFileSize <= 0)
+        m_traceFileSize = TRC_DEFAULT_FILE_MAXSIZE;
+
+      TRC_START(m_traceFileName, m_traceFileSize);
+      TRC_INF("Loaded configuration file: " << PAR(m_cfgFileName));
+      TRC_INF("Opened trace file: " << PAR(m_traceFileName) << PAR(m_traceFileSize));
+
+    }
+    catch (std::exception &e) {
+      std::cout << "Cannot create TracerFile: " << e.what() << std::endl;
+    }
+  }
+}
 
 void MessagingController::startIqrfIf()
 {
-  try {
-    size_t found = m_iqrfInterfaceName.find("spi");
-    if (found != std::string::npos)
-      m_iqrfInterface = ant_new IqrfSpiChannel(m_iqrfInterfaceName);
-    else
-      m_iqrfInterface = ant_new IqrfCdcChannel(m_iqrfInterfaceName);
+
+  auto fnd = m_componentMap.find("IqrfInterface");
+  if (fnd != m_componentMap.end() && fnd->second.m_enabled) {
+    try {
+      m_iqrfInterfaceName = jutils::getMemberAs<std::string>("IqrfInterface", fnd->second.m_doc);
+      TRC_INF(PAR(m_iqrfInterfaceName));
+
+      size_t found = m_iqrfInterfaceName.find("spi");
+      if (found != std::string::npos)
+        m_iqrfInterface = ant_new IqrfSpiChannel(m_iqrfInterfaceName);
+      else
+        m_iqrfInterface = ant_new IqrfCdcChannel(m_iqrfInterfaceName);
+
+    }
+    catch (std::exception &e) {
+      CATCH_EX("Cannot create IqrfInterface: ", std::exception, e);
+    }
   }
-  catch (std::exception& ae) {
-    TRC_ERR("There was an error during IqrfIf start: " << ae.what());
-  }
+
+  //m_iqrfInterfaceName = jutils::getMemberAs<std::string>("IqrfInterface", m_configuration);
+  //TRC_INF(PAR(m_iqrfInterfaceName));
+
+  //try {
+  //  size_t found = m_iqrfInterfaceName.find("spi");
+  //  if (found != std::string::npos)
+  //    m_iqrfInterface = ant_new IqrfSpiChannel(m_iqrfInterfaceName);
+  //  else
+  //    m_iqrfInterface = ant_new IqrfCdcChannel(m_iqrfInterfaceName);
+  //}
+  //catch (std::exception& ae) {
+  //  TRC_ERR("There was an error during IqrfIf start: " << ae.what());
+  //}
 
   m_dpaTransactionQueue = ant_new TaskQueue<DpaTransaction*>([&](DpaTransaction* trans) {
     executeDpaTransactionFunc(trans);
@@ -230,17 +278,22 @@ void MessagingController::startDpa()
   catch (std::exception& ae) {
     TRC_ERR("There was an error during DPA handler creation: " << ae.what());
   }
-
-  //m_dpaTransactionQueue = ant_new TaskQueue<DpaTransaction*>([&](DpaTransaction* trans) {
-  //  executeDpaTransactionFunc(trans);
-  //});
 }
 
 void MessagingController::startScheduler()
 {
   Scheduler* schd = ant_new Scheduler();
   m_scheduler = schd;
-  schd->updateConfiguration(m_configuration);
+
+  auto fnd = m_componentMap.find("Scheduler");
+  if (fnd != m_componentMap.end() && fnd->second.m_enabled) {
+    try {
+      schd->updateConfiguration(fnd->second.m_doc);
+    }
+    catch (std::exception &e) {
+      CATCH_EX("Cannot create Scheduler: ", std::exception, e);
+    }
+  }
 
   m_scheduler->start();
 }
@@ -251,15 +304,12 @@ void MessagingController::startClients()
 
   ///////// Messagings ///////////////////////////////////
   //TODO load Messagings plugins
-  const auto m = jutils::getMember("MqttMessaging", m_configuration);
-  const rapidjson::Value& vct = m->value;
-  jutils::assertIsArray("MqttMessaging", vct);
 
-  for (auto itr = vct.Begin(); itr != vct.End(); ++itr) {
-    jutils::assertIsObject("", *itr);
+  auto fnd = m_componentMap.find("MqttMessaging");
+  if (fnd != m_componentMap.end() && fnd->second.m_enabled) {
     try {
       std::unique_ptr<MqttMessaging> uptr(ant_new MqttMessaging());
-      uptr->updateConfiguration(*itr);
+      uptr->updateConfiguration(fnd->second.m_doc);
       insertMessaging(std::move(uptr));
     }
     catch (std::exception &e) {
@@ -347,6 +397,7 @@ void MessagingController::start()
 {
   TRC_ENTER("");
 
+  startTrace();
   startIqrfIf();
   startUdp();
   startDpa();
@@ -358,6 +409,10 @@ void MessagingController::start()
 }
 
 ///////// STOPS ////////////////////////////
+
+void MessagingController::stopTrace()
+{
+}
 
 void MessagingController::stopIqrfIf()
 {
@@ -422,14 +477,29 @@ void MessagingController::stop()
   stopDpa();
   stopUdp();
   stopIqrfIf();
+  stopTrace();
 
   TRC_LEAVE("");
 }
-
-/////////////////////////////////////
 
 void MessagingController::exit()
 {
   TRC_INF("exiting ...");
   m_running = false;
+}
+
+/////////////////////////////////////
+
+void ComponentDescriptor::loadConfiguration(const std::string configurationDir)
+{
+  std::ostringstream os;
+  os << configurationDir << '/' << m_componentName << ".json";
+
+  try {
+    jutils::parseJsonFile(os.str(), m_doc);
+  }
+  catch (std::exception &e) {
+    CATCH_EX("Cannot load file " << NAME_PAR(fname, os.str()), std::exception, e);
+  }
+
 }

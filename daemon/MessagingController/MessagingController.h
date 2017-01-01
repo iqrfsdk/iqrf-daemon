@@ -9,12 +9,30 @@
 #include <map>
 #include <string>
 #include <atomic>
+#include <vector>
 
 typedef std::basic_string<unsigned char> ustring;
 
 class IChannel;
 class DpaHandler;
 class UdpMessaging;
+
+class ComponentDescriptor {
+public:
+  ComponentDescriptor(const std::string& componentName, bool enabled)
+    : m_componentName(componentName)
+    , m_enabled(enabled)
+  {}
+  void loadConfiguration(const std::string configurationDir);
+
+  rapidjson::Value& getConfiguration() {
+    return m_doc;
+  }
+
+  std::string m_componentName;
+  bool m_enabled = false;
+  rapidjson::Document m_doc;
+};
 
 class MessagingController : public IDaemon
 {
@@ -38,6 +56,7 @@ public:
   IChannel* getIqrfInterface();
 
 private:
+  void startTrace();
   void startIqrfIf();
   void startUdp();
   void startDpa();
@@ -49,6 +68,7 @@ private:
   void stopDpa();
   void stopClients();
   void stopScheduler();
+  void stopTrace();
 
   void start();
   void stop();
@@ -81,4 +101,9 @@ private:
   std::string m_traceFileName;
   int m_traceFileSize = 0;
   std::string m_iqrfInterfaceName;
+
+  //
+  std::string m_configurationDir;
+  std::map<std::string, ComponentDescriptor> m_componentMap;
+
 };

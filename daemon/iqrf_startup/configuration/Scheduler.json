@@ -1,0 +1,16 @@
+{
+  "Tasks": [
+    "00 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+    "05 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+    "10 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+    "15 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+    "20 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+    "25 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+    "30 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+    "35 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+    "40 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+    "45 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+    "50 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+    "55 * * * * * * TestClient2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}"
+  ]
+}

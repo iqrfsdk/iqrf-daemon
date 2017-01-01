@@ -12,6 +12,16 @@ set(iqrf_startup_SRC_FILES
 set(iqrf_startup_INC_FILES
 )
 
+file(GLOB_RECURSE _HDRFILES ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+file(GLOB_RECURSE _SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+file(GLOB_RECURSE _CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/configuration/*)
+file(GLOB_RECURSE _CONFIG_EX ${CMAKE_CURRENT_SOURCE_DIR}/configurationExamples/*)
+
+source_group("Header Files" FILES ${_HDRFILES})
+source_group("Source Files" FILES ${_SRCFILES})
+source_group("Config" FILES ${_CONFIG})
+source_group("ConfigExamples" FILES ${_CONFIG_EX})
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/UdpChannel)
 include_directories(${CMAKE_SOURCE_DIR}/MqChannel)
@@ -32,7 +42,8 @@ include_directories(${clibspi_INCLUDE_DIRS})
 include_directories(${clibdpa_INCLUDE_DIRS})
 include_directories(${PAHO_INCLUDE_DIRS})
 
-add_executable(${PROJECT_NAME} ${iqrf_startup_SRC_FILES} ${iqrf_startup_INC_FILES})
+#add_executable(${PROJECT_NAME} ${iqrf_startup_SRC_FILES} ${iqrf_startup_INC_FILES})
+add_executable(${PROJECT_NAME} ${_HDRFILES} ${_SRCFILES} ${_CONFIG} ${_CONFIG_EX})
 
 if (WIN32) 
  	target_link_libraries(${PROJECT_NAME}
@@ -84,22 +95,44 @@ else()
 endif()
 
 if (WIN32)
-add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_SOURCE_DIR}/config.json
-        ${CMAKE_CURRENT_BINARY_DIR}/config.json
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/config.json)
+set (_CONFIG_DEST ${CMAKE_CURRENT_BINARY_DIR})
+
 else()
-add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_SOURCE_DIR}/config.json
-        $<TARGET_FILE_DIR:${PROJECT_NAME}>/config.json
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/config.json)
+set (_CONFIG_DEST $<TARGET_FILE_DIR:${PROJECT_NAME}>)
 
 INSTALL(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib)
+
 endif()
+
+# do the copying
+foreach( file_i ${_CONFIG})
+    add_custom_command(
+    TARGET ${PROJECT_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -E copy ${file_i} ${_CONFIG_DEST}/configuration
+)
+endforeach( file_i )
+
+# if (WIN32)
+# add_custom_command(
+        # TARGET ${PROJECT_NAME} POST_BUILD
+        # COMMAND ${CMAKE_COMMAND} -E copy
+        # ${CMAKE_CURRENT_SOURCE_DIR}/configuration/*
+        # ${CMAKE_CURRENT_BINARY_DIR}/configuration
+        # DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/configuration/*)
+# else()
+# add_custom_command(
+        # TARGET ${PROJECT_NAME} POST_BUILD
+        # COMMAND ${CMAKE_COMMAND} -E copy
+        # ${CMAKE_CURRENT_SOURCE_DIR}/config.json
+        # $<TARGET_FILE_DIR:${PROJECT_NAME}>/config.json
+        # DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/config.json)
+
+# INSTALL(TARGETS ${PROJECT_NAME}
+    # RUNTIME DESTINATION bin
+    # LIBRARY DESTINATION lib)
+# endif()
 

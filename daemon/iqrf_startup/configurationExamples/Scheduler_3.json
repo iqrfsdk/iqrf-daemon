@@ -1,0 +1,16 @@
+{
+  "Tasks": [
+    "00 * * * * * * ClientService LedR 0 PULSE",
+    "05 * * * * * * ClientService LedR 0 PULSE",
+    "10 * * * * * * ClientService LedG 0 PULSE",
+    "15 * * * * * * ClientService LedR 0 PULSE",
+    "20 * * * * * * ClientService LedG 0 PULSE",
+    "25 * * * * * * ClientService LedR 0 PULSE",
+    "30 * * * * * * ClientService LedG 0 PULSE",
+    "35 * * * * * * ClientService LedR 0 PULSE",
+    "40 * * * * * * ClientService LedG 0 PULSE",
+    "45 * * * * * * ClientService LedR 0 PULSE",
+    "50 * * * * * * ClientService LedG 0 PULSE",
+    "55 * * * * * * ClientService LedR 0 PULSE"
+  ]
+}
