@@ -21,6 +21,7 @@ void parseRequestJson(DpaTask& dpaTask, rapidjson::Value& val)
   jutils::assertIsObject("", val);
   dpaTask.setAddress(jutils::getMemberAs<int>("Addr", val));
   dpaTask.parseCommand(jutils::getMemberAs<std::string>("Comd", val));
+  dpaTask.setTimeout(jutils::getPossibleMemberAs<int>("Timeout", val, -1));
 }
 
 void encodeResponseJson(const DpaTask& dpaTask, rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc)
@@ -34,6 +35,12 @@ void encodeResponseJson(const DpaTask& dpaTask, rapidjson::Value& val, rapidjson
 
   v.SetString(dpaTask.encodeCommand().c_str(), alloc);
   val.AddMember("Comd", v, alloc);
+
+  if (dpaTask.getTimeout() > 0) {
+    v.SetInt(dpaTask.getTimeout());
+    val.AddMember("Timeout", v, alloc);
+  }
+
 }
 
 //-------------------------------
@@ -41,6 +48,7 @@ PrfRawJson::PrfRawJson(rapidjson::Value& val)
 {
   jutils::assertIsObject("", val);
   std::string buf = jutils::getMemberAs<std::string>("Request", val);
+  setTimeout(jutils::getPossibleMemberAs<int>("Timeout", val, -1));
 
   std::istringstream istr(buf);
 
@@ -75,6 +83,11 @@ std::string PrfRawJson::encodeResponse(const std::string& errStr) const
 
   v.SetString(ostr.str().c_str(), doc.GetAllocator());
   doc.AddMember("Response", v, doc.GetAllocator());
+
+  if (getTimeout() > 0) {
+    v.SetInt(getTimeout());
+    doc.AddMember("Timeout", v, doc.GetAllocator());
+  }
 
   StringBuffer buffer;
   PrettyWriter<StringBuffer> writer(buffer);

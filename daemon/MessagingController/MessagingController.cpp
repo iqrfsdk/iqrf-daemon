@@ -106,9 +106,6 @@ MessagingController::MessagingController(const std::string& cfgFileName)
       THROW_EX(std::logic_error, "Unexpected configuration: " << PAR(cfgVersion) << "expected: " << m_cfgVersion);
     }
 
-    //m_iqrfInterfaceName = jutils::getMemberAs<std::string>("IqrfInterface", m_configuration);
-    //TRC_INF(PAR(m_iqrfInterfaceName));
-
     //prepare list
     m_configurationDir = jutils::getMemberAs<std::string>("ConfigurationDir", m_configuration);
     const auto m = jutils::getMember("Components", m_configuration);
@@ -237,20 +234,6 @@ void MessagingController::startIqrfIf()
     }
   }
 
-  //m_iqrfInterfaceName = jutils::getMemberAs<std::string>("IqrfInterface", m_configuration);
-  //TRC_INF(PAR(m_iqrfInterfaceName));
-
-  //try {
-  //  size_t found = m_iqrfInterfaceName.find("spi");
-  //  if (found != std::string::npos)
-  //    m_iqrfInterface = ant_new IqrfSpiChannel(m_iqrfInterfaceName);
-  //  else
-  //    m_iqrfInterface = ant_new IqrfCdcChannel(m_iqrfInterfaceName);
-  //}
-  //catch (std::exception& ae) {
-  //  TRC_ERR("There was an error during IqrfIf start: " << ae.what());
-  //}
-
   m_dpaTransactionQueue = ant_new TaskQueue<DpaTransaction*>([&](DpaTransaction* trans) {
     executeDpaTransactionFunc(trans);
   });
@@ -273,7 +256,7 @@ void MessagingController::startDpa()
 {
   try {
     m_dpaHandler = ant_new DpaHandler(m_iqrfInterface);
-    m_dpaHandler->Timeout(100);    // Default timeout is infinite
+    m_dpaHandler->Timeout(200);    // Default timeout is infinite
   }
   catch (std::exception& ae) {
     TRC_ERR("There was an error during DPA handler creation: " << ae.what());

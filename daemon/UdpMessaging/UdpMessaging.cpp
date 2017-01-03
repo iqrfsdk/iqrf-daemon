@@ -290,6 +290,11 @@ const DpaMessage& UdpMessagingTransaction::getMessage() const
   return m_message;
 }
 
+int UdpMessagingTransaction::getTimeout() const
+{
+  return -1;
+}
+
 void UdpMessagingTransaction::processConfirmationMessage(const DpaMessage& confirmation)
 {
   m_udpMessaging->sendDpaMessageToUdp(confirmation);

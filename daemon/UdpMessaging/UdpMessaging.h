@@ -18,10 +18,11 @@ class UdpMessagingTransaction : public DpaTransaction
 public:
   UdpMessagingTransaction(UdpMessaging* udpMessaging);
   virtual ~UdpMessagingTransaction();
-  virtual const DpaMessage& getMessage() const;
-  virtual void processConfirmationMessage(const DpaMessage& confirmation);
-  virtual void processResponseMessage(const DpaMessage& response);
-  virtual void processFinish(DpaRequest::DpaRequestStatus status);
+  const DpaMessage& getMessage() const override;
+  int getTimeout() const override;
+  void processConfirmationMessage(const DpaMessage& confirmation) override;
+  void processResponseMessage(const DpaMessage& response) override;
+  void processFinish(DpaRequest::DpaRequestStatus status) override;
   void setMessage(ustring message);
 private:
   DpaMessage m_message;

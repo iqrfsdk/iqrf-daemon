@@ -1,16 +1,16 @@
 {
   "Tasks": [
-    "00 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
-    "05 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
-    "10 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
-    "15 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
-    "20 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
-    "25 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
-    "30 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
-    "35 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
-    "40 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
-    "45 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
-    "50 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}",
-    "55 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\"}"
+    "00 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "05 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "10 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "15 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "20 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "25 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "30 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "35 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "40 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "45 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "50 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "55 * * * * * * TestClient2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}"
   ]
 }

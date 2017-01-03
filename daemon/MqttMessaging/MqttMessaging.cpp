@@ -7,24 +7,6 @@
 #include <string.h>
 #include <atomic>
 
-//const std::string MQTT_BROKER_ADDRESS("tcp://localhost:1883");
-//const std::string MQTT_BROKER_ADDRESS("tcp://192.168.1.26:1883");
-//const std::string MQTT_BROKER_ADDRESS_AZURE("ssl://iqrf-test.azure-devices.net:8883");
-
-//const std::string MQTT_CLIENTID("IqrfDpaMessaging");
-//const std::string MQTT_CLIENTID_AZURE("12345");
-//
-//const std::string MQTT_TOPIC_DPA_REQUEST("Iqrf/DpaRequest");
-//const std::string MQTT_TOPIC_DPA_RESPONSE("Iqrf/DpaResponse");
-//const std::string MQTT_TOPIC_DPA_REQUEST_AZURE("devices/12345/messages/devicebound/#");
-//const std::string MQTT_TOPIC_DPA_RESPONSE_AZURE("devices/12345/messages/events/");
-//
-//const std::string MQTT_USERNAME_AZURE("iqrf-test.azure-devices.net/12345");
-//const std::string MQTT_PASSWORD_AZURE("SharedAccessSignature sr=iqrf-test.azure-devices.net%2Fdevices%2F12345&sig=Xo6zrdRMcXT84zB941fTUT3WBvgn7LW3C355wOPmGNM%3D&se=1510560471");
-//
-//const int MQTT_QOS(1);
-//const unsigned long MQTT_TIMEOUT(10000);
-
 class Impl {
 public:
   Impl()
