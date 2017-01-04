@@ -77,17 +77,31 @@ std::string PrfRawJson::encodeResponse(const std::string& errStr) const
   v.SetString(getPrfName().c_str(), doc.GetAllocator());
   doc.AddMember("Type", v, doc.GetAllocator());
 
-  std::ostringstream ostr;
-  int len = m_response.Length();
-  ostr << iqrf::TracerHexString((unsigned char*)m_response.DpaPacket().Buffer, m_response.Length(), true);
+  {
+    std::ostringstream ostr;
+    int len = m_request.Length();
+    ostr << iqrf::TracerHexString((unsigned char*)m_request.DpaPacket().Buffer, m_request.Length(), true);
 
-  v.SetString(ostr.str().c_str(), doc.GetAllocator());
-  doc.AddMember("Response", v, doc.GetAllocator());
+    v.SetString(ostr.str().c_str(), doc.GetAllocator());
+    doc.AddMember("Request", v, doc.GetAllocator());
+  }
 
-  if (getTimeout() > 0) {
+  {
+    std::ostringstream ostr;
+    int len = m_response.Length();
+    ostr << iqrf::TracerHexString((unsigned char*)m_response.DpaPacket().Buffer, m_response.Length(), true);
+
+    v.SetString(ostr.str().c_str(), doc.GetAllocator());
+    doc.AddMember("Response", v, doc.GetAllocator());
+  }
+
+  if (getTimeout() >= 0) {
     v.SetInt(getTimeout());
     doc.AddMember("Timeout", v, doc.GetAllocator());
   }
+
+  v.SetString(errStr.c_str(), doc.GetAllocator());
+  doc.AddMember("Result", v, doc.GetAllocator());
 
   StringBuffer buffer;
   PrettyWriter<StringBuffer> writer(buffer);
