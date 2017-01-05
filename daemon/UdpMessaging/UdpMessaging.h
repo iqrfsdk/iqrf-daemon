@@ -18,6 +18,7 @@ public:
   UdpMessagingTransaction(UdpMessaging* udpMessaging);
   virtual ~UdpMessagingTransaction();
   virtual const DpaMessage& getMessage() const;
+  virtual int getTimeout() const { return -1; }
   virtual void processConfirmationMessage(const DpaMessage& confirmation);
   virtual void processResponseMessage(const DpaMessage& response);
   virtual void processFinish(DpaRequest::DpaRequestStatus status);
