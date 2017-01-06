@@ -3,7 +3,7 @@ project (daemon)
 enable_language(CXX)
 enable_language(C)
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.10)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
@@ -18,9 +18,11 @@ ELSE()
 	MESSAGE("Paho cannot be found")
 ENDIF()
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_DEBUG "_DEBUG")
-endif()
+set_directory_properties(PROPERTIES COMPILE_DEFINITIONS $<$<CONFIG:Debug>:_DEBUG>)
+
+#if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+#  set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_DEBUG "_DEBUG")
+#endif()
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)

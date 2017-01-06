@@ -335,7 +335,7 @@ void MessagingController::startClients()
   client2->setDaemon(this);
 
   //TODO will be solved by TestClient cfg
-  auto found2 = m_messagings.find("IqrfDpaMessaging");
+  auto found2 = m_messagings.find("MqttMessaging");
   if (found2 != m_messagings.end()) {
     client2->setMessaging(found2->second.get());
     client2->setSerializer(jsonSerializer);

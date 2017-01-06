@@ -42,7 +42,6 @@ include_directories(${clibspi_INCLUDE_DIRS})
 include_directories(${clibdpa_INCLUDE_DIRS})
 include_directories(${PAHO_INCLUDE_DIRS})
 
-#add_executable(${PROJECT_NAME} ${iqrf_startup_SRC_FILES} ${iqrf_startup_INC_FILES})
 add_executable(${PROJECT_NAME} ${_HDRFILES} ${_SRCFILES} ${_CONFIG} ${_CONFIG_EX})
 
 if (WIN32) 
@@ -77,7 +76,7 @@ else()
 	SimpleSerializer
 	Scheduler
 	MqttMessaging
-	${PAHO_C_LIBRARY}
+	paho-mqtt3cs
 	MqMessaging
 	DpaExtension
 	MqChannel
@@ -106,15 +105,24 @@ INSTALL(TARGETS ${PROJECT_NAME}
 
 endif()
 
+if (WIN32)
 # do the copying
-foreach( file_i ${_CONFIG})
+  foreach( file_i ${_CONFIG})
     add_custom_command(
     TARGET ${PROJECT_NAME}
     POST_BUILD
     COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy ${file_i} ${_CONFIG_DEST}/configuration
-)
-endforeach( file_i )
+    ARGS -E copy ${file_i} ${_CONFIG_DEST}/configuration/
+    )
+  endforeach( file_i )
+else()
+    add_custom_command(
+    TARGET ${PROJECT_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/configuration ${_CONFIG_DEST}/configuration
+    )
+endif()
 
 # if (WIN32)
 # add_custom_command(

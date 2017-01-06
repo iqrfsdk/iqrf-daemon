@@ -4,13 +4,10 @@
 #  PAHO_ROOT_DIR - The paho root path
 #  PAHO_INCLUDE_DIRS - The paho include directories
 #  PAHO_LIBRARY_DIRS - The libraries include directories
-#  PAHO_A_LIBRARY - Async paho library
-#  PAHO_C_LIBRARY - Sync paho library
-#  PAHO_DEFINITIONS - Compiler switches required for using paho
 # 
 #	To satisfy this finder paho has to be installed properly
 #   Download https://github.com/eclipse/paho.mqtt.c.git
-#   Build in a directory outside sources:
+#   Build in a directory outside sources e.g:
 #     mkdir pahoBuild
 #	  cd pahoBuild
 #	  cmake -G "Visual Studio 12 2013 Win64" -DPAHO_WITH_SSL=FALSE -DPAHO_BUILD_DOCUMENTATION=FALSE -DPAHO_BUILD_SAMPLES=TRUE ../paho.mqtt.c
@@ -33,37 +30,24 @@ find_path(PAHO_INC_DIR
     MQTTClient.h
 )
 
-find_library(PAHO_A_LIBRARY 
-    paho-mqtt3as
+find_library(PAHO_C_LIB 
+    paho-mqtt3c
 )
 
-find_library(PAHO_C_LIBRARY 
-    paho-mqtt3cs
-)
-
-find_path(PAHO_LIB_DIR 
-    paho-mqtt3c 
-)
+get_filename_component(PAHO_LIB_DIR ${PAHO_C_LIB} DIRECTORY CACHE)
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LOGGING_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(PAHO DEFAULT_MSG PAHO_INC_DIR PAHO_A_LIBRARY PAHO_C_LIBRARY)
+find_package_handle_standard_args(PAHO DEFAULT_MSG PAHO_INC_DIR PAHO_C_LIB)
 
 if (PAHO_FOUND)
-	list(APPEND PAHO_LIBRARIES ${PAHO_A_LIBRARY}  ${PAHO_C_LIBRARY} )
     set(PAHO_INCLUDE_DIRS ${PAHO_INC_DIR} )
     set(PAHO_LIBRARY_DIRS ${PAHO_LIB_DIR} )
     set(PAHO_DEFINITIONS )
-
-    #MESSAGE(STATUS "PAHO_ROOT_DIR: " ${PAHO_ROOT_DIR} )
-	#MESSAGE(STATUS "PAHO_INCLUDE_DIRS: " ${PAHO_INCLUDE_DIRS})
-	#MESSAGE(STATUS "PAHO_LIBRARIES:")
-	#foreach(found ${PAHO_LIBRARIES})
-	#	message(STATUS "found='${found}'")
-	#endforeach()
-	#MESSAGE(STATUS "PAHO_DEFINITIONS: " ${PAHO_DEFINITIONS})
+    #MESSAGE(STATUS "PAHO_DEFINITIONS: " ${PAHO_DEFINITIONS})
 endif()
 
 # Tell cmake GUIs to ignore the "local" variables.
-mark_as_advanced(PAHO_INC_DIR PAHO_LIB_DIR)
+mark_as_advanced(PAHO_INC_DIR PAHO_LIB_DIR PAHO_C_LIB)
+

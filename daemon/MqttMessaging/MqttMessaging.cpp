@@ -161,6 +161,7 @@ void Impl::updateConfiguration(const rapidjson::Value& cfg)
   m_mqttTopicResponse = jutils::getMemberAs<std::string>("TopicResponse", cfg);
   m_mqttUser = jutils::getMemberAs<std::string>("User", cfg);
   m_mqttPassword = jutils::getMemberAs<std::string>("Password", cfg);
+  m_mqttEnabledSSL= jutils::getMemberAs<bool>("EnabledSSL", cfg);
 
   TRC_LEAVE("");
 }
@@ -181,6 +182,7 @@ void Impl::start()
 
   MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
   MQTTClient_SSLOptions ssl_opts = MQTTClient_SSLOptions_initializer;
+  ssl_opts.enableServerCertAuth = true;
   int retval;
 
   if ((retval = MQTTClient_create(&m_client, m_mqttBrokerAddr.c_str(),
@@ -195,7 +197,6 @@ void Impl::start()
   conn_opts.password = m_mqttPassword.c_str();
   
   if (m_mqttEnabledSSL) {
-    ssl_opts.enableServerCertAuth = true;
     conn_opts.ssl = &ssl_opts;
   }
 
