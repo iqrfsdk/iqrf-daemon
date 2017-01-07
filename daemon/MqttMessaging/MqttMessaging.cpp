@@ -23,7 +23,7 @@ public:
     m_messageHandlerFunc = hndl;
   }
 
-  const std::string& getName() const { return m_mqttClientId; }
+  const std::string& getName() const { return m_myName; }
 
   void updateConfiguration(const rapidjson::Value& cfg);
 
@@ -93,6 +93,8 @@ public:
   std::string m_mqttUser;
   std::string m_mqttPassword;
   bool m_mqttEnabledSSL = false;
+
+  std::string m_myName = "MqttMessaging";
 };
 
 MqttMessaging::MqttMessaging()

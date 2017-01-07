@@ -51,6 +51,8 @@ void TestClient::stop()
 {
   TRC_ENTER("");
 
+  m_daemon->getScheduler()->unregisterMessageHandler(m_name);
+
   TRC_INF("TestClient :" << PAR(m_name) << " stopped");
   TRC_LEAVE("");
 }

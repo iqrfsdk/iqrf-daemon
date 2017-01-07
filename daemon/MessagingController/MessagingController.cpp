@@ -319,24 +319,20 @@ void MessagingController::startClients()
   m_serializers.push_back(jsonSerializer);
 
   //////// Clients //////////////////////////////////
-  //TODO load clients plugins
-  IClient* client1 = ant_new TestClient("TestClient1");
-  client1->setDaemon(this);
-
-  //TODO will be solved by TestClient cfg
   auto found1 = m_messagings.find("IqrfDpaMessaging");
   if (found1 != m_messagings.end()) {
+    IClient* client1 = ant_new TestClient("TestClient1");
+    client1->setDaemon(this);
     client1->setMessaging(found1->second.get());
     client1->setSerializer(simpleSerializer);
     m_clients.insert(std::make_pair(client1->getClientName(), client1));
   }
 
-  IClient* client2 = ant_new TestClient("TestClient2");
-  client2->setDaemon(this);
-
   //TODO will be solved by TestClient cfg
   auto found2 = m_messagings.find("MqttMessaging");
   if (found2 != m_messagings.end()) {
+    IClient* client2 = ant_new TestClient("TestClient2");
+    client2->setDaemon(this);
     client2->setMessaging(found2->second.get());
     client2->setSerializer(jsonSerializer);
     m_clients.insert(std::make_pair(client2->getClientName(), client2));

@@ -62,8 +62,8 @@ private:
   std::atomic_bool m_exclusiveAccess;
   WatchDog<std::function<void()>> m_watchDog;
 
-  MessagingController *m_messagingController;
-  UdpMessagingTransaction* m_transaction;
+  MessagingController *m_messagingController = nullptr;
+  UdpMessagingTransaction* m_transaction = nullptr;
 
   UdpChannel *m_udpChannel;
   TaskQueue<ustring> *m_toUdpMessageQueue;
