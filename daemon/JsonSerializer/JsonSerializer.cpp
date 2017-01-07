@@ -154,12 +154,12 @@ std::unique_ptr<DpaTask> DpaTaskJsonSerializerFactory::parseRequest(const std::s
     std::string perif = jutils::getMemberAs<std::string>("Type", doc);
 
     auto obj = createObject(perif, doc);
+    m_lastError = "OK";
     return std::move(obj);
   }
   catch (std::exception &e) {
     m_lastError = e.what();
   }
-  m_lastError = "OK";
 }
 
 std::string DpaTaskJsonSerializerFactory::getLastError() const
