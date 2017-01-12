@@ -1,0 +1,3 @@
+{
+  "IqrfInterface": "/dev/spidev0.0"
+}
