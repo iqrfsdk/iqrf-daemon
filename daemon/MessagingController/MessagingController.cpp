@@ -319,12 +319,18 @@ void MessagingController::startClients()
   m_serializers.push_back(jsonSerializer);
 
   //////// Clients //////////////////////////////////
-  auto found1 = m_messagings.find("IqrfDpaMessaging");
+  //TODO load Clients plugins
+  //auto found1 = m_messagings.find("IqrfDpaMessaging");
+  auto found1 = m_messagings.find("MqMessaging");
   if (found1 != m_messagings.end()) {
     IClient* client1 = ant_new TestClient("TestClient1");
     client1->setDaemon(this);
     client1->setMessaging(found1->second.get());
+
+    //multi-serializer support
     client1->setSerializer(simpleSerializer);
+    client1->setSerializer(jsonSerializer);
+
     m_clients.insert(std::make_pair(client1->getClientName(), client1));
   }
 
@@ -338,11 +344,12 @@ void MessagingController::startClients()
     m_clients.insert(std::make_pair(client2->getClientName(), client2));
   }
 
-  IClient* clientIqrfapp = ant_new TestClient("TestClientIqrfapp");
-  clientIqrfapp->setDaemon(this);
-  clientIqrfapp->setMessaging(mqMessaging);
-  clientIqrfapp->setSerializer(simpleSerializer);
-  m_clients.insert(std::make_pair(clientIqrfapp->getClientName(), clientIqrfapp));
+  //IClient* clientIqrfapp = ant_new TestClient("TestClientIqrfapp");
+  //IClient* clientIqrfapp = ant_new TestClient("MqMessaging");
+  //clientIqrfapp->setDaemon(this);
+  //clientIqrfapp->setMessaging(mqMessaging);
+  //clientIqrfapp->setSerializer(simpleSerializer);
+  //m_clients.insert(std::make_pair(clientIqrfapp->getClientName(), clientIqrfapp));
 
   //IClient* clientService = ant_new ClientService("ClientService");
   //clientIqrfapp->setDaemon(this);

@@ -9,6 +9,7 @@ MqMessaging::MqMessaging()
   :m_daemon(nullptr)
   , m_mqChannel(nullptr)
   , m_toMqMessageQueue(nullptr)
+  , m_name("MqMessaging")
 {
   m_localMqName = "iqrf-daemon-110";
   m_remoteMqName = "iqrf-daemon-100";

@@ -7,7 +7,7 @@ TestClient::TestClient(const std::string & name)
   :m_name(name)
   , m_messaging(nullptr)
   , m_daemon(nullptr)
-  , m_serializer(nullptr)
+  //, m_serializer(nullptr)
 {
 }
 
@@ -22,7 +22,8 @@ void TestClient::setDaemon(IDaemon* daemon)
 
 void TestClient::setSerializer(ISerializer* serializer)
 {
-  m_serializer = serializer;
+  //m_serializer = serializer;
+  m_serializerVect.push_back(serializer);
   m_messaging->registerMessageHandler([&](const ustring& msg) {
     handleMsgFromMessaging(msg);
   });
@@ -69,7 +70,14 @@ void TestClient::handleMsgFromMessaging(const ustring& msg)
   std::string msgs((const char*)msg.data(), msg.size());
   std::istringstream is(msgs);
 
-  std::unique_ptr<DpaTask> dpaTask = m_serializer->parseRequest(msgs);
+  std::unique_ptr<DpaTask> dpaTask;
+  for (auto ser : m_serializerVect) {
+    dpaTask = ser->parseRequest(msgs);
+    if (dpaTask) {
+      break;
+    }
+  }
+  //std::unique_ptr<DpaTask> dpaTask = m_serializer->parseRequest(msgs);
   if (dpaTask) {
     DpaTransactionTask trans(*dpaTask);
     m_daemon->executeDpaTransaction(trans);
@@ -77,7 +85,8 @@ void TestClient::handleMsgFromMessaging(const ustring& msg)
     os << dpaTask->encodeResponse(trans.getErrorStr());
   }
   else {
-    os << m_serializer->getLastError();
+    //os << m_serializer->getLastError();
+    os << "PARSE ERROR";
   }
 
   ustring msgu((unsigned char*)os.str().data(), os.str().size());

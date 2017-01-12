@@ -5,9 +5,10 @@
 #include "IMessaging.h"
 #include "IScheduler.h"
 #include <string>
-#include <chrono>
-#include <map>
-#include <memory>
+//#include <chrono>
+//#include <map>
+//#include <memory>
+#include <vector>
 
 class IDaemon;
 
@@ -36,5 +37,5 @@ private:
 
   IMessaging* m_messaging;
   IDaemon* m_daemon;
-  ISerializer* m_serializer;
+  std::vector<ISerializer*> m_serializerVect;
 };
