@@ -219,6 +219,7 @@ void MessagingController::startIqrfIf()
   auto fnd = m_componentMap.find("IqrfInterface");
   if (fnd != m_componentMap.end() && fnd->second.m_enabled) {
     try {
+      jutils::assertIsObject("", fnd->second.m_doc);
       m_iqrfInterfaceName = jutils::getMemberAs<std::string>("IqrfInterface", fnd->second.m_doc);
       TRC_INF(PAR(m_iqrfInterfaceName));
 
@@ -271,6 +272,7 @@ void MessagingController::startScheduler()
   auto fnd = m_componentMap.find("Scheduler");
   if (fnd != m_componentMap.end() && fnd->second.m_enabled) {
     try {
+      jutils::assertIsObject("", fnd->second.m_doc);
       schd->updateConfiguration(fnd->second.m_doc);
     }
     catch (std::exception &e) {
@@ -486,6 +488,7 @@ void ComponentDescriptor::loadConfiguration(const std::string configurationDir)
   }
   catch (std::exception &e) {
     CATCH_EX("Cannot load file " << NAME_PAR(fname, os.str()), std::exception, e);
+    std::cerr << std::endl << "Cannot load file " << NAME_PAR(fname, os.str()) << NAME_PAR(error, e.what()) << std::endl;
   }
 
 }
