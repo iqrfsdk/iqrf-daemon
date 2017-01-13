@@ -1,14 +1,14 @@
-From 42418795c0cc219f5aaf49a3b5f44c3e0d1796fb Mon Sep 17 00:00:00 2001
+From 4b036c3761bd70a3c03fb6f3f79397e16d13eec7 Mon Sep 17 00:00:00 2001
 From: Frantisek Mikulu <frantisek.mikulu@openhs.org>
-Date: Sat, 26 Nov 2016 14:28:39 +0100
-Subject: [PATCH] Fixed build and installation for Win
+Date: Fri, 13 Jan 2017 08:10:23 +0100
+Subject: [PATCH] Fixed build and installation for Win and SSL
 
 ---
- src/CMakeLists.txt | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ src/CMakeLists.txt | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
 
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 1faaa92..3960a8f 100644
+index 1faaa92..dea8391 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -50,14 +50,14 @@ SET(common_src
@@ -37,7 +37,7 @@ index 1faaa92..3960a8f 100644
      LIBRARY DESTINATION lib)
  INSTALL(FILES MQTTAsync.h MQTTClient.h MQTTClientPersistence.h
      DESTINATION include)
-@@ -81,17 +82,19 @@ IF (PAHO_WITH_SSL)
+@@ -81,17 +82,20 @@ IF (PAHO_WITH_SSL)
          )
      ADD_LIBRARY(paho-mqtt3cs SHARED ${common_src} MQTTClient.c SSLSocket.c)
      ADD_LIBRARY(paho-mqtt3as SHARED ${common_src} MQTTAsync.c SSLSocket.c)
@@ -48,7 +48,9 @@ index 1faaa92..3960a8f 100644
      SET_TARGET_PROPERTIES(
          paho-mqtt3cs paho-mqtt3as PROPERTIES
          VERSION ${CLIENT_VERSION}
-         SOVERSION ${PAHO_VERSION_MAJOR})
+-        SOVERSION ${PAHO_VERSION_MAJOR})
++        SOVERSION ${PAHO_VERSION_MAJOR}
++        COMPILE_FLAGS -DOPENSSL)
      INSTALL(TARGETS paho-mqtt3cs
          RUNTIME DESTINATION bin
 +        ARCHIVE DESTINATION lib
