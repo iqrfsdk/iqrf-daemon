@@ -36,7 +36,8 @@ class PrfLedSimple : public L
 {
 public:
   explicit PrfLedSimple(std::istream& istr) {
-    parseRequestSimple(*this, parseTokens(*this, istr));
+    std::vector<std::string> v = parseTokens(*this, istr);
+    parseRequestSimple(*this, v);
   }
 
   virtual ~PrfLedSimple() {}

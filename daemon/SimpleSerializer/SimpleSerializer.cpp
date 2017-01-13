@@ -1,6 +1,7 @@
 #include "SimpleSerializer.h"
 #include "IqrfLogging.h"
 #include <vector>
+#include <iterator>
 #include <array>
 
 std::vector<std::string> parseTokens(DpaTask& dpaTask, std::istream& istr)
@@ -111,7 +112,8 @@ std::string PrfRawSimple::encodeResponse(const std::string& errStr) const
 //////////////////////////////////////////
 PrfThermometerSimple::PrfThermometerSimple(std::istream& istr)
 {
-  parseRequestSimple(*this, parseTokens(*this, istr));
+  std::vector<std::string> v = parseTokens(*this, istr);
+  parseRequestSimple(*this, v);
 }
 
 std::string PrfThermometerSimple::encodeResponse(const std::string& errStr) const
