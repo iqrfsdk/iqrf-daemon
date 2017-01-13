@@ -9,28 +9,26 @@ std::vector<std::string> parseTokens(DpaTask& dpaTask, std::istream& istr)
   std::istream_iterator<std::string> end;
   std::vector<std::string> vstrings(begin, end);
 
-  std::string timeoutStr, clientIdStr;
   std::size_t found;
   auto it = vstrings.begin();
   while (it != vstrings.end()) {
     if (std::string::npos != (found = it->find("TIMEOUT"))) {
-      timeoutStr = *it;
+      std::string timeoutStr = *it;
       it = vstrings.erase(it);
       found = timeoutStr.find_first_of('=');
       if (std::string::npos != found && found < timeoutStr.size()-1) {
-        int timeout = std::stoi(timeoutStr.substr(++found, timeoutStr.size()-1));
-        dpaTask.setTimeout(timeout);
+        dpaTask.setTimeout(std::stoi(timeoutStr.substr(++found, timeoutStr.size() - 1)));
       }
       else {
         THROW_EX(std::logic_error, "Parse error: " << NAME_PAR(token, timeoutStr));
       }
     }
     else if (std::string::npos != (found = it->find("CLID"))) {
-      clientIdStr = *it;
+      std::string clientIdStr = *it;
       it = vstrings.erase(it);
-      found = timeoutStr.find_first_of('=');
-      if (std::string::npos != found && found < timeoutStr.size() - 1) {
-        std::string clid = clientIdStr.substr(++found, timeoutStr.size()-1);
+      found = clientIdStr.find_first_of('=');
+      if (std::string::npos != found && found < clientIdStr.size() - 1) {
+        dpaTask.setClid(clientIdStr.substr(++found, clientIdStr.size() - 1));
       }
       else {
         THROW_EX(std::logic_error, "Parse error: " << NAME_PAR(token, clientIdStr));
@@ -68,6 +66,9 @@ void encodeTokens(const DpaTask& dpaTask, const std::string& errStr, std::ostrea
   if (dpaTask.getTimeout() >= 0) {
     ostr << " " << "TIMEOUT=" << dpaTask.getTimeout();
   }
+  if (!dpaTask.getClid().empty()) {
+    ostr << " " << "CLID=" << dpaTask.getClid();
+  }
   ostr << " " << errStr;
 }
 
@@ -77,7 +78,7 @@ void encodeTokens(const DpaTask& dpaTask, const std::string& errStr, std::ostrea
 //00 00 07 03 ff ff  LedG 0 PULSE
 
 PrfRawSimple::PrfRawSimple(std::istream& istr)
-  :DpaRawTask()
+  :PrfRaw()
 {
   uint8_t bbyte;
   int val;
@@ -117,7 +118,10 @@ std::string PrfThermometerSimple::encodeResponse(const std::string& errStr) cons
 {
   std::ostringstream ostr;
   encodeResponseSimple(*this, ostr);
-  ostr << " " << getFloatTemperature() << " " << errStr;
+  ostr << " " << getFloatTemperature();
+
+  encodeTokens(*this, errStr, ostr);
+
   return ostr.str();
 }
 

@@ -138,7 +138,7 @@ std::string PrfThermometerJson::encodeResponse(const std::string& errStr) const
 ///////////////////////////////////////////
 DpaTaskJsonSerializerFactory::DpaTaskJsonSerializerFactory()
 {
-  registerClass<PrfRawJson>(DpaRawTask::PRF_NAME);
+  registerClass<PrfRawJson>(PrfRaw::PRF_NAME);
   registerClass<PrfThermometerJson>(PrfThermometer::PRF_NAME);
   registerClass<PrfLedGJson>(PrfLedG::PRF_NAME);
   registerClass<PrfLedRJson>(PrfLedR::PRF_NAME);

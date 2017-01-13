@@ -2,6 +2,7 @@
 
 #include "ISerializer.h"
 #include "ObjectFactory.h"
+#include "PrfRaw.h"
 #include "PrfThermometer.h"
 #include "PrfLeds.h"
 #include "PlatformDep.h"
@@ -16,7 +17,7 @@
 void parseRequestJson(DpaTask& dpaTask, rapidjson::Value& val);
 void encodeResponseJson(DpaTask& dpaTask, rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc);
 
-class PrfRawJson : public DpaRawTask
+class PrfRawJson : public PrfRaw
 {
 public:
   explicit PrfRawJson(rapidjson::Value& val);
