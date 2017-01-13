@@ -1,6 +1,6 @@
 # IQRF GW daemon
 
-IQRF GW daemon with the multiple communication channels - UDP/MQ/MQTT.
+IQRF GW daemon with the multiple communication channels - UDP/MQ/MQTT.  
 ![See the daemon architecture](/doc/iqrf-linux-gw.png)
 
 ###How to compile the daemon for AAEON UP board
