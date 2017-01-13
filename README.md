@@ -1,39 +1,41 @@
 # IQRF GW daemon
 
 IQRF GW daemon with the multiple communication channels - UDP/MQ/MQTT.
+![See the daemon architecture](/doc/iqrf-linux-gw.png)
 
-#How to compile the daemon for AAEON UP board
+###How to compile the daemon for AAEON UP board
 
-cd scripts
+cd scripts  
+./build-up.sh
+
+###How to compile the daemon for Raspberry PI
+
+cd scripts  
 ./build-rpi.sh
 
-#How to compile the daemon for Raspberry PI
+###How to install the daemon
 
-cd scripts
-./build-rpi.sh
-
-#How to install the daemon
-
-cd scripts
+cd scripts  
 ./install.sh
 
-#How to run the daemon
+###How to run the daemon
 
-cd scripts
+cd scripts  
 ./run.sh
 
-#How to test UDP channel
+###How to test UDP channel
 
-Use IQRF IDE and follow the instruction for UDP connection.
+Use IQRF IDE and follow the instruction for UDP connection.  
+Then use IQMESH Network Manager.
 
-#How to test MQ channel
+###How to test MQ channel
 
-cd scripts
+cd scripts  
 ./mq-iqrfapp-test.sh
 
-#How to test MQTT channel
+###How to test MQTT channel
 
 sudo apt-get install mosquitto
 
-cd scripts
+cd scripts  
 ./mqtt-local-pub-test.sh
