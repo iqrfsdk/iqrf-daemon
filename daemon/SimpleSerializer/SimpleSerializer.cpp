@@ -1,16 +1,61 @@
 #include "SimpleSerializer.h"
 #include "IqrfLogging.h"
+#include <vector>
 #include <array>
 
-void parseRequestSimple(std::istream& istr, DpaTask& dpaTask)
+std::vector<std::string> parseTokens(DpaTask& dpaTask, std::istream& istr)
+{
+  std::istream_iterator<std::string> begin(istr);
+  std::istream_iterator<std::string> end;
+  std::vector<std::string> vstrings(begin, end);
+
+  std::string timeoutStr, clientIdStr;
+  std::size_t found;
+  auto it = vstrings.begin();
+  while (it != vstrings.end()) {
+    if (std::string::npos != (found = it->find("TIMEOUT"))) {
+      timeoutStr = *it;
+      it = vstrings.erase(it);
+      found = timeoutStr.find_first_of('=');
+      if (std::string::npos != found && found < timeoutStr.size()-1) {
+        int timeout = std::stoi(timeoutStr.substr(++found, timeoutStr.size()-1));
+        dpaTask.setTimeout(timeout);
+      }
+      else {
+        THROW_EX(std::logic_error, "Parse error: " << NAME_PAR(token, timeoutStr));
+      }
+    }
+    else if (std::string::npos != (found = it->find("CLID"))) {
+      clientIdStr = *it;
+      it = vstrings.erase(it);
+      found = timeoutStr.find_first_of('=');
+      if (std::string::npos != found && found < timeoutStr.size() - 1) {
+        std::string clid = clientIdStr.substr(++found, timeoutStr.size()-1);
+      }
+      else {
+        THROW_EX(std::logic_error, "Parse error: " << NAME_PAR(token, clientIdStr));
+      }
+    }
+    else
+      it++;
+  }
+
+  return vstrings;
+}
+
+void parseRequestSimple(DpaTask & dpaTask, std::vector<std::string>& tokens)
 {
   int address = -1;
   std::string command;
-
-  istr >> address >> command;
-
-  dpaTask.setAddress(address);
-  dpaTask.parseCommand(command);
+  if (tokens.size() > 1) {
+    address = std::stoi(tokens[0]);
+    command = tokens[1];
+    dpaTask.setAddress(address);
+    dpaTask.parseCommand(command);
+  }
+  else {
+    THROW_EX(std::logic_error, "Parse error: " << NAME_PAR(tokensNum, tokens.size()));
+  }
 }
 
 void encodeResponseSimple(const DpaTask & dt, std::ostream& ostr)
@@ -18,6 +63,13 @@ void encodeResponseSimple(const DpaTask & dt, std::ostream& ostr)
   ostr << dt.getPrfName() << " " << dt.getAddress() << " " << dt.encodeCommand() << " ";
 }
 
+void encodeTokens(const DpaTask& dpaTask, const std::string& errStr, std::ostream& ostr)
+{
+  if (dpaTask.getTimeout() >= 0) {
+    ostr << " " << "TIMEOUT=" << dpaTask.getTimeout();
+  }
+  ostr << " " << errStr;
+}
 
 //////////////////////////////////////////
 
@@ -31,13 +83,13 @@ PrfRawSimple::PrfRawSimple(std::istream& istr)
   int val;
   int i = 0;
 
-  while (i < MAX_DPA_BUFFER) {
-    if (istr >> std::hex >> val) {
-      m_request.DpaPacket().Buffer[i] = (uint8_t)val;
-      i++;
-    }
-    else
-      break;
+  std::vector<std::string> vstrings = parseTokens(*this, istr);
+
+  int sz = (int)vstrings.size();
+  while (i < MAX_DPA_BUFFER && i < sz) {
+    val = std::stoi(vstrings[i], nullptr, 16);
+    m_request.DpaPacket().Buffer[i] = (uint8_t)val;
+    i++;
   }
   m_request.SetLength(i);
 }
@@ -48,15 +100,17 @@ std::string PrfRawSimple::encodeResponse(const std::string& errStr) const
   int len = m_response.Length();
   TRC_DBG(PAR(len));
   ostr << getPrfName() << " " <<
-    iqrf::TracerHexString((unsigned char*)m_response.DpaPacket().Buffer, m_response.Length(), true) <<
-    " " << errStr;
+    iqrf::TracerHexString((unsigned char*)m_response.DpaPacket().Buffer, m_response.Length(), true);
+  
+  encodeTokens(*this, errStr, ostr);
+
   return ostr.str();
 }
 
 //////////////////////////////////////////
 PrfThermometerSimple::PrfThermometerSimple(std::istream& istr)
 {
-  parseRequestSimple(istr, *this);
+  parseRequestSimple(*this, parseTokens(*this, istr));
 }
 
 std::string PrfThermometerSimple::encodeResponse(const std::string& errStr) const
@@ -78,15 +132,21 @@ DpaTaskSimpleSerializerFactory::DpaTaskSimpleSerializerFactory()
 
 std::unique_ptr<DpaTask> DpaTaskSimpleSerializerFactory::parseRequest(const std::string& request)
 {
-  std::istringstream istr(request);
-  std::string perif;
-  istr >> perif;
-  auto obj = createObject(perif, istr);
+  std::unique_ptr<DpaTask> obj;
+  try {
+    std::istringstream istr(request);
+    std::string perif;
+    istr >> perif;
+    obj = createObject(perif, istr);
+    m_lastError = "OK";
+  }
+  catch (std::exception &e) {
+    m_lastError = e.what();
+  }
   return std::move(obj);
 }
 
 std::string DpaTaskSimpleSerializerFactory::getLastError() const
 {
-  //TODO
-  return "OK";
+  return m_lastError;
 }

@@ -5,11 +5,14 @@
 #include "PrfThermometer.h"
 #include "PrfLeds.h"
 #include "PlatformDep.h"
-#include <memory>
+#include <vector>
 #include <string>
 
-void parseRequestSimple(DpaTask& dpaTask, std::istream& istr);
+std::vector<std::string> parseTokens(DpaTask& dpaTask, std::istream& istr);
+void parseRequestSimple(DpaTask& dpaTask, std::vector<std::string>& tokens);
+
 void encodeResponseSimple(const DpaTask & dt, std::ostream& ostr);
+void encodeTokens(const DpaTask& dpaTask, const std::string& errStr, std::ostream& ostr);
 
 class PrfRawSimple : public DpaRawTask
 {
@@ -32,7 +35,7 @@ class PrfLedSimple : public L
 {
 public:
   explicit PrfLedSimple(std::istream& istr) {
-    parseRequestSimple(istr, *this);
+    parseRequestSimple(*this, parseTokens(*this, istr));
   }
 
   virtual ~PrfLedSimple() {}
@@ -58,4 +61,6 @@ public:
 
   std::unique_ptr<DpaTask> parseRequest(const std::string& request) override;
   std::string getLastError() const override;
+private:
+  std::string m_lastError;
 };
