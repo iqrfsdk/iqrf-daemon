@@ -9,5 +9,5 @@
   "TopicResponse": "Iqrf/DpaResponse",
   "User": "",
   "Password": "",
-  "EnabledSSL": true
-},
+  "EnabledSSL": false
+}

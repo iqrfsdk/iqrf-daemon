@@ -1,16 +1,16 @@
 {
   "Tasks": [
-    "0 * * * * * * TestClient1 LedR 0 PULSE",
-    "5 * * * * * * TestClient1 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "10 * * * * * * TestClient1 LedR 0 PULSE",
-    "15 * * * * * * TestClient1 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "20 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
-    "25 * * * * * * TestClient1 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "30 * * * * * * TestClient1 LedR 0 PULSE",
-    "35 * * * * * * TestClient1 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "40 * * * * * * TestClient1 LedR 0 PULSE",
-    "45 * * * * * * TestClient1 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "50 * * * * * * TestClient1 Raw 00 00 06 03 ff ff",
-    "55 * * * * * * TestClient1 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}"
+    "0 * * * * * * ClientServicePlain1 LedR 0 PULSE",
+    "5 * * * * * * ClientServicePlain1 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "10 * * * * * * ClientServicePlain1 LedR 0 PULSE",
+    "15 * * * * * * ClientServicePlain1 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "20 * * * * * * ClientServicePlain1 Raw 00 00 06 03 ff ff",
+    "25 * * * * * * ClientServicePlain1 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "30 * * * * * * ClientServicePlain1 LedR 0 PULSE",
+    "35 * * * * * * ClientServicePlain1 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "40 * * * * * * ClientServicePlain1 LedR 0 PULSE",
+    "45 * * * * * * ClientServicePlain1 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "50 * * * * * * ClientServicePlain1 Raw 00 00 06 03 ff ff",
+    "55 * * * * * * ClientServicePlain1 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}"
   ]
 }

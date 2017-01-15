@@ -35,7 +35,7 @@ include_directories(${CMAKE_SOURCE_DIR}/IqrfSpiChannel)
 include_directories(${CMAKE_SOURCE_DIR}/SimpleSerializer)
 include_directories(${CMAKE_SOURCE_DIR}/JsonSerializer)
 include_directories(${CMAKE_SOURCE_DIR}/JsonSerializer/include)
-include_directories(${CMAKE_SOURCE_DIR}/TestClient)
+include_directories(${CMAKE_SOURCE_DIR}/ClientServicePlain)
 include_directories(${CMAKE_SOURCE_DIR}/MessagingController)
 include_directories(${clibcdc_INCLUDE_DIRS})
 include_directories(${clibspi_INCLUDE_DIRS})
@@ -47,7 +47,7 @@ add_executable(${PROJECT_NAME} ${_HDRFILES} ${_SRCFILES} ${_CONFIG} ${_CONFIG_EX
 if (WIN32) 
  	target_link_libraries(${PROJECT_NAME}
 	MessagingController
-	TestClient
+	ClientServicePlain
 	JsonSerializer
 	SimpleSerializer
 	Scheduler
@@ -69,7 +69,7 @@ if (WIN32)
 else()
 	target_link_libraries(${PROJECT_NAME}
 	MessagingController
-	TestClient
+	ClientServicePlain
 	JsonSerializer
 	SimpleSerializer
 	Scheduler

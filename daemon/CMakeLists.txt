@@ -66,7 +66,7 @@ add_subdirectory(SimpleSerializer)
 add_subdirectory(JsonSerializer)
 add_subdirectory(iqrf_ide_dummy)
 add_subdirectory(iqrfapp)
-add_subdirectory(TestClient)
+add_subdirectory(ClientServicePlain)
 add_subdirectory(MessagingController)
 add_subdirectory(iqrf_startup)
 
