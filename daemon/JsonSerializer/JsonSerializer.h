@@ -3,6 +3,7 @@
 #include "ISerializer.h"
 #include "ObjectFactory.h"
 #include "PrfRaw.h"
+#include "PrfFrc.h"
 #include "PrfThermometer.h"
 #include "PrfLeds.h"
 #include "PlatformDep.h"
@@ -30,6 +31,14 @@ class PrfThermometerJson : public PrfThermometer
 public:
   explicit PrfThermometerJson(rapidjson::Value& val);
   virtual ~PrfThermometerJson() {}
+  std::string encodeResponse(const std::string& errStr) const  override;
+};
+
+class PrfFrcJson : public PrfFrc
+{
+public:
+  explicit PrfFrcJson(rapidjson::Value& val);
+  virtual ~PrfFrcJson() {}
   std::string encodeResponse(const std::string& errStr) const  override;
 };
 

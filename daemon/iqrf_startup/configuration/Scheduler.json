@@ -1,16 +1,16 @@
 {
   "Tasks": [
-    "00 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "05 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "10 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "15 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "20 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "25 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "30 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "35 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "40 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "45 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "50 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "55 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}"
+    "00 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
+    "05 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
+    "10 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
+    "15 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
+    "20 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
+    "25 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
+    "30 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
+    "35 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
+    "40 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
+    "45 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
+    "50 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
+    "55 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}"
   ]
 }

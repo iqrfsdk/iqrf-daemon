@@ -135,6 +135,34 @@ std::string PrfThermometerJson::encodeResponse(const std::string& errStr) const
   return buffer.GetString();
 }
 
+//-------------------------------
+PrfFrcJson::PrfFrcJson(rapidjson::Value& val)
+{
+  parseRequestJson(*this, val);
+  //TODO
+  //setFrc(jutils::getMemberAs<int>("Addr", val));
+}
+
+std::string PrfFrcJson::encodeResponse(const std::string& errStr) const
+{
+  Document doc;
+  doc.SetObject();
+
+  encodeResponseJson(*this, doc, doc.GetAllocator());
+
+  rapidjson::Value v;
+  //v = getFloatTemperature();
+  //doc.AddMember("Temperature", v, doc.GetAllocator());
+
+  v.SetString(errStr.c_str(), doc.GetAllocator());
+  doc.AddMember("Status", v, doc.GetAllocator());
+
+  StringBuffer buffer;
+  PrettyWriter<StringBuffer> writer(buffer);
+  doc.Accept(writer);
+  return buffer.GetString();
+}
+
 ///////////////////////////////////////////
 DpaTaskJsonSerializerFactory::DpaTaskJsonSerializerFactory()
 {
