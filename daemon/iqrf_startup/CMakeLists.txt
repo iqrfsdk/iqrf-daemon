@@ -36,6 +36,7 @@ include_directories(${CMAKE_SOURCE_DIR}/SimpleSerializer)
 include_directories(${CMAKE_SOURCE_DIR}/JsonSerializer)
 include_directories(${CMAKE_SOURCE_DIR}/JsonSerializer/include)
 include_directories(${CMAKE_SOURCE_DIR}/ClientServicePlain)
+include_directories(${CMAKE_SOURCE_DIR}/ClientServicePm)
 include_directories(${CMAKE_SOURCE_DIR}/MessagingController)
 include_directories(${clibcdc_INCLUDE_DIRS})
 include_directories(${clibspi_INCLUDE_DIRS})
@@ -47,6 +48,7 @@ add_executable(${PROJECT_NAME} ${_HDRFILES} ${_SRCFILES} ${_CONFIG} ${_CONFIG_EX
 if (WIN32) 
  	target_link_libraries(${PROJECT_NAME}
 	MessagingController
+	ClientServicePm
 	ClientServicePlain
 	JsonSerializer
 	SimpleSerializer
@@ -69,6 +71,7 @@ if (WIN32)
 else()
 	target_link_libraries(${PROJECT_NAME}
 	MessagingController
+	ClientServicePm
 	ClientServicePlain
 	JsonSerializer
 	SimpleSerializer
@@ -103,39 +106,31 @@ INSTALL(TARGETS ${PROJECT_NAME}
 
 endif()
 
-if (WIN32)
 # do the copying
-  foreach( file_i ${_CONFIG})
-    add_custom_command(
-    TARGET ${PROJECT_NAME}
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy ${file_i} ${_CONFIG_DEST}/configuration/
-    )
-  endforeach( file_i )
-else()
-    add_custom_command(
+add_custom_command(
     TARGET ${PROJECT_NAME}
     POST_BUILD
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/configuration ${_CONFIG_DEST}/configuration
-    )
-endif()
+)
 
 # if (WIN32)
-# add_custom_command(
-        # TARGET ${PROJECT_NAME} POST_BUILD
-        # COMMAND ${CMAKE_COMMAND} -E copy
-        # ${CMAKE_CURRENT_SOURCE_DIR}/configuration/*
-        # ${CMAKE_CURRENT_BINARY_DIR}/configuration
-        # DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/configuration/*)
+  # foreach( file_i ${_CONFIG})
+    # add_custom_command(
+    # TARGET ${PROJECT_NAME}
+    # POST_BUILD
+    # COMMAND ${CMAKE_COMMAND}
+    # ARGS -E copy ${file_i} ${_CONFIG_DEST}/configuration/
+    # )
+  # endforeach( file_i )
 # else()
-# add_custom_command(
-        # TARGET ${PROJECT_NAME} POST_BUILD
-        # COMMAND ${CMAKE_COMMAND} -E copy
-        # ${CMAKE_CURRENT_SOURCE_DIR}/config.json
-        # $<TARGET_FILE_DIR:${PROJECT_NAME}>/config.json
-        # DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/config.json)
+    # add_custom_command(
+    # TARGET ${PROJECT_NAME}
+    # POST_BUILD
+    # COMMAND ${CMAKE_COMMAND}
+    # ARGS -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/configuration ${_CONFIG_DEST}/configuration
+    # )
+# endif()
 
 # INSTALL(TARGETS ${PROJECT_NAME}
     # RUNTIME DESTINATION bin

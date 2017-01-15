@@ -1,16 +1,16 @@
 {
   "Tasks": [
-    "00 * * * * * * ClientServicePlain2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
-    "05 * * * * * * ClientServicePlain2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
-    "10 * * * * * * ClientServicePlain2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
-    "15 * * * * * * ClientServicePlain2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
-    "20 * * * * * * ClientServicePlain2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
-    "25 * * * * * * ClientServicePlain2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
-    "30 * * * * * * ClientServicePlain2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
-    "35 * * * * * * ClientServicePlain2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
-    "40 * * * * * * ClientServicePlain2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
-    "45 * * * * * * ClientServicePlain2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
-    "50 * * * * * * ClientServicePlain2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
-    "55 * * * * * * ClientServicePlain2 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}"
+    "00 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "05 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "10 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "15 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "20 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "25 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "30 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "35 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "40 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "45 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "50 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "55 * * * * * * ClientServicePm {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}"
   ]
 }

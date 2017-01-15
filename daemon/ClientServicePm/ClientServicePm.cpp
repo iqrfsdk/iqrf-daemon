@@ -1,9 +1,9 @@
-#include "ClientService.h"
+#include "ClientServicePm.h"
 #include "DpaTransactionTask.h"
 #include "IDaemon.h"
 #include "IqrfLogging.h"
 
-ClientService::ClientService(const std::string & name)
+ClientServicePm::ClientServicePm(const std::string & name)
   :m_name(name)
   , m_messaging(nullptr)
   , m_daemon(nullptr)
@@ -11,16 +11,16 @@ ClientService::ClientService(const std::string & name)
 {
 }
 
-ClientService::~ClientService()
+ClientServicePm::~ClientServicePm()
 {
 }
 
-void ClientService::setDaemon(IDaemon* daemon)
+void ClientServicePm::setDaemon(IDaemon* daemon)
 {
   m_daemon = daemon;
 }
 
-void ClientService::setSerializer(ISerializer* serializer)
+void ClientServicePm::setSerializer(ISerializer* serializer)
 {
   m_serializer = serializer;
   m_messaging->registerMessageHandler([&](const ustring& msg) {
@@ -28,12 +28,12 @@ void ClientService::setSerializer(ISerializer* serializer)
   });
 }
 
-void ClientService::setMessaging(IMessaging* messaging)
+void ClientServicePm::setMessaging(IMessaging* messaging)
 {
   m_messaging = messaging;
 }
 
-void ClientService::start()
+void ClientServicePm::start()
 {
   TRC_ENTER("");
 
@@ -42,20 +42,20 @@ void ClientService::start()
     handleMsgFromMessaging(msgu);
   });
 
-  TRC_INF("ClientService :" << PAR(m_name) << " started");
+  TRC_INF("ClientServicePm :" << PAR(m_name) << " started");
 
   TRC_LEAVE("");
 }
 
-void ClientService::stop()
+void ClientServicePm::stop()
 {
   TRC_ENTER("");
 
-  TRC_INF("ClientService :" << PAR(m_name) << " stopped");
+  TRC_INF("ClientServicePm :" << PAR(m_name) << " stopped");
   TRC_LEAVE("");
 }
 
-void ClientService::handleMsgFromMessaging(const ustring& msg)
+void ClientServicePm::handleMsgFromMessaging(const ustring& msg)
 {
   TRC_DBG("==================================" << std::endl <<
     "Received from MESSAGING: " << std::endl << FORM_HEX(msg.data(), msg.size()));

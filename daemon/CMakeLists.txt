@@ -69,6 +69,7 @@ add_subdirectory(iqrfapp)
 add_subdirectory(ClientServicePlain)
 add_subdirectory(MessagingController)
 add_subdirectory(iqrf_startup)
+add_subdirectory(ClientServicePm)
 
 # Configure config file.
 # This file specifies actions performed and variables exported when using find_package on this project.

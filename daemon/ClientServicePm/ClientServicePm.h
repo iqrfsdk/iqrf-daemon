@@ -13,12 +13,12 @@ class IDaemon;
 
 typedef std::basic_string<unsigned char> ustring;
 
-class ClientService : public IClient
+class ClientServicePm : public IClient
 {
 public:
-  ClientService() = delete;
-  ClientService(const std::string& name);
-  virtual ~ClientService();
+  ClientServicePm() = delete;
+  ClientServicePm(const std::string& name);
+  virtual ~ClientServicePm();
 
   void setDaemon(IDaemon* daemon) override;
   virtual void setSerializer(ISerializer* serializer) override;

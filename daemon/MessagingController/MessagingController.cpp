@@ -7,6 +7,7 @@
 #include "IClient.h"
 //TODO temporary here
 #include "ClientServicePlain.h"
+#include "ClientServicePm.h"
 
 //TODO temporary here
 #include "IMessaging.h"
@@ -337,7 +338,7 @@ void MessagingController::startClients()
   //TODO will be solved by ClientServicePlain cfg
   auto found2 = m_messagings.find("MqttMessaging");
   if (found2 != m_messagings.end()) {
-    IClient* client2 = ant_new ClientServicePlain("ClientServicePlain2");
+    IClient* client2 = ant_new ClientServicePm("ClientServicePm");
     client2->setDaemon(this);
     client2->setMessaging(found2->second.get());
     client2->setSerializer(jsonSerializer);
