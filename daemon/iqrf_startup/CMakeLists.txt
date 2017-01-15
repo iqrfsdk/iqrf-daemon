@@ -48,7 +48,6 @@ if (WIN32)
  	target_link_libraries(${PROJECT_NAME}
 	MessagingController
 	TestClient
-	ClientService
 	JsonSerializer
 	SimpleSerializer
 	Scheduler
@@ -71,7 +70,6 @@ else()
 	target_link_libraries(${PROJECT_NAME}
 	MessagingController
 	TestClient
-	ClientService
 	JsonSerializer
 	SimpleSerializer
 	Scheduler

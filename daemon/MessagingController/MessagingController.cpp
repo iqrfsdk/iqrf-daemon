@@ -7,7 +7,6 @@
 #include "IClient.h"
 //TODO temporary here
 #include "TestClient.h"
-#include "ClientService.h"
 
 //TODO temporary here
 #include "IMessaging.h"
@@ -322,7 +321,6 @@ void MessagingController::startClients()
 
   //////// Clients //////////////////////////////////
   //TODO load Clients plugins
-  //auto found1 = m_messagings.find("IqrfDpaMessaging");
   auto found1 = m_messagings.find("MqMessaging");
   if (found1 != m_messagings.end()) {
     IClient* client1 = ant_new TestClient("TestClient1");
@@ -345,19 +343,6 @@ void MessagingController::startClients()
     client2->setSerializer(jsonSerializer);
     m_clients.insert(std::make_pair(client2->getClientName(), client2));
   }
-
-  //IClient* clientIqrfapp = ant_new TestClient("TestClientIqrfapp");
-  //IClient* clientIqrfapp = ant_new TestClient("MqMessaging");
-  //clientIqrfapp->setDaemon(this);
-  //clientIqrfapp->setMessaging(mqMessaging);
-  //clientIqrfapp->setSerializer(simpleSerializer);
-  //m_clients.insert(std::make_pair(clientIqrfapp->getClientName(), clientIqrfapp));
-
-  //IClient* clientService = ant_new ClientService("ClientService");
-  //clientIqrfapp->setDaemon(this);
-  //clientIqrfapp->setMessaging(mqMessaging);
-  //clientIqrfapp->setSerializer(simpleSerializer);
-  //m_clients.insert(std::make_pair(clientService->getClientName(), clientService));
 
   /////////////////////
   for (auto cli : m_clients) {
@@ -420,9 +405,7 @@ void MessagingController::stopUdp()
 
 void MessagingController::stopDpa()
 {
-  //delete m_dpaTransactionQueue;
   delete m_dpaHandler;
-  //m_dpaTransactionQueue = nullptr;
   m_dpaHandler = nullptr;
 }
 

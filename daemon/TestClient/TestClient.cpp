@@ -7,7 +7,6 @@ TestClient::TestClient(const std::string & name)
   :m_name(name)
   , m_messaging(nullptr)
   , m_daemon(nullptr)
-  //, m_serializer(nullptr)
 {
 }
 
@@ -22,7 +21,6 @@ void TestClient::setDaemon(IDaemon* daemon)
 
 void TestClient::setSerializer(ISerializer* serializer)
 {
-  //m_serializer = serializer;
   m_serializerVect.push_back(serializer);
   m_messaging->registerMessageHandler([&](const ustring& msg) {
     handleMsgFromMessaging(msg);
@@ -77,7 +75,6 @@ void TestClient::handleMsgFromMessaging(const ustring& msg)
       break;
     }
   }
-  //std::unique_ptr<DpaTask> dpaTask = m_serializer->parseRequest(msgs);
   if (dpaTask) {
     DpaTransactionTask trans(*dpaTask);
     m_daemon->executeDpaTransaction(trans);
