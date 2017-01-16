@@ -18,6 +18,11 @@ cd scripts
 cd scripts  
 ./install.sh
 
+###How to configure the daemon
+
+cd /usr/local/bin/configuration  
+Configure main and each component's JSON file.
+
 ###How to run the daemon
 
 cd scripts  
@@ -38,4 +43,5 @@ cd scripts
 sudo apt-get install mosquitto
 
 cd scripts  
-./mqtt-local-pub-test.sh
+./mqtt-local-pub-test.sh  
+
