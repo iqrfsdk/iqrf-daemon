@@ -75,6 +75,12 @@ fi
 if [ ! -d "${PAHO_DIRECTORY}" ]; then
 	echo "Cloning paho ..."
         git clone https://github.com/eclipse/${PAHO_DIRECTORY}.git
+	if [ -d "${PAHO_DIRECTORY}" ]; then
+		echo "Applying patch ..."
+        	cd ${PAHO_DIRECTORY}
+        	git apply ../iqrf-daemon/daemon/cmake/modules/0001-Fixed-build-and-installation-for-Win-and-SSL.patch
+        	cd ..
+	fi
 else
 	cd ${PAHO_DIRECTORY}
 	echo "Pulling paho ..."
