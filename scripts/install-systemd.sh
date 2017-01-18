@@ -40,15 +40,15 @@ esac
 
 cat > /lib/systemd/system/"$name".service << END
 [Unit]
-Description="$name" daemon
+Description=$name daemon
 After=syslog.target network.target
 
 [Service]
 Type=simple
 User=root
 Group=root
-WorkingDirectory="$workdir"
-ExecStart="$command" "$args"
+WorkingDirectory=$workdir
+ExecStart=$command $args
 StandardOutput=syslog
 StandardError=syslog
 RestartSec=5
