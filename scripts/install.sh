@@ -3,15 +3,22 @@
 # Tested on Raspberry PI 3, Raspbian Lite
 # Tested on AAEON UP, UbiLinux
 
-DAEMON_DIRECTORY=iqrf-daemon/daemon/build/Unix_Makefiles
+CMAKE_DIRECTORY=iqrf-daemon/daemon/build/Unix_Makefiles
+CONFIG_DIRECTORY=/usr/local/bin/configuration
 
 cd ../..
 
 # installing daemon
-if [ -d "${DAEMON_DIRECTORY}" ]; then
+if [ -d "${CMAKE_DIRECTORY}" ]; then
         echo "Installing daemon ..."
-	cd ${DAEMON_DIRECTORY}
+	cd ${CMAKE_DIRECTORY}
         sudo make install
+	# copy only if there is not directory
+	if [ ! -d "${CONFIG_DIRECTORY}" ]; then
+		echo "Copying the configuration directory ..."
+		cd ../..
+		sudo cp -r iqrf_startup/configuration /usr/local/bin
+	fi
 else
 	echo "IQRF daemon is not built yet!"
 	echo "Run build script according to your platform first!"
