@@ -78,7 +78,7 @@ else()
 	SimpleSerializer
 	Scheduler
 	MqttMessaging
-	paho-mqtt3cs
+	paho-mqtt3as
 	MqMessaging
 	DpaExtension
 	MqChannel

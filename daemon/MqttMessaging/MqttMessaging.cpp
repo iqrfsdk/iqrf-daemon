@@ -66,7 +66,7 @@ public:
   {}
 
   //------------------------
-  void Impl::updateConfiguration(const rapidjson::Value& cfg)
+  void updateConfiguration(const rapidjson::Value& cfg)
   {
     TRC_ENTER("");
     jutils::assertIsObject("", cfg);
@@ -87,7 +87,7 @@ public:
   }
 
   //------------------------
-  void Impl::start()
+  void start()
   {
     TRC_ENTER("");
 
@@ -142,7 +142,7 @@ public:
   }
 
   //------------------------
-  void Impl::stop()
+  void stop()
   {
     TRC_ENTER("");
     if (m_enabled) {
@@ -193,7 +193,7 @@ public:
   }
 
   //------------------------
-  void Impl::handleMessageFromMqtt(const ustring& mqMessage)
+  void handleMessageFromMqtt(const ustring& mqMessage)
   {
     TRC_DBG("==================================" << std::endl <<
       "Received from MQTT: " << std::endl << FORM_HEX(mqMessage.data(), mqMessage.size()));
@@ -203,7 +203,7 @@ public:
   }
 
   //------------------------
-  void Impl::sendTo(const ustring& msg)
+  void sendTo(const ustring& msg)
   {
     TRC_DBG("Sending to MQTT: " << NAME_PAR(topic, m_mqttTopicResponse) << std::endl <<
       FORM_HEX(msg.data(), msg.size()));
@@ -232,7 +232,7 @@ public:
   }
 
   //------------------------
-  void Impl::connectThread()
+  void connectThread()
   {
     int retval;
     while (!m_connected && !m_stopAutoConnect) {
@@ -253,7 +253,7 @@ public:
   }
 
   //------------------------
-  void Impl::connect()
+  void connect()
   {
     int retval;
 
