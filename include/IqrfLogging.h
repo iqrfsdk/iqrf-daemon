@@ -153,7 +153,7 @@ namespace iqrf {
 
     void write(const std::string& msg)
     {
-      std::lock_guard<std::recursive_mutex> lck(m_mtx);
+      std::lock_guard<std::mutex> lck(m_mtx);
 
       if (m_started) {
         if (m_cout)
@@ -172,7 +172,7 @@ namespace iqrf {
 
     void start(const std::string& fname, long maxSize = TRC_DEFAULT_FILE_MAXSIZE)
     {
-      std::lock_guard<std::recursive_mutex> lck(m_mtx);
+      std::lock_guard<std::mutex> lck(m_mtx);
       closeFile();
 
       m_fname = fname;
@@ -187,7 +187,7 @@ namespace iqrf {
 
     void stop()
     {
-      std::lock_guard<std::recursive_mutex> lck(m_mtx);
+      std::lock_guard<std::mutex> lck(m_mtx);
       closeFile();
       m_started = false;
     }
@@ -229,7 +229,8 @@ namespace iqrf {
     Tracer & operator = (const Tracer& t);
     Tracer(const Tracer& t);
 
-    std::recursive_mutex m_mtx;
+    //std::recursive_mutex m_mtx;
+    std::mutex m_mtx;
     std::string m_fname;
     std::ofstream m_ofstream;
     bool m_cout;
