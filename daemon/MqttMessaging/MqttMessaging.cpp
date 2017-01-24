@@ -16,7 +16,7 @@ private:
   //configuration
   std::string m_mqttBrokerAddr;
   std::string m_mqttClientId;
-  bool m_enabled = false;
+  //bool m_enabled = false;
   int m_mqttPersistence = 0;
   std::string m_mqttTopicRequest;
   std::string m_mqttTopicResponse;
@@ -73,7 +73,7 @@ public:
 
     m_mqttBrokerAddr = jutils::getMemberAs<std::string>("BrokerAddr", cfg);
     m_mqttClientId = jutils::getMemberAs<std::string>("ClientId", cfg);
-    m_enabled = jutils::getMemberAs<bool>("Enabled", cfg);
+    //m_enabled = jutils::getMemberAs<bool>("Enabled", cfg);
     m_mqttPersistence = jutils::getMemberAs<int>("Persistence", cfg);
     m_mqttQos = jutils::getMemberAs<int>("Qos", cfg);
     m_mqttTimeout = (unsigned long)jutils::getMemberAs<int>("Timeout:", cfg);
@@ -91,11 +91,11 @@ public:
   {
     TRC_ENTER("");
 
-    if (!m_enabled) {
-      TRC_WAR("MqttMessaging DISABLED:" << PAR(m_mqttClientId));
-      TRC_LEAVE("");
-      return;
-    }
+    //if (!m_enabled) {
+    //  TRC_WAR("MqttMessaging DISABLED:" << PAR(m_mqttClientId));
+    //  TRC_LEAVE("");
+    //  return;
+    //}
 
     m_toMqttMessageQueue = ant_new TaskQueue<ustring>([&](const ustring& msg) {
       sendTo(msg);
@@ -145,7 +145,7 @@ public:
   void stop()
   {
     TRC_ENTER("");
-    if (m_enabled) {
+    //if (m_enabled) {
 
       ///stop possibly running connect thread
       m_stopAutoConnect = true;
@@ -170,7 +170,7 @@ public:
       MQTTAsync_destroy(&m_client);
       delete m_toMqttMessageQueue;
       std::cout << "daemon-MQTT-protocol stopped" << std::endl;
-    }
+    //}
     TRC_LEAVE("");
   }
 
