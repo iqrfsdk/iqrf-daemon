@@ -18,13 +18,6 @@ cd scripts/
 ./build-rpi.sh
 ```
 
-## How to install the daemon
-
-```Bash
-cd scripts/
-./install.sh
-```
-
 ## How to configure the daemon
 
 ```Bash
@@ -32,11 +25,17 @@ cd /usr/local/bin/configuration/
 ```
 Configure main and each component's JSON file.
 
-## How to run the daemon
+## How to install the daemon as a systemd service
 
 ```Bash
 cd scripts/
-./run.sh
+sudo ./install-systemd.sh install default 
+```
+
+## How to start/stop/restart/status the daemon
+
+```Bash
+sudo systemctl start/stop/restart/status IQRF
 ```
 
 ## How to test UDP channel
