@@ -148,28 +148,28 @@ public:
     //if (m_enabled) {
 
       ///stop possibly running connect thread
-      m_stopAutoConnect = true;
-      onConnectFailure(nullptr);
-      if (m_connectThread.joinable())
-        m_connectThread.join();
+    m_stopAutoConnect = true;
+    onConnectFailure(nullptr);
+    if (m_connectThread.joinable())
+      m_connectThread.join();
 
-      int retval;
-      m_disc_opts.onSuccess = s_onDisconnect;
-      m_disc_opts.context = this;
-      if ((retval = MQTTAsync_disconnect(m_client, &m_disc_opts)) != MQTTASYNC_SUCCESS) {
-        TRC_WAR("Failed to start disconnect: " << PAR(retval));
-        onDisconnect(nullptr);
-      }
+    int retval;
+    m_disc_opts.onSuccess = s_onDisconnect;
+    m_disc_opts.context = this;
+    if ((retval = MQTTAsync_disconnect(m_client, &m_disc_opts)) != MQTTASYNC_SUCCESS) {
+      TRC_WAR("Failed to start disconnect: " << PAR(retval));
+      onDisconnect(nullptr);
+    }
 
-      //wait for async disconnect
-      std::chrono::milliseconds span(5000);
-      if (m_disconnect_future.wait_for(span) == std::future_status::timeout) {
-        TRC_WAR("Timeout to wait disconnect");
-      }
+    //wait for async disconnect
+    std::chrono::milliseconds span(5000);
+    if (m_disconnect_future.wait_for(span) == std::future_status::timeout) {
+      TRC_WAR("Timeout to wait disconnect");
+    }
 
-      MQTTAsync_destroy(&m_client);
-      delete m_toMqttMessageQueue;
-      std::cout << "daemon-MQTT-protocol stopped" << std::endl;
+    MQTTAsync_destroy(&m_client);
+    delete m_toMqttMessageQueue;
+    std::cout << "daemon-MQTT-protocol stopped" << std::endl;
     //}
     TRC_LEAVE("");
   }
@@ -337,18 +337,19 @@ public:
   }
   int msgarrvd(char *topicName, int topicLen, MQTTAsync_message *message) {
     ustring msg((unsigned char*)message->payload, message->payloadlen);
-	std::string topic;
-	if (topicLen > 0)
-    	topic = std::string(topicName, topicLen);
-	else
-		topic = std::string(topicName);
+    std::string topic;
+    if (topicLen > 0)
+      topic = std::string(topicName, topicLen);
+    else
+      topic = std::string(topicName);
     //TODO wildcards in comparison - only # supported now
-	size_t sz = m_mqttTopicRequest.size();
-	if (m_mqttTopicRequest[--sz] == '#') {
-		if (0 == m_mqttTopicRequest.compare(0,sz,topic, 0, sz))
-			handleMessageFromMqtt(msg);
-	}
-	else if (0 == m_mqttTopicRequest.compare(topic))
+    TRC_DBG(PAR(topic));
+    size_t sz = m_mqttTopicRequest.size();
+    if (m_mqttTopicRequest[--sz] == '#') {
+      if (0 == m_mqttTopicRequest.compare(0, sz, topic, 0, sz))
+        handleMessageFromMqtt(msg);
+    }
+    else if (0 == m_mqttTopicRequest.compare(topic))
       handleMessageFromMqtt(msg);
     MQTTAsync_freeMessage(&message);
     MQTTAsync_free(topicName);
