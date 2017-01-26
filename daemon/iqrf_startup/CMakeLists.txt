@@ -42,6 +42,10 @@ include_directories(${clibspi_INCLUDE_DIRS})
 include_directories(${clibdpa_INCLUDE_DIRS})
 include_directories(${PAHO_INCLUDE_DIRS})
 
+if (WIN32) 
+	link_directories(${PAHO_LIBRARY_DIRS})
+endif()
+
 add_executable(${PROJECT_NAME} ${_HDRFILES} ${_SRCFILES} ${_CONFIG} ${_CONFIG_EX})
 
 if (WIN32) 
@@ -52,7 +56,7 @@ if (WIN32)
 	SimpleSerializer
 	Scheduler
 	MqttMessaging
-	${PAHO_C_LIBRARY}
+	paho-mqtt3as
 	MqMessaging
 	DpaExtension
 	MqChannel
@@ -74,7 +78,7 @@ else()
 	SimpleSerializer
 	Scheduler
 	MqttMessaging
-	paho-mqtt3cs
+	paho-mqtt3as
 	MqMessaging
 	DpaExtension
 	MqChannel
