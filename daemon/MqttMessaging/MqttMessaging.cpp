@@ -337,7 +337,18 @@ public:
   }
   int msgarrvd(char *topicName, int topicLen, MQTTAsync_message *message) {
     ustring msg((unsigned char*)message->payload, message->payloadlen);
-    if (!strncmp(topicName, m_mqttTopicRequest.c_str(), topicLen))
+	std::string topic;
+	if (topicLen > 0)
+    	topic = std::string(topicName, topicLen);
+	else
+		topic = std::string(topicName);
+    //TODO wildcards in comparison - only # supported now
+	size_t sz = m_mqttTopicRequest.size();
+	if (m_mqttTopicRequest[--sz] == '#') {
+		if (0 == m_mqttTopicRequest.compare(0,sz,topic, 0, sz))
+			handleMessageFromMqtt(msg);
+	}
+	else if (0 == m_mqttTopicRequest.compare(topic))
       handleMessageFromMqtt(msg);
     MQTTAsync_freeMessage(&message);
     MQTTAsync_free(topicName);
