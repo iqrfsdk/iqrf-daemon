@@ -204,7 +204,7 @@ std::string PrfFrcJson::encodeResponse(const std::string& errStr) const
   switch (getFrcType()) {
   case FrcType::GET_BIT2:
   {
-    for (int i = 1; i < PrfFrc::FRC_MAX_NODE_BIT2; i++) {
+    for (int i = 1; i <= PrfFrc::FRC_MAX_NODE_BIT2; i++) {
       os << std::setw(2) << (int)getFrcData_bit2(i) << ' ';
     }
   }
@@ -212,7 +212,7 @@ std::string PrfFrcJson::encodeResponse(const std::string& errStr) const
 
   case FrcType::GET_BYTE:
   {
-    for (int i = 1; i < PrfFrc::FRC_MAX_NODE_BYTE; i++) {
+    for (int i = 1; i <= PrfFrc::FRC_MAX_NODE_BYTE; i++) {
       os << std::setw(2) << (int)getFrcData_Byte(i) << ' ';
     }
   }
@@ -220,7 +220,7 @@ std::string PrfFrcJson::encodeResponse(const std::string& errStr) const
 
   case FrcType::GET_BYTE2:
   {
-    for (int i = 1; i < PrfFrc::FRC_MAX_NODE_BYTE2; i++) {
+    for (int i = 1; i <= PrfFrc::FRC_MAX_NODE_BYTE2; i++) {
       os << std::setw(4) << (int)getFrcData_Byte2(i) << ' ';
     }
   }
