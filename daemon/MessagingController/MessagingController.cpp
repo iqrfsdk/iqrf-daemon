@@ -345,6 +345,15 @@ void MessagingController::startClients()
     m_clients.insert(std::make_pair(client2->getClientName(), client2));
   }
 
+  //auto found2 = m_messagings.find("MqttMessaging");
+  //if (found2 != m_messagings.end()) {
+  //  IClient* client2 = ant_new ClientServicePlain("ClientServicePlain2");
+  //  client2->setDaemon(this);
+  //  client2->setMessaging(found2->second.get());
+  //  client2->setSerializer(jsonSerializer);
+  //  m_clients.insert(std::make_pair(client2->getClientName(), client2));
+  //}
+
   /////////////////////
   for (auto cli : m_clients) {
     try {

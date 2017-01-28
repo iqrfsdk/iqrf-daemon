@@ -52,8 +52,8 @@ void UdpMessaging::resetExclusiveAccess()
 
 int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
 {
-  TRC_DBG("==================================" << std::endl <<
-    "Received from UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
+  //TRC_DBG("==================================" << std::endl <<
+  //  "Received from UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
 
   if (!m_exclusiveAccess)
     setExclusiveAccess();

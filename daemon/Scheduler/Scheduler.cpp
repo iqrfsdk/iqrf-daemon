@@ -77,7 +77,7 @@ int Scheduler::handleScheduledRecord(const ScheduleRecord& record)
     std::lock_guard<std::mutex> lck(m_messageHandlersMutex);
     auto found = m_messageHandlers.find(record.getClientId());
     if (found != m_messageHandlers.end()) {
-      TRC_DBG(NAME_PAR(Response, record.getTask()) << " has been passed to: " << NAME_PAR(ClinetId, record.getClientId()));
+      TRC_DBG(NAME_PAR(Task, record.getTask()) << " has been passed to: " << NAME_PAR(ClinetId, record.getClientId()));
       found->second(record.getTask());
     }
     else {

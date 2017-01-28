@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PlatformDep.h"
+#include "IqrfLogging.h"
 #include <map>
 #include <functional>
 #include <memory>
@@ -22,7 +23,7 @@ public:
   template<typename S>
   void registerClass(const std::string& id){
     if (m_creators.find(id) != m_creators.end()){
-      //TODO error handling
+      THROW_EX(std::logic_error, "Duplicit registration of: " << PAR(id));
     }
     m_creators.insert(std::make_pair(id, createObject<S>));
   }
@@ -34,7 +35,8 @@ public:
   std::unique_ptr<T> createObject(const std::string& id, R& representation){
     auto iter = m_creators.find(id);
     if (iter == m_creators.end()){
-      return std::unique_ptr<T>();
+      THROW_EX(std::logic_error, "Unregistered parser for: " << PAR(id));
+      //return std::unique_ptr<T>();
     }
     //calls the required createObject() function
     return std::move(iter->second(representation));

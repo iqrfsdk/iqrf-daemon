@@ -16,31 +16,39 @@
 using namespace rapidjson;
 
 //////////////////////////////////////////
-void parseRequestJson(DpaTask& dpaTask, rapidjson::Value& val)
+PrfCommonJson::PrfCommonJson(DpaTask& dpaTask)
+  :m_dpaTask(dpaTask)
 {
-  jutils::assertIsObject("", val);
-  dpaTask.setAddress(jutils::getMemberAs<int>("Addr", val));
-  dpaTask.parseCommand(jutils::getMemberAs<std::string>("Comd", val));
-  dpaTask.setTimeout(jutils::getPossibleMemberAs<int>("Timeout", val, -1));
 }
 
-void encodeResponseJson(const DpaTask& dpaTask, rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc)
+void PrfCommonJson::parseRequestJson(rapidjson::Value& val)
+{
+  jutils::assertIsObject("", val);
+  m_dpaTask.setAddress(jutils::getMemberAs<int>("Addr", val));
+  m_dpaTask.parseCommand(jutils::getMemberAs<std::string>("Comd", val));
+  int tout = jutils::getPossibleMemberAs<int>("Timeout", val, -1);
+  if (tout >= 0) {
+    m_explicitTimeout = true;
+    m_dpaTask.setTimeout(tout);
+  }
+}
+
+void PrfCommonJson::encodeResponseJson(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const
 {
   rapidjson::Value v;
-  v.SetString(dpaTask.getPrfName().c_str(),alloc);
+  v.SetString(m_dpaTask.getPrfName().c_str(),alloc);
   val.AddMember("Type", v, alloc);
 
-  v = dpaTask.getAddress();
+  v = m_dpaTask.getAddress();
   val.AddMember("Addr", v, alloc);
 
-  v.SetString(dpaTask.encodeCommand().c_str(), alloc);
+  v.SetString(m_dpaTask.encodeCommand().c_str(), alloc);
   val.AddMember("Comd", v, alloc);
 
-  if (dpaTask.getTimeout() > 0) {
-    v.SetInt(dpaTask.getTimeout());
+  if (m_explicitTimeout > 0) {
+    v.SetInt(m_dpaTask.getTimeout());
     val.AddMember("Timeout", v, alloc);
   }
-
 }
 
 //-------------------------------
@@ -50,6 +58,10 @@ PrfRawJson::PrfRawJson(rapidjson::Value& val)
   std::string buf = jutils::getMemberAs<std::string>("Request", val);
   setTimeout(jutils::getPossibleMemberAs<int>("Timeout", val, -1));
 
+  if (std::string::npos != buf.find_first_of('.')) {
+    buf.replace(buf.begin(), buf.end(), '.', ' ');
+    m_dotNotation = true;
+  }
   std::istringstream istr(buf);
 
   uint8_t bbyte;
@@ -82,7 +94,15 @@ std::string PrfRawJson::encodeResponse(const std::string& errStr) const
     int len = m_request.Length();
     ostr << iqrf::TracerHexString((unsigned char*)m_request.DpaPacket().Buffer, m_request.Length(), true);
 
-    v.SetString(ostr.str().c_str(), doc.GetAllocator());
+    std::string buf(ostr.str());
+
+    if (m_dotNotation) {
+      buf.replace(buf.begin(), buf.end(), ' ', '.');
+      if (buf[buf.size() - 1] == '.')
+        buf.pop_back();
+    }
+
+    v.SetString(buf.c_str(), doc.GetAllocator());
     doc.AddMember("Request", v, doc.GetAllocator());
   }
 
@@ -112,7 +132,7 @@ std::string PrfRawJson::encodeResponse(const std::string& errStr) const
 //-------------------------------
 PrfThermometerJson::PrfThermometerJson(rapidjson::Value& val)
 {
-  parseRequestJson(*this, val);
+  m_common.parseRequestJson(val);
 }
 
 std::string PrfThermometerJson::encodeResponse(const std::string& errStr) const
@@ -120,7 +140,7 @@ std::string PrfThermometerJson::encodeResponse(const std::string& errStr) const
   Document doc;
   doc.SetObject();
 
-  encodeResponseJson(*this, doc, doc.GetAllocator());
+  m_common.encodeResponseJson(doc, doc.GetAllocator());
 
   rapidjson::Value v;
   v = getFloatTemperature();
@@ -135,30 +155,92 @@ std::string PrfThermometerJson::encodeResponse(const std::string& errStr) const
   return buffer.GetString();
 }
 
+//{\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"Prebonding\"}"
+//{\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcType\":\"GET_BIT2\",\"FrcUser\":0}"
+
 //-------------------------------
 PrfFrcJson::PrfFrcJson(rapidjson::Value& val)
 {
-  parseRequestJson(*this, val);
-  //TODO
-  //setFrc(jutils::getMemberAs<int>("Addr", val));
+  m_common.parseRequestJson(val);
+
+  std::string frcCmd = jutils::getPossibleMemberAs<std::string>("FrcCmd", val, "");
+  if (!frcCmd.empty()) {
+    setFrcCommand(parseFrcCmd(frcCmd));
+    m_predefinedFrcCommand = true;
+  }
+  else {
+    std::string frcType = jutils::getMemberAs<std::string>("FrcType", val);
+    uint8_t frcUser = (uint8_t)jutils::getMemberAs<int>("FrcUser", val);
+    setFrcCommand(parseFrcType(frcType), frcUser);
+  }
 }
 
 std::string PrfFrcJson::encodeResponse(const std::string& errStr) const
 {
   Document doc;
   doc.SetObject();
+  auto& alloc = doc.GetAllocator();
 
-  encodeResponseJson(*this, doc, doc.GetAllocator());
+  m_common.encodeResponseJson(doc, doc.GetAllocator());
 
   rapidjson::Value v;
-  //v = getFloatTemperature();
-  //doc.AddMember("Temperature", v, doc.GetAllocator());
+
+  if (m_predefinedFrcCommand) {
+    v.SetString(PrfFrc::encodeFrcCmd((FrcCmd)getFrcCommand()).c_str(), alloc);
+    doc.AddMember("FrcCmd", v, doc.GetAllocator());
+  }
+  else {
+    v.SetString(PrfFrc::encodeFrcType((FrcType)getFrcType()).c_str(), alloc);
+    doc.AddMember("FrcType", v, doc.GetAllocator());
+
+    v = (int)getFrcUser();
+    doc.AddMember("FrcUser", v, doc.GetAllocator());
+  }
+
+  std::ostringstream os;
+  os.setf(std::ios::hex, std::ios::basefield);
+  os.fill('0');
+
+  switch (getFrcType()) {
+  case FrcType::GET_BIT2:
+  {
+    for (int i = 1; i < PrfFrc::FRC_MAX_NODE_BIT2; i++) {
+      os << std::setw(2) << (int)getFrcData_bit2(i) << ' ';
+    }
+  }
+  break;
+
+  case FrcType::GET_BYTE:
+  {
+    for (int i = 1; i < PrfFrc::FRC_MAX_NODE_BYTE; i++) {
+      os << std::setw(2) << (int)getFrcData_Byte(i) << ' ';
+    }
+  }
+  break;
+
+  case FrcType::GET_BYTE2:
+  {
+    for (int i = 1; i < PrfFrc::FRC_MAX_NODE_BYTE2; i++) {
+      os << std::setw(4) << (int)getFrcData_Byte2(i) << ' ';
+    }
+  }
+  break;
+  default:
+    ;
+  }
+
+  std::string values(os.str());
+  values.pop_back();
+
+  v.SetString(values.c_str(), doc.GetAllocator());
+  doc.AddMember("Values", v, doc.GetAllocator());
 
   v.SetString(errStr.c_str(), doc.GetAllocator());
   doc.AddMember("Status", v, doc.GetAllocator());
 
   StringBuffer buffer;
   PrettyWriter<StringBuffer> writer(buffer);
+  writer.SetFormatOptions(kFormatSingleLineArray);
   doc.Accept(writer);
   return buffer.GetString();
 }
@@ -170,6 +252,7 @@ DpaTaskJsonSerializerFactory::DpaTaskJsonSerializerFactory()
   registerClass<PrfThermometerJson>(PrfThermometer::PRF_NAME);
   registerClass<PrfLedGJson>(PrfLedG::PRF_NAME);
   registerClass<PrfLedRJson>(PrfLedR::PRF_NAME);
+  registerClass<PrfFrcJson>(PrfFrc::PRF_NAME);
 }
 
 std::unique_ptr<DpaTask> DpaTaskJsonSerializerFactory::parseRequest(const std::string& request)
@@ -183,7 +266,6 @@ std::unique_ptr<DpaTask> DpaTaskJsonSerializerFactory::parseRequest(const std::s
     std::string perif = jutils::getMemberAs<std::string>("Type", doc);
 
     obj = createObject(perif, doc);
-    m_lastError = "OK";
   }
   catch (std::exception &e) {
     m_lastError = e.what();
