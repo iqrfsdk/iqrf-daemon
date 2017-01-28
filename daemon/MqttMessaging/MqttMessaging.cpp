@@ -250,8 +250,8 @@ public:
       TRC_DBG("Going to sleep for: " << PAR(seconds));
       {
         std::unique_lock<std::mutex> lck(m_connectionMutex);
-        m_connectionVariable.wait_for(lck, std::chrono::seconds(seconds));
-        if (m_connected || m_stopAutoConnect)
+        if (m_connectionVariable.wait_for(lck, std::chrono::seconds(seconds),
+          [this] {return m_connected == true || m_stopAutoConnect == true; }))
           break;
       }
       seconds = seconds < seconds_max ? seconds * 2 : seconds_max;
