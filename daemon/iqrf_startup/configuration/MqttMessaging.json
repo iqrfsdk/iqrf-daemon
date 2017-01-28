@@ -1,13 +1,13 @@
 {
-  "BrokerAddr": "ssl://iqrf-demo.azure-devices.net:8883",
-  "ClientId": "12345",
+  "BrokerAddr": "tcp://192.168.1.26:1883",
+  "ClientId": "IqrfDpaMessaging",
   "Enabled": true,
   "Persistence": 1,
   "Qos": 1,
   "Timeout:": 10000,
-  "TopicRequest": "devices/12345/messages/devicebound/#",
-  "TopicResponse": "devices/12345/messages/events/",
-  "User": "iqrf-demo.azure-devices.net/12345",
-  "Password": "SharedAccessSignature sr=iqrf-demo.azure-devices.net%2Fdevices%2F12345&sig=gZO%2Bptr%2BRb9jJCMgaDheIuym%2Fmz5eAL58No6wxFIePw%3D&se=1515168464",
-  "EnabledSSL": true
+  "TopicRequest": "Iqrf/DpaRequest",
+  "TopicResponse": "Iqrf/DpaResponse",
+  "User": "",
+  "Password": "",
+  "EnabledSSL": false
 }

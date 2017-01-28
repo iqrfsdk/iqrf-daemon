@@ -380,7 +380,7 @@ public:
   }
   void onSendFailure(MQTTAsync_failureData* response) {
     TRC_WAR("Message sent failure: " << PAR(response->code));
-    connect();
+    //connect();
   }
 
   //------------------------

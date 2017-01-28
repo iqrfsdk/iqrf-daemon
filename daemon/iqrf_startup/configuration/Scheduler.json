@@ -1,16 +1,16 @@
 {
   "Tasks": [
-    "00 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
-    "05 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
-    "10 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
-    "15 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
-    "20 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
-    "25 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
-    "30 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
-    "35 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
-    "40 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
-    "45 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
-    "50 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}",
-    "55 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"SEND\"}"
+    "00 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcType\":\"GET_BYTE2\",\"FrcUser\":0}",
+    "05 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"Prebonding\"}",
+    "10 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"Temperature\"}",
+    "15 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcType\":\"GET_BYTE2\",\"FrcUser\":0}",
+    "20 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"Prebonding\"}",
+    "25 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"Temperature\"}",
+    "30 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcType\":\"GET_BYTE2\",\"FrcUser\":0}",
+    "35 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"Prebonding\"}",
+    "40 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"Temperature\"}",
+    "45 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcType\":\"GET_BYTE2\",\"FrcUser\":0}",
+    "50 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"Prebonding\"}",
+    "55 * * * * * * ClientServicePm {\"Type\":\"FRC\",\"Addr\":0,\"Comd\":\"SEND\",\"FrcCmd\":\"Temperature\"}"
   ]
 }
