@@ -16,7 +16,6 @@ private:
   //configuration
   std::string m_mqttBrokerAddr;
   std::string m_mqttClientId;
-  //bool m_enabled = false;
   int m_mqttPersistence = 0;
   std::string m_mqttTopicRequest;
   std::string m_mqttTopicResponse;
@@ -234,8 +233,12 @@ public:
   //------------------------
   void connectThread()
   {
+    //TODO verify paho autoconnect and reuse is appliable
     int retval;
-    while (!m_connected && !m_stopAutoConnect) {
+    int seconds = 1;
+    int seconds_max = 16;
+
+    while (true) {
       TRC_DBG("Connecting: " << PAR(m_mqttBrokerAddr) << PAR(m_mqttClientId));
       if ((retval = MQTTAsync_connect(m_client, &m_conn_opts)) == MQTTASYNC_SUCCESS) {
       }
@@ -244,17 +247,21 @@ public:
       }
 
       // wait for connection result
+      TRC_DBG("Going to sleep for: " << PAR(seconds));
       {
         std::unique_lock<std::mutex> lck(m_connectionMutex);
-        if (!m_connected)
-          m_connectionVariable.wait(lck);
+        m_connectionVariable.wait_for(lck, std::chrono::seconds(seconds));
+        if (m_connected || m_stopAutoConnect)
+          break;
       }
+      seconds = seconds < seconds_max ? seconds * 2 : seconds_max;
     }
   }
 
   //------------------------
   void connect()
   {
+    TRC_ENTER("");
     int retval;
 
     m_stopAutoConnect = false;
@@ -265,6 +272,7 @@ public:
       m_connectThread.join();
 
     m_connectThread = std::thread([this]() { this->connectThread(); });
+    TRC_LEAVE("");
   }
 
 
@@ -293,6 +301,7 @@ public:
     ((Impl*)context)->onConnectFailure(response);
   }
   void onConnectFailure(MQTTAsync_failureData* response) {
+    TRC_ENTER("");
     if (response) {
       TRC_WAR("Connect failed: " << PAR(response->code) << PAR(m_mqttTopicRequest) << PAR(m_mqttQos));
     }
@@ -302,6 +311,7 @@ public:
       m_connected = false;
       m_connectionVariable.notify_one();
     }
+    TRC_LEAVE("");
   }
 
   //------------------------
