@@ -1,6 +1,6 @@
 #!/bin/bash
 # Script for building IQRF daemon on Linux machine
-# Tested on AAEON UP, UbiLinux
+# Tested on Ubuntu 16.04
 # External dependencies: IBM Paho, Oracle Java
 
 DAEMON_DIRECTORY=iqrf-daemon
@@ -10,9 +10,14 @@ LIBCDC_DIRECTORY=clibcdc
 LIBSPI_DIRECTORY=clibspi
 PAHO_DIRECTORY=paho.mqtt.c
 
-export JAVA_HOME=/opt/jdk/jdk1.8.0_112
+export JAVA_HOME="/usr/lib/jvm/java-8-oracle"
+#echo "JAVA_HOME=\"/usr/lib/jvm/java-8-oracle\"" >> ${HOME}/.profile
+
 export JAVA_INCLUDE_PATH=${JAVA_HOME}/include
+#echo "JAVA_INCLUDE_PATH=\"/usr/lib/jvm/java-8-oracle/include\"" >> ${HOME}/.profile
+
 export JAVA_INCLUDE_PATH2=${JAVA_INCLUDE_PATH}/linux
+#echo "JAVA_INCLUDE_PATH2=\"/usr/lib/jvm/java-8-oracle/include/linux\"" >> ${HOME}/.profile
 
 cd ../..
 
@@ -75,13 +80,13 @@ fi
 if [ ! -d "${PAHO_DIRECTORY}" ]; then
 	echo "Cloning paho ..."
         git clone https://github.com/eclipse/${PAHO_DIRECTORY}.git
-# fix already in paho master
-#	if [ -d "${PAHO_DIRECTORY}" ]; then
-#		echo "Applying patch ..."
-#        	cd ${PAHO_DIRECTORY}
-#        	git apply ../iqrf-daemon/daemon/cmake/modules/0001-Fixed-build-and-installation-for-Win-and-SSL.patch
-#        	cd ..
-#	fi
+# already fixed in paho master
+#        if [ -d "${PAHO_DIRECTORY}" ]; then
+#                echo "Applying patch ..."
+#                cd ${PAHO_DIRECTORY}
+#                git apply ../iqrf-daemon/daemon/cmake/modules/0001-Fixed-build-and-installation-for-Win-and-SSL.patch
+#                cd ..
+#        fi
 else
 	cd ${PAHO_DIRECTORY}
 	echo "Pulling paho ..."
@@ -106,15 +111,11 @@ fi
 if [ -d "${LIBSPI_DIRECTORY}" ]; then
 	echo "Building libspi ..."
         cd ${LIBSPI_DIRECTORY}
-	if [ ! -d "${JAVA_HOME}" ]; then
-        	echo "Getting and installing Oracle Java for IQRF libraries Java stubs"
-		wget --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u112-b15/jdk-8u112-linux-x64.tar.gz
-		sudo mkdir /opt/jdk
-		sudo tar -zxf jdk-8u112-linux-x64.tar.gz -C /opt/jdk
-		sudo update-alternatives --install /usr/bin/java java /opt/jdk/jdk1.8.0_112/bin/java 100
-		sudo update-alternatives --install /usr/bin/javac javac /opt/jdk/jdk1.8.0_112/bin/javac 100
-		rm -rf jdk-8u112-linux-x64.tar.gz
+	if [ ! grep -g "ppa:webupd8team/java" /etc/apt/sources.list /etc/apt/sources.list.d/* ]; then
+		sudo add-apt-repository ppa:webupd8team/java
+		sudo apt-get update
 	fi
+        sudo apt-get install oracle-java8-installer
 	chmod +x buildMake.sh
 	./buildMake.sh
 	cd ..
