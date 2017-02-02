@@ -68,6 +68,23 @@ void Scheduler::stop()
   TRC_LEAVE("");
 }
 
+Scheduler::TaskHandle Scheduler::scheduleTaskAt(const std::string& task, const std::chrono::system_clock::time_point& tp)
+{
+  addScheduleRecord(std::shared_ptr<ScheduleRecord>(ant_new ScheduleRecord(task, tp)));
+  return 0;
+}
+
+Scheduler::TaskHandle Scheduler::scheduleTaskPeriodic(const std::string& task, const std::chrono::seconds& sec,
+    const std::chrono::system_clock::time_point& tp)
+{
+  addScheduleRecord(std::shared_ptr<ScheduleRecord>(ant_new ScheduleRecord(task, sec, tp)));
+  return 0;
+}
+
+void Scheduler::removeTask(TaskHandle hndl)
+{
+}
+
 int Scheduler::handleScheduledRecord(const ScheduleRecord& record)
 {
   TRC_DBG("==================================" << std::endl <<
@@ -88,7 +105,7 @@ int Scheduler::handleScheduledRecord(const ScheduleRecord& record)
   return 0;
 }
 
-void Scheduler::addScheduleRecord(std::shared_ptr<ScheduleRecord>& record)
+Scheduler::TaskHandle Scheduler::addScheduleRecord(std::shared_ptr<ScheduleRecord>& record)
 {
   system_clock::time_point timePoint;
   std::tm timeStr;
@@ -98,12 +115,14 @@ void Scheduler::addScheduleRecord(std::shared_ptr<ScheduleRecord>& record)
   // lock and insert
   std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
   system_clock::time_point tp = record->getNext(timeStr);
-  m_scheduledTasks.insert(std::make_pair(tp, record));
+  m_scheduledTasksByTime.insert(std::make_pair(tp, record));
 
   // notify timer thread
   std::unique_lock<std::mutex> lckn(m_conditionVariableMutex);
   m_scheduledTaskPushed = true;
   m_conditionVariable.notify_one();
+  //TODO
+  return 0;
 }
 
 void Scheduler::addScheduleRecords(std::vector<std::shared_ptr<ScheduleRecord>>& records)
@@ -117,7 +136,7 @@ void Scheduler::addScheduleRecords(std::vector<std::shared_ptr<ScheduleRecord>>&
   std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
   for (auto & record : records) {
     system_clock::time_point tp = record->getNext(timeStr);
-    m_scheduledTasks.insert(std::make_pair(tp, record));
+    m_scheduledTasksByTime.insert(std::make_pair(tp, record));
   }
 
   // notify timer thread
@@ -148,9 +167,9 @@ void Scheduler::timer()
     std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
 
     // fire all expired tasks
-    while (!m_scheduledTasks.empty()) {
+    while (!m_scheduledTasksByTime.empty()) {
 
-      auto begin = m_scheduledTasks.begin();
+      auto begin = m_scheduledTasksByTime.begin();
       std::shared_ptr<ScheduleRecord> record = begin->second;
 
       if (begin->first < timePoint) {
@@ -160,12 +179,12 @@ void Scheduler::timer()
         m_dpaTaskQueue->pushToQueue(*record); //copy record
 
         // erase fired
-        m_scheduledTasks.erase(begin);
+        m_scheduledTasksByTime.erase(begin);
 
         // get and schedule next
         system_clock::time_point nextTimePoint = record->getNext(timeStr);
         if (nextTimePoint >= timePoint) {
-          m_scheduledTasks.insert(std::make_pair(nextTimePoint, record));
+          m_scheduledTasksByTime.insert(std::make_pair(nextTimePoint, record));
         }
       }
       else {
@@ -174,8 +193,8 @@ void Scheduler::timer()
     }
 
     // get next wakeup time
-    if (!m_scheduledTasks.empty()) {
-      timePoint = m_scheduledTasks.begin()->first;
+    if (!m_scheduledTasksByTime.empty()) {
+      timePoint = m_scheduledTasksByTime.begin()->first;
     }
     else {
       timePoint += duration<int>(10);
@@ -202,7 +221,7 @@ std::vector<std::string> Scheduler::getMyTasks(const std::string& clientId)
   std::vector<std::string> retval;
   // lock and copy
   std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
-  for (auto & task : m_scheduledTasks) {
+  for (auto & task : m_scheduledTasksByTime) {
     if (task.second->getClientId() == clientId) {
       retval.push_back(task.second->getTask());
     }
@@ -214,25 +233,61 @@ void Scheduler::removeAllMyTasks(const std::string& clientId)
 {
   // lock and remove
   std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
-  for (auto it = m_scheduledTasks.begin(); it != m_scheduledTasks.end(); ++it) {
+  for (auto it = m_scheduledTasksByTime.begin(); it != m_scheduledTasksByTime.end(); ++it) {
     if (it->second->getClientId() == clientId) {
-      it = m_scheduledTasks.erase(it);
+      it = m_scheduledTasksByTime.erase(it);
     }
   }
 }
 
 /////////////////////////////////////////
+ScheduleRecord::ScheduleRecord(const std::string& task, const std::chrono::system_clock::time_point& tp)
+  :m_explicitTiming(true)
+{
+  std::time_t tt = system_clock::to_time_t(tp);
+  struct std::tm * ptm = std::localtime(&tt);
+
+  m_tm.tm_sec = ptm->tm_sec;
+  m_tm.tm_min = ptm->tm_min;
+  m_tm.tm_hour = ptm->tm_hour;
+  m_tm.tm_mday = ptm->tm_mday;
+  m_tm.tm_mon = ptm->tm_mon;
+  m_tm.tm_year = ptm->tm_year;
+  m_tm.tm_wday = ptm->tm_wday;
+  m_tm.tm_yday = ptm->tm_yday;
+  m_tm.tm_isdst = ptm->tm_isdst;
+
+  m_task = task;
+
+}
+
+ScheduleRecord::ScheduleRecord(const std::string& task, const std::chrono::seconds& sec,
+  const std::chrono::system_clock::time_point& tp)
+  :m_explicitTiming(true)
+{
+  m_period = sec;
+  m_timePoint = tp;
+  m_task = task;
+
+  // split into days, hours, minutes, seconds
+  //typedef duration<int, std::ratio<60 * 60 * 24>> days;
+  //days    dd = duration_cast<days> (sec);
+  //hours   hh = duration_cast<hours>(sec % days(1));
+  //minutes mm = duration_cast<minutes>(sec % chrono::hours(1));
+  //seconds ss = sec % chrono::minutes(1);
+}
+
 ScheduleRecord::ScheduleRecord(const std::string& rec)
 {
-  m_tm.tm_sec = -1;
-  m_tm.tm_min = -1;
-  m_tm.tm_hour = -1;
-  m_tm.tm_mday = -1;
-  m_tm.tm_mon = -1;
-  m_tm.tm_year = -1;
-  m_tm.tm_wday = -1;
-  m_tm.tm_yday = -1;
-  m_tm.tm_isdst = -1;
+  //m_tm.tm_sec = -1;
+  //m_tm.tm_min = -1;
+  //m_tm.tm_hour = -1;
+  //m_tm.tm_mday = -1;
+  //m_tm.tm_mon = -1;
+  //m_tm.tm_year = -1;
+  //m_tm.tm_wday = -1;
+  //m_tm.tm_yday = -1;
+  //m_tm.tm_isdst = -1;
 
   parse(rec);
 }
@@ -268,7 +323,7 @@ void ScheduleRecord::parse(const std::string& rec)
   std::string dow("*");
 
   is >> sec >> mnt >> hrs >> day >> mon >> yer >> dow >> m_clientId;
-  std::getline(is, m_dpaTask, '|'); // just to get rest of line with spaces
+  std::getline(is, m_task, '|'); // just to get rest of line with spaces
   
   m_tm.tm_sec = parseItem(sec, 0, 59);
   m_tm.tm_min = parseItem(mnt, 0, 59);
@@ -296,43 +351,49 @@ int ScheduleRecord::parseItem(std::string& item, int mnm, int mxm)
 
 system_clock::time_point ScheduleRecord::getNext(const std::tm& actualTime)
 {
-  bool lower = false;
-  std::tm c_tm = actualTime;
+  system_clock::time_point tp;
 
-  while (true) {
-    if (!compareTimeVal(c_tm.tm_sec, m_tm.tm_sec, lower))
-      break;
-    if (!compareTimeVal(c_tm.tm_min, m_tm.tm_min, lower))
-      break;
-    if (!compareTimeVal(c_tm.tm_hour, m_tm.tm_hour, lower))
-      break;
-    //Compare Day of Week if present
-    if (m_tm.tm_wday >= 0) {
-      int dif = c_tm.tm_wday - m_tm.tm_wday;
-      if (dif == 0 && !lower)
-        c_tm.tm_mday++;
-      else if (dif > 0)
-        c_tm.tm_mday += 7 - dif;
-      else
-        c_tm.tm_mday -= dif;
+  if (!m_explicitTiming) {
+    bool lower = false;
+    std::tm c_tm = actualTime;
+
+    while (true) {
+      if (!compareTimeVal(c_tm.tm_sec, m_tm.tm_sec, lower))
+        break;
+      if (!compareTimeVal(c_tm.tm_min, m_tm.tm_min, lower))
+        break;
+      if (!compareTimeVal(c_tm.tm_hour, m_tm.tm_hour, lower))
+        break;
+      //Compare Day of Week if present
+      if (m_tm.tm_wday >= 0) {
+        int dif = c_tm.tm_wday - m_tm.tm_wday;
+        if (dif == 0 && !lower)
+          c_tm.tm_mday++;
+        else if (dif > 0)
+          c_tm.tm_mday += 7 - dif;
+        else
+          c_tm.tm_mday -= dif;
+        break;
+      }
+      if (!compareTimeVal(c_tm.tm_mday, m_tm.tm_mday, lower))
+        break;
+      if (!compareTimeVal(c_tm.tm_mon, m_tm.tm_mon, lower))
+        break;
+      if (!compareTimeVal(c_tm.tm_year, m_tm.tm_year, lower))
+        break;
+
       break;
     }
-    if (!compareTimeVal(c_tm.tm_mday, m_tm.tm_mday, lower))
-      break;
-    if (!compareTimeVal(c_tm.tm_mon, m_tm.tm_mon, lower))
-      break;
-    if (!compareTimeVal(c_tm.tm_year, m_tm.tm_year, lower))
-      break;
 
-    break;
+    std::time_t tt = std::mktime(&c_tm);
+    if (tt == -1) {
+      throw std::logic_error("Invalid time conversion");
+    }
+    tp = system_clock::from_time_t(tt);
   }
-
-  std::time_t tt = std::mktime(&c_tm);
-  if (tt == -1) {
-    throw "no valid system time"; //TODO
+  else {
   }
   
-  system_clock::time_point tp = system_clock::from_time_t(tt);
   m_next = asString(tp);
   return tp;
 }
