@@ -27,15 +27,15 @@ public:
   void unregisterMessageHandler(const std::string& clientId) override;
 
   std::vector<std::string> getMyTasks(const std::string& clientId) const override;
-  std::string getMyTask(const TaskHandle& hndl) const override;
+  std::string getMyTask(const std::string& clientId, const TaskHandle& hndl) const override;
 
-  TaskHandle scheduleTaskAt(const std::string& task, const std::chrono::system_clock::time_point& tp) override;
-  TaskHandle scheduleTaskPeriodic(const std::string& task, const std::chrono::seconds& sec,
+  TaskHandle scheduleTaskAt(const std::string& clientId, const std::string& task, const std::chrono::system_clock::time_point& tp) override;
+  TaskHandle scheduleTaskPeriodic(const std::string& clientId, const std::string& task, const std::chrono::seconds& sec,
     const std::chrono::system_clock::time_point& tp) override;
 
   void removeAllMyTasks(const std::string& clientId) override;
-  void removeTask(TaskHandle hndl) override;
-  void removeTasks(std::vector<TaskHandle> hndls) override;
+  void removeTask(const std::string& clientId, TaskHandle hndl) override;
+  void removeTasks(const std::string& clientId, std::vector<TaskHandle> hndls) override;
 
 private:
   int handleScheduledRecord(const ScheduleRecord& record);
@@ -73,13 +73,14 @@ private:
 
 class ScheduleRecord {
 public:
-  ScheduleRecord(const std::string& task, const std::chrono::system_clock::time_point& tp);
-  ScheduleRecord(const std::string& task, const std::chrono::seconds& sec,
-    const std::chrono::system_clock::time_point& tp = std::chrono::system_clock::now());
+  ScheduleRecord() = delete;
+  ScheduleRecord(const std::string& clientId, const std::string& task, const std::chrono::system_clock::time_point& tp);
+  ScheduleRecord(const std::string& clientId, const std::string& task, const std::chrono::seconds& sec,
+    const std::chrono::system_clock::time_point& tp);
   ScheduleRecord(const std::string& rec);
 
   Scheduler::TaskHandle getTaskHandle() const { return m_taskHandle; }
-  std::chrono::system_clock::time_point getNext(const std::tm& actualTime);
+  std::chrono::system_clock::time_point getNext(const std::chrono::system_clock::time_point& actualTimePoint, const std::tm& actualTime);
   const std::string& getTask() const { return m_task; }
   const std::string& getClientId() const { return m_clientId; }
 
@@ -100,14 +101,15 @@ private:
   //return true - continue false - finish
   bool compareTimeVal(int& cval, int tval, bool& lw) const;
   std::tm m_tm = { -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-  std::string m_next;
+  //std::string m_next;
   std::string m_task;
   std::string m_clientId;
 
   //explicit timing
-  bool m_explicitTiming = false;
+  bool m_periodic = false;
+  bool m_started = false;
   std::chrono::seconds m_period;
-  std::chrono::system_clock::time_point m_timePoint;
+  std::chrono::system_clock::time_point m_startTime;
 
   Scheduler::TaskHandle m_taskHandle;
 };
