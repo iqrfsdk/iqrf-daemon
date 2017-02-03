@@ -94,7 +94,7 @@ private:
   //The only method can do it
   friend void shuffleDuplicitHandle(ScheduleRecord& rec);
   
-  void ScheduleRecord::init();
+  void init();
 
   void parse(const std::string& rec);
   int parseItem(std::string& item, int mnm, int mxm);
