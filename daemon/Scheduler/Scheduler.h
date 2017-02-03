@@ -13,6 +13,8 @@ class ScheduleRecord;
 class Scheduler : public IScheduler
 {
 public:
+  typedef long TaskHandle;
+
   Scheduler();
   virtual ~Scheduler();
 
@@ -24,22 +26,27 @@ public:
   void registerMessageHandler(const std::string& clientId, TaskHandlerFunc fun) override;
   void unregisterMessageHandler(const std::string& clientId) override;
 
-  std::vector<std::string> getMyTasks(const std::string& clientId) override;
-  void removeAllMyTasks(const std::string& clientId) override;
+  std::vector<std::string> getMyTasks(const std::string& clientId) const override;
+  std::string getMyTask(const TaskHandle& hndl) const override;
 
-  ///////////
-  typedef uint32_t TaskHandle;
-  TaskHandle scheduleTaskAt(const std::string& task, const std::chrono::system_clock::time_point& tp);
+  TaskHandle scheduleTaskAt(const std::string& task, const std::chrono::system_clock::time_point& tp) override;
   TaskHandle scheduleTaskPeriodic(const std::string& task, const std::chrono::seconds& sec,
-    const std::chrono::system_clock::time_point& tp);
-  void removeTask(TaskHandle hndl);
+    const std::chrono::system_clock::time_point& tp) override;
+
+  void removeAllMyTasks(const std::string& clientId) override;
+  void removeTask(TaskHandle hndl) override;
+  void removeTasks(std::vector<TaskHandle> hndls) override;
 
 private:
   int handleScheduledRecord(const ScheduleRecord& record);
 
+  TaskHandle addScheduleRecordUnlocked(std::shared_ptr<ScheduleRecord>& record);
   TaskHandle addScheduleRecord(std::shared_ptr<ScheduleRecord>& record);
   void addScheduleRecords(std::vector<std::shared_ptr<ScheduleRecord>>& records);
-  //void removeScheduleRecord(const ScheduleRecord& record);
+  
+  void removeScheduleRecordUnlocked(std::shared_ptr<ScheduleRecord>& record);
+  void removeScheduleRecord(std::shared_ptr<ScheduleRecord>& record);
+  void removeScheduleRecords(std::vector<std::shared_ptr<ScheduleRecord>>& records);
 
   ////////////////////////////////
   TaskQueue<ScheduleRecord>* m_dpaTaskQueue;
@@ -52,7 +59,7 @@ private:
   // generated from required time matrice
   std::multimap<std::chrono::system_clock::time_point, std::shared_ptr<ScheduleRecord>> m_scheduledTasksByTime;
   bool m_scheduledTaskPushed;
-  std::mutex m_scheduledTasksMutex;
+  mutable std::mutex m_scheduledTasksMutex;
 
   std::thread m_timerThread;
   std::atomic_bool m_runTimerThread;
@@ -69,9 +76,9 @@ public:
   ScheduleRecord(const std::string& task, const std::chrono::system_clock::time_point& tp);
   ScheduleRecord(const std::string& task, const std::chrono::seconds& sec,
     const std::chrono::system_clock::time_point& tp = std::chrono::system_clock::now());
-
   ScheduleRecord(const std::string& rec);
 
+  Scheduler::TaskHandle getTaskHandle() const { return m_taskHandle; }
   std::chrono::system_clock::time_point getNext(const std::tm& actualTime);
   const std::string& getTask() const { return m_task; }
   const std::string& getClientId() const { return m_clientId; }
@@ -81,6 +88,13 @@ public:
   static std::vector<std::string> preparseMultiRecord(const std::string& rec);
 
 private:
+  //Change handle it if duplicit detected by Scheduler
+  void shuffleHandle(); //change handle it if duplicit exists
+  //The only method can do it
+  friend void shuffleDuplicitHandle(ScheduleRecord& rec);
+  
+  void ScheduleRecord::init();
+
   void parse(const std::string& rec);
   int parseItem(std::string& item, int mnm, int mxm);
   //return true - continue false - finish
@@ -94,6 +108,8 @@ private:
   bool m_explicitTiming = false;
   std::chrono::seconds m_period;
   std::chrono::system_clock::time_point m_timePoint;
+
+  Scheduler::TaskHandle m_taskHandle;
 };
 
 
