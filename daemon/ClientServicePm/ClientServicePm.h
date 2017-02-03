@@ -37,4 +37,6 @@ private:
   IMessaging* m_messaging;
   IDaemon* m_daemon;
   ISerializer* m_serializer;
+
+  std::map<uint16_t, bool> m_watchedPm;
 };
