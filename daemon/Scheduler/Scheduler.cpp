@@ -70,13 +70,15 @@ void Scheduler::stop()
 
 Scheduler::TaskHandle Scheduler::scheduleTaskAt(const std::string& clientId, const std::string& task, const std::chrono::system_clock::time_point& tp)
 {
-  return addScheduleRecord(std::shared_ptr<ScheduleRecord>(ant_new ScheduleRecord(clientId, task, tp)));
+  std::shared_ptr<ScheduleRecord> s = std::shared_ptr<ScheduleRecord>(ant_new ScheduleRecord(clientId, task, tp));
+  return addScheduleRecord(s);
 }
 
 Scheduler::TaskHandle Scheduler::scheduleTaskPeriodic(const std::string& clientId, const std::string& task, const std::chrono::seconds& sec,
     const std::chrono::system_clock::time_point& tp)
 {
-  return addScheduleRecord(std::shared_ptr<ScheduleRecord>(ant_new ScheduleRecord(clientId, task, sec, tp)));
+  std::shared_ptr<ScheduleRecord> s = std::shared_ptr<ScheduleRecord>(ant_new ScheduleRecord(clientId, task, sec, tp));
+  return addScheduleRecord(s);
 }
 
 int Scheduler::handleScheduledRecord(const ScheduleRecord& record)
