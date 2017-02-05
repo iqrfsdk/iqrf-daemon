@@ -75,7 +75,7 @@ Scheduler::TaskHandle Scheduler::scheduleTaskAt(const std::string& clientId, con
 }
 
 Scheduler::TaskHandle Scheduler::scheduleTaskPeriodic(const std::string& clientId, const std::string& task, const std::chrono::seconds& sec,
-    const std::chrono::system_clock::time_point& tp)
+  const std::chrono::system_clock::time_point& tp)
 {
   std::shared_ptr<ScheduleRecord> s = std::shared_ptr<ScheduleRecord>(ant_new ScheduleRecord(clientId, task, sec, tp));
   return addScheduleRecord(s);
@@ -126,7 +126,7 @@ Scheduler::TaskHandle Scheduler::addScheduleRecordUnlocked(std::shared_ptr<Sched
 
 Scheduler::TaskHandle Scheduler::addScheduleRecord(std::shared_ptr<ScheduleRecord>& record)
 {
-  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
 
   addScheduleRecordUnlocked(record);
 
@@ -140,7 +140,7 @@ Scheduler::TaskHandle Scheduler::addScheduleRecord(std::shared_ptr<ScheduleRecor
 
 void Scheduler::addScheduleRecords(std::vector<std::shared_ptr<ScheduleRecord>>& records)
 {
-  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
 
   for (auto & record : records) {
     addScheduleRecordUnlocked(record);
@@ -155,27 +155,30 @@ void Scheduler::addScheduleRecords(std::vector<std::shared_ptr<ScheduleRecord>>&
 void Scheduler::removeScheduleRecordUnlocked(std::shared_ptr<ScheduleRecord>& record)
 {
   Scheduler::TaskHandle handle = record->getTaskHandle();
-  for (auto it = m_scheduledTasksByTime.begin(); it != m_scheduledTasksByTime.end(); it++) {
+  for (auto it = m_scheduledTasksByTime.begin(); it != m_scheduledTasksByTime.end(); ) {
     if (it->second->getTaskHandle() == handle)
       it = m_scheduledTasksByTime.erase(it);
+    else
+      it++;
   }
   m_scheduledTasksByHandle.erase(handle);
 }
 
 void Scheduler::removeScheduleRecord(std::shared_ptr<ScheduleRecord>& record)
 {
-  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
   removeScheduleRecordUnlocked(record);
 }
 
 void Scheduler::removeScheduleRecords(std::vector<std::shared_ptr<ScheduleRecord>>& records)
 {
-  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
   for (auto & record : records) {
     removeScheduleRecordUnlocked(record);
   }
 }
 
+/*
 //thread function
 void Scheduler::timer()
 {
@@ -185,17 +188,18 @@ void Scheduler::timer()
   TRC_DBG(ScheduleRecord::asString(timePoint));
 
   while (m_runTimerThread) {
-    
+
     { // wait for something in the m_scheduledTasks;
       std::unique_lock<std::mutex> lck(m_conditionVariableMutex);
-      m_conditionVariable.wait_until(lck, timePoint, [&]{ return m_scheduledTaskPushed; });
+      m_conditionVariable.wait_until(lck, timePoint, [&] { return m_scheduledTaskPushed; });
       m_scheduledTaskPushed = false;
     }
 
     // get actual time
     ScheduleRecord::getTime(timePoint, timeStr);
 
-    std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
+    //std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
+    m_scheduledTasksMutex.lock();
 
     // fire all expired tasks
     while (!m_scheduledTasksByTime.empty()) {
@@ -204,9 +208,9 @@ void Scheduler::timer()
       std::shared_ptr<ScheduleRecord> record = begin->second;
 
       if (begin->first < timePoint) {
-        
+
         // fire
-    	TRC_INF("Task fired at: " << ScheduleRecord::asString(timePoint));
+        TRC_INF("Task fired at: " << ScheduleRecord::asString(timePoint) << PAR(record->getTask()));
         m_dpaTaskQueue->pushToQueue(*record); //copy record
 
         // erase fired
@@ -216,6 +220,9 @@ void Scheduler::timer()
         system_clock::time_point nextTimePoint = record->getNext(timePoint, timeStr);
         if (nextTimePoint >= timePoint) {
           m_scheduledTasksByTime.insert(std::make_pair(nextTimePoint, record));
+        }
+        else {
+          //TODO remove from m_scheduledTasksByHandle
         }
       }
       else {
@@ -228,10 +235,87 @@ void Scheduler::timer()
       timePoint = m_scheduledTasksByTime.begin()->first;
     }
     else {
-      timePoint += duration<int>(10);
+      timePoint += seconds(10);
     }
 
+    TRC_DBG("UNLOCKING MUTEX");
+    m_scheduledTasksMutex.unlock();
+
   }
+}
+*/
+//thread function
+void Scheduler::timer()
+{
+  system_clock::time_point timePoint;
+  std::tm timeStr;
+  ScheduleRecord::getTime(timePoint, timeStr);
+  TRC_DBG(ScheduleRecord::asString(timePoint));
+
+  while (m_runTimerThread) {
+
+    { // wait for something in the m_scheduledTasks;
+      std::unique_lock<std::mutex> lck(m_conditionVariableMutex);
+      m_conditionVariable.wait_until(lck, timePoint, [&] { return m_scheduledTaskPushed; });
+      m_scheduledTaskPushed = false;
+    }
+
+    // get actual time
+    ScheduleRecord::getTime(timePoint, timeStr);
+
+    // fire all expired tasks
+    while (true) {
+
+      m_scheduledTasksMutex.lock();
+
+      if (m_scheduledTasksByTime.empty()) {
+        nextWakeupAndUnlock(timePoint);
+        break;
+      }
+
+      auto begin = m_scheduledTasksByTime.begin();
+      std::shared_ptr<ScheduleRecord> record = begin->second;
+
+      if (begin->first < timePoint) {
+
+        // erase fired
+        m_scheduledTasksByTime.erase(begin);
+
+        // get and schedule next
+        system_clock::time_point nextTimePoint = record->getNext(timePoint, timeStr);
+        if (nextTimePoint >= timePoint) {
+          m_scheduledTasksByTime.insert(std::make_pair(nextTimePoint, record));
+        }
+        else {
+          //TODO remove from m_scheduledTasksByHandle
+        }
+
+        nextWakeupAndUnlock(timePoint);
+
+        // fire
+        TRC_INF("Task fired at: " << ScheduleRecord::asString(timePoint) << PAR(record->getTask()));
+        m_dpaTaskQueue->pushToQueue(*record); //copy record
+
+      }
+      else {
+        nextWakeupAndUnlock(timePoint);
+        break;
+      }
+    }
+  }
+}
+
+void Scheduler::nextWakeupAndUnlock(system_clock::time_point& timePoint)
+{
+  // get next wakeup time
+  if (!m_scheduledTasksByTime.empty()) {
+    timePoint = m_scheduledTasksByTime.begin()->first;
+  }
+  else {
+    timePoint += seconds(10);
+  }
+  TRC_DBG("UNLOCKING MUTEX");
+  m_scheduledTasksMutex.unlock();
 }
 
 void Scheduler::registerMessageHandler(const std::string& clientId, TaskHandlerFunc fun)
@@ -251,7 +335,7 @@ std::vector<std::string> Scheduler::getMyTasks(const std::string& clientId) cons
 {
   std::vector<std::string> retval;
   // lock and copy
-  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
   for (auto & task : m_scheduledTasksByTime) {
     if (task.second->getClientId() == clientId) {
       retval.push_back(task.second->getTask());
@@ -264,7 +348,7 @@ std::string Scheduler::getMyTask(const std::string& clientId, const TaskHandle& 
 {
   std::string retval;
   // lock and copy
-  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
   auto found = m_scheduledTasksByHandle.find(hndl);
   if (found != m_scheduledTasksByHandle.end() && clientId == found->second->getClientId())
     retval = found->second->getTask();
@@ -274,7 +358,7 @@ std::string Scheduler::getMyTask(const std::string& clientId, const TaskHandle& 
 void Scheduler::removeAllMyTasks(const std::string& clientId)
 {
   // lock and remove
-  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
   for (auto it = m_scheduledTasksByTime.begin(); it != m_scheduledTasksByTime.end(); ) {
     if (it->second->getClientId() == clientId) {
       m_scheduledTasksByHandle.erase(it->second->getTaskHandle());
@@ -287,7 +371,7 @@ void Scheduler::removeAllMyTasks(const std::string& clientId)
 
 void Scheduler::removeTask(const std::string& clientId, TaskHandle hndl)
 {
-  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
   auto found = m_scheduledTasksByHandle.find(hndl);
   if (found != m_scheduledTasksByHandle.end() && clientId == found->second->getClientId())
     removeScheduleRecordUnlocked(found->second);
@@ -295,7 +379,7 @@ void Scheduler::removeTask(const std::string& clientId, TaskHandle hndl)
 
 void Scheduler::removeTasks(const std::string& clientId, std::vector<TaskHandle> hndls)
 {
-  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
   for (auto& it : hndls) {
     auto found = m_scheduledTasksByHandle.find(it);
     if (found != m_scheduledTasksByHandle.end() && clientId == found->second->getClientId())
@@ -313,7 +397,8 @@ private:
 public:
   static Scheduler::TaskHandle getTaskHandle() {
     static RandomTaskHandleGenerator rt;
-    return (Scheduler::TaskHandle)rand();
+    int val = rand();
+    return (Scheduler::TaskHandle)(val ? val : val + 1);
   }
 };
 
@@ -416,7 +501,7 @@ void ScheduleRecord::parse(const std::string& rec)
 
   is >> sec >> mnt >> hrs >> day >> mon >> yer >> dow >> m_clientId;
   std::getline(is, m_task, '|'); // just to get rest of line with spaces
-  
+
   m_tm.tm_sec = parseItem(sec, 0, 59);
   m_tm.tm_min = parseItem(mnt, 0, 59);
   m_tm.tm_hour = parseItem(hrs, 0, 23);
@@ -491,7 +576,7 @@ system_clock::time_point ScheduleRecord::getNext(const std::chrono::system_clock
       m_started = true;
     }
   }
-  
+
   //m_next = asString(tp);
   return tp;
 }
