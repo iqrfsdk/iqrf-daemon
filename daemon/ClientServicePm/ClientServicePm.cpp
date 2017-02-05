@@ -151,7 +151,8 @@ void ClientServicePm::processPulseMeterFromTaskQueue(PrfPulseMeterSchd& pm)
     TRC_INF(std::endl << "PMETER: " << NAME_PAR(node, pm.getDpa().getAddress()) << " ALIVE !!!!!!!!!!!!!!!" << std::endl);
     pm.setSync(true);
 
-    //Schedule next read and sleep
+    //Schedule next read
+    //TODO and sleep
     std::ostringstream os;
     os << SCHEDULED_SEND_PMT_TASK << ' ' << pm.getDpa().getAddress();
     pm.scheduleTaskPeriodic(getClientName(), os.str(), std::chrono::seconds(10));

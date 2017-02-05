@@ -45,6 +45,7 @@ public:
   void scheduleTaskPeriodic(const std::string& clientId, const std::string& task, const std::chrono::seconds& sec,
     const std::chrono::system_clock::time_point& tp = std::chrono::system_clock::now())
   {
+    removeSchedule(clientId);
     m_taskHandle = m_scheduler->scheduleTaskPeriodic(clientId, task, sec, tp);
   }
 
@@ -53,9 +54,9 @@ public:
     return m_taskHandle != IScheduler::TASK_HANDLE_INVALID;
   }
 
-  void removeSchedule()
+  void removeSchedule(const std::string& clientId)
   {
-    m_taskHandle = m_scheduler->scheduleTaskAt(clientId, task, tp);
+    m_scheduler->removeTask(clientId, m_taskHandle);
     m_taskHandle = IScheduler::TASK_HANDLE_INVALID;
   }
 
