@@ -23,12 +23,14 @@ public:
   ScheduleDpaTask(const T& dpt, IScheduler* schd)
     :m_scheduler(schd)
     , m_dpa(dpt)
+    , m_sync(false)
   {}
 
   ScheduleDpaTask(const ScheduleDpaTask& other)
     : m_taskHandle(other.m_taskHandle)
     , m_scheduler(other.m_scheduler)
     , m_dpa(other.m_dpa)
+    , m_sync((bool)other.m_sync)
   {
   }
 
