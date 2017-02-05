@@ -126,7 +126,7 @@ Scheduler::TaskHandle Scheduler::addScheduleRecordUnlocked(std::shared_ptr<Sched
 
 Scheduler::TaskHandle Scheduler::addScheduleRecord(std::shared_ptr<ScheduleRecord>& record)
 {
-  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
 
   addScheduleRecordUnlocked(record);
 
@@ -140,7 +140,7 @@ Scheduler::TaskHandle Scheduler::addScheduleRecord(std::shared_ptr<ScheduleRecor
 
 void Scheduler::addScheduleRecords(std::vector<std::shared_ptr<ScheduleRecord>>& records)
 {
-  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
 
   for (auto & record : records) {
     addScheduleRecordUnlocked(record);
@@ -166,13 +166,13 @@ void Scheduler::removeScheduleRecordUnlocked(std::shared_ptr<ScheduleRecord>& re
 
 void Scheduler::removeScheduleRecord(std::shared_ptr<ScheduleRecord>& record)
 {
-  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
   removeScheduleRecordUnlocked(record);
 }
 
 void Scheduler::removeScheduleRecords(std::vector<std::shared_ptr<ScheduleRecord>>& records)
 {
-  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
   for (auto & record : records) {
     removeScheduleRecordUnlocked(record);
   }
@@ -198,7 +198,7 @@ void Scheduler::timer()
     // get actual time
     ScheduleRecord::getTime(timePoint, timeStr);
 
-    //std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
+    //std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
     m_scheduledTasksMutex.lock();
 
     // fire all expired tasks
@@ -335,7 +335,7 @@ std::vector<std::string> Scheduler::getMyTasks(const std::string& clientId) cons
 {
   std::vector<std::string> retval;
   // lock and copy
-  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
   for (auto & task : m_scheduledTasksByTime) {
     if (task.second->getClientId() == clientId) {
       retval.push_back(task.second->getTask());
@@ -348,7 +348,7 @@ std::string Scheduler::getMyTask(const std::string& clientId, const TaskHandle& 
 {
   std::string retval;
   // lock and copy
-  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
   auto found = m_scheduledTasksByHandle.find(hndl);
   if (found != m_scheduledTasksByHandle.end() && clientId == found->second->getClientId())
     retval = found->second->getTask();
@@ -358,7 +358,7 @@ std::string Scheduler::getMyTask(const std::string& clientId, const TaskHandle& 
 void Scheduler::removeAllMyTasks(const std::string& clientId)
 {
   // lock and remove
-  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
   for (auto it = m_scheduledTasksByTime.begin(); it != m_scheduledTasksByTime.end(); ) {
     if (it->second->getClientId() == clientId) {
       m_scheduledTasksByHandle.erase(it->second->getTaskHandle());
@@ -371,7 +371,7 @@ void Scheduler::removeAllMyTasks(const std::string& clientId)
 
 void Scheduler::removeTask(const std::string& clientId, TaskHandle hndl)
 {
-  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
   auto found = m_scheduledTasksByHandle.find(hndl);
   if (found != m_scheduledTasksByHandle.end() && clientId == found->second->getClientId())
     removeScheduleRecordUnlocked(found->second);
@@ -379,7 +379,7 @@ void Scheduler::removeTask(const std::string& clientId, TaskHandle hndl)
 
 void Scheduler::removeTasks(const std::string& clientId, std::vector<TaskHandle> hndls)
 {
-  std::lock_guard<std::recursive_mutex> lck(m_scheduledTasksMutex);
+  std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
   for (auto& it : hndls) {
     auto found = m_scheduledTasksByHandle.find(it);
     if (found != m_scheduledTasksByHandle.end() && clientId == found->second->getClientId())

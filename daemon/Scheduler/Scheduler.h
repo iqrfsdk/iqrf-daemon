@@ -59,7 +59,7 @@ private:
   // generated from required time matrice
   std::multimap<std::chrono::system_clock::time_point, std::shared_ptr<ScheduleRecord>> m_scheduledTasksByTime;
   bool m_scheduledTaskPushed;
-  mutable std::recursive_mutex m_scheduledTasksMutex;
+  mutable std::mutex m_scheduledTasksMutex;
 
   std::thread m_timerThread;
   std::atomic_bool m_runTimerThread;
