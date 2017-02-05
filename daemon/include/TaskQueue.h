@@ -60,12 +60,15 @@ private:
       }
 
       while (true) {
-        std::lock_guard<std::mutex> lck(m_taskQueueMutex);
+        m_taskQueueMutex.lock();
         if (!m_taskQueue.empty()) {
-          m_processTaskFunc(m_taskQueue.front());
+          T toBeProcessed = m_taskQueue.front();
           m_taskQueue.pop();
+          m_taskQueueMutex.unlock();
+          m_processTaskFunc(toBeProcessed);
         }
         else {
+          m_taskQueueMutex.unlock();
           break;
         }
       }
