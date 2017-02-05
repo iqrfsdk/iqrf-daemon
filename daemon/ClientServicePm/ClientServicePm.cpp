@@ -1,11 +1,15 @@
 #include "ClientServicePm.h"
 #include "PrfFrc.h"
+#include "PrfOs.h"
 #include "DpaTransactionTask.h"
 #include "IDaemon.h"
 #include "IqrfLogging.h"
 
 const std::string SCHEDULED_SEND_FRC_TASK("SND_FRC");
 const std::string SCHEDULED_SEND_PMT_TASK("SND_PMT");
+
+const unsigned SLEEP_SEC(60);
+const unsigned SLEEP_MILIS(SLEEP_SEC * 1000);
 
 ClientServicePm::ClientServicePm(const std::string & name)
   :m_name(name)
@@ -152,15 +156,15 @@ void ClientServicePm::processPulseMeterFromTaskQueue(PrfPulseMeterSchd& pm)
     pm.setSync(true);
 
     //Schedule next read
-    //TODO and sleep
     std::ostringstream os;
     os << SCHEDULED_SEND_PMT_TASK << ' ' << pm.getDpa().getAddress();
-    pm.scheduleTaskPeriodic(getClientName(), os.str(), std::chrono::seconds(10));
+    pm.scheduleTaskPeriodic(getClientName(), os.str(), std::chrono::seconds(SLEEP_SEC));
   }
 }
 
 void ClientServicePm::processPulseMeterFromScheduler(const std::string& task)
 {
+  //parse cmd and address from scheduled task
   std::string cmd;
   uint16_t adr = 0;
   std::istringstream is(task);
@@ -171,6 +175,7 @@ void ClientServicePm::processPulseMeterFromScheduler(const std::string& task)
     return;
   }
 
+  //find according address from watched pmeters
   PrfPulseMeterSchd* pms(nullptr);
   for (auto& pm : m_watchedPm) {
     if (pm.getDpa().getAddress() == adr) {
@@ -185,18 +190,26 @@ void ClientServicePm::processPulseMeterFromScheduler(const std::string& task)
   }
   
   //send read
-  DpaTransactionTask trans(pms->getDpa());
-  m_daemon->executeDpaTransaction(trans);
-  int result = trans.waitFinish();
+  DpaTransactionTask transRead(pms->getDpa());
+  m_daemon->executeDpaTransaction(transRead);
+  int resultRead = transRead.waitFinish();
   
-  //to encode output message
+  //send sleep - temporary for testing with just ordinary node
+  PrfOs prfOs(pms->getDpa().getAddress());
+  prfOs.sleep(std::chrono::milliseconds(SLEEP_MILIS - 2000), (uint8_t)PrfOs::TimeControl::LEDG_FLASH);
+  DpaTransactionTask transSleep(prfOs);
+  m_daemon->executeDpaTransaction(transSleep);
+  int resultSleep = transSleep.waitFinish();
+
+  //encode output message
   std::ostringstream os;
-  os << pms->getDpa().encodeResponse(trans.getErrorStr());
+  os << pms->getDpa().encodeResponse(transRead.getErrorStr());
 
   ustring msgu((unsigned char*)os.str().data(), os.str().size());
   m_messaging->sendMessage(msgu);
 
-  if (result != 0) {
+  if (resultRead != 0) {
+    //we probably lost pmeter - start FRC to sync again
     pms->setSync(false);
     setFrc(true);
   }
