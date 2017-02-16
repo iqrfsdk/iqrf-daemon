@@ -17,3 +17,8 @@ include_directories(${CMAKE_SOURCE_DIR}/JsonSerializer)
 include_directories(${clibdpa_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME} STATIC ${ClientServicePm_SRC_FILES} ${ClientServicePm_INC_FILES})
+
+SET_TARGET_PROPERTIES(
+	${PROJECT_NAME} PROPERTIES
+	COMPILE_FLAGS -DTHERM_SIM
+)

@@ -127,7 +127,13 @@ void ClientServicePm::setFrc(bool val)
 void ClientServicePm::processFrcFromScheduler(const std::string& task)
 {
   //prepare FRC
+#ifdef THERM_SIM
   PrfFrc frc(PrfFrc::Cmd::SEND, PrfFrc::FrcCmd::Prebonding);
+#else
+  //seems as the same FRC behaviour as above
+  PrfFrc frc(PrfFrc::Cmd::SEND, PrfFrc::FrcType::GET_BIT2, (uint8_t)PrfPulseMeter::FrcCmd::ALIVE);
+  //TODO command alive stop autosleep?
+#endif
   DpaTransactionTask trans(frc);
   m_daemon->executeDpaTransaction(trans);
   int result = trans.waitFinish();
