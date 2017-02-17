@@ -50,7 +50,7 @@ if (WIN32)
 	SimpleSerializer
 	Scheduler
 	MqttMessaging
-	paho-mqtt3as
+	paho-mqtt3a
 	MqMessaging
 	DpaExtension
 	MqChannel
