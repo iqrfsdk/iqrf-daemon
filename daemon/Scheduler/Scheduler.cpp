@@ -314,7 +314,7 @@ void Scheduler::nextWakeupAndUnlock(system_clock::time_point& timePoint)
   else {
     timePoint += seconds(10);
   }
-  TRC_DBG("UNLOCKING MUTEX");
+  //TRC_DBG("UNLOCKING MUTEX");
   m_scheduledTasksMutex.unlock();
 }
 

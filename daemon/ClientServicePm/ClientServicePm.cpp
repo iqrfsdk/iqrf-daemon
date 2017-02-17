@@ -194,13 +194,13 @@ void ClientServicePm::processPulseMeterFromScheduler(const std::string& task)
     TRC_WAR("Unknown address: " << PAR(adr));
     return;
   }
-  
+
   //send read
   pms->getDpa().commandReadCounters(std::chrono::seconds(SLEEP_SEC - 2));
   DpaTransactionTask transRead(pms->getDpa());
   m_daemon->executeDpaTransaction(transRead);
   int resultRead = transRead.waitFinish();
-  
+
 #ifdef THERM_SIM
   //send sleep - temporary for testing with just ordinary node
   PrfOs prfOs(pms->getDpa().getAddress());
@@ -210,16 +210,47 @@ void ClientServicePm::processPulseMeterFromScheduler(const std::string& task)
   int resultSleep = transSleep.waitFinish();
 #endif
 
-  //encode output message
-  std::ostringstream os;
-  os << pms->getDpa().encodeResponse(transRead.getErrorStr());
+  TRC_DBG(">>>>>>>>>>>>>>>>>> Pmeter result: " << NAME_PAR(TransactionError, transRead.getErrorStr())
+    << NAME_PAR(TransactionError, pms->getDpa().getAddress()));
 
-  ustring msgu((unsigned char*)os.str().data(), os.str().size());
-  m_messaging->sendMessage(msgu);
+  switch (resultRead) {
+    case 0:
+    {
+      //encode output message
+      std::ostringstream os;
+      os << pms->getDpa().encodeResponse(transRead.getErrorStr());
 
-  if (resultRead != 0) {
-    //we probably lost pmeter - start FRC to sync again
-    pms->setSync(false);
-    setFrc(true);
+      ustring msgu((unsigned char*)os.str().data(), os.str().size());
+      m_messaging->sendMessage(msgu);
+    }
+    break;
+
+    case -1: //ERROR_TIMEOUT
+    {
+      //we probably lost pmeter - start FRC to sync again
+      pms->removeSchedule(getClientName());
+      TRC_DBG("Lost Pulsemeter");
+      pms->setSync(false);
+      setFrc(true);
+    }
+    break;
+
+    case ERROR_PNUM:
+    {
+      //there isn't pmeter device in the address - stop trying
+      pms->removeSchedule(getClientName());
+      TRC_DBG("Stop seeking Pulsemeter");
+      //pms->setSync(false);
+      //setFrc(true);
+    }
+    break;
+
+    default:
+    { //other error
+      pms->removeSchedule(getClientName());
+      TRC_DBG("Stop seeking Pulsemeter");
+      //pms->setSync(false);
+      //setFrc(true);
+    }
   }
 }
