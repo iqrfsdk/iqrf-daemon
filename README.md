@@ -4,6 +4,15 @@ IQRF GW daemon with the multiple communication channels - UDP/MQ/MQTT.
 
 ![See the daemon architecture](/doc/iqrf-linux-gw.png)
 
+## How to download the daemon
+
+```Bash
+mkdir iqrf
+cd iqrf/
+git clone https://github.com/iqrfsdk/iqrf-daemon.git
+cd iqrf-daemon
+```
+
 ## How to compile the daemon for AAEON UP board
 
 ```Bash
@@ -16,6 +25,13 @@ cd scripts/
 ```Bash
 cd scripts/
 ./build-rpi.sh
+```
+
+## How to install the daemon to /usr/local/bin
+
+```Bash
+cd scripts/
+./install.sh
 ```
 
 ## How to configure the daemon

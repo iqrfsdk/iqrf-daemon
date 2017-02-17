@@ -1,7 +1,5 @@
 project(UdpMessaging)
 
-FIND_PACKAGE(clibdpa REQUIRED)
-
 set(UdpMessaging_SRC_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/UdpMessaging.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/helpers.c
@@ -13,7 +11,6 @@ set(UdpMessaging_INC_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/UdpMessaging.h
 )
 
-include_directories(${clibdpa_INCLUDE_DIRS})
 include_directories(${CMAKE_SOURCE_DIR}/MessagingController)
 
 add_library(${PROJECT_NAME} STATIC ${UdpMessaging_SRC_FILES} ${UdpMessaging_INC_FILES})
