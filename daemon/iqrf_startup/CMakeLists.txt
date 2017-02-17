@@ -1,9 +1,5 @@
 project(iqrf_startup)
 
-FIND_PACKAGE(clibcdc REQUIRED)
-FIND_PACKAGE(clibspi REQUIRED)
-FIND_PACKAGE(clibdpa REQUIRED)
-
 set(iqrf_startup_SRC_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/config.json
@@ -37,10 +33,6 @@ include_directories(${CMAKE_SOURCE_DIR}/JsonSerializer)
 include_directories(${CMAKE_SOURCE_DIR}/JsonSerializer/include)
 include_directories(${CMAKE_SOURCE_DIR}/ClientServicePlain)
 include_directories(${CMAKE_SOURCE_DIR}/MessagingController)
-include_directories(${clibcdc_INCLUDE_DIRS})
-include_directories(${clibspi_INCLUDE_DIRS})
-include_directories(${clibdpa_INCLUDE_DIRS})
-include_directories(${PAHO_INCLUDE_DIRS})
 
 if (WIN32) 
 	link_directories(${PAHO_LIBRARY_DIRS})

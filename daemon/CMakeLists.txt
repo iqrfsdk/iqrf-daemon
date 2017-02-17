@@ -10,6 +10,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 FIND_PACKAGE(clibcdc REQUIRED)
 FIND_PACKAGE(clibspi REQUIRED)
 FIND_PACKAGE(cutils REQUIRED)
+FIND_PACKAGE(clibdpa REQUIRED)
 FIND_PACKAGE(paho REQUIRED)
 
 IF (PAHO_FOUND)
@@ -55,6 +56,8 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${clibcdc_INCLUDE_DIRS})
 include_directories(${clibspi_INCLUDE_DIRS})
 include_directories(${cutils_INCLUDE_DIRS})
+include_directories(${clibdpa_INCLUDE_DIRS})
+include_directories(${PAHO_INCLUDE_DIRS})
 
 #library build
 add_subdirectory(include)
