@@ -15,7 +15,8 @@ public:
 
   enum class FrcCmd {
     ALIVE = 0,
-    ALIVE_STOP_AUTOSLEEP = 1
+    ALIVE_STOP_AUTOSLEEP = 1,
+    ALIVE_START_AUTOSLEEP = 2
   };
 
   enum class CntNum {
@@ -29,9 +30,9 @@ public:
   PrfPulseMeter(uint16_t address);
   virtual ~PrfPulseMeter();
 
-  void readCountersCommand(const std::chrono::seconds& sec);
-  void storeCountersCommand(CntNum cntNum, uint32_t value);
-  void disableAutosleepCommand(bool enable);
+  void commandReadCounters(const std::chrono::seconds& sec);
+  void commandStoreCounter(CntNum cntNum, uint32_t value);
+  void commandDisableAutosleep(bool enable);
 
   void parseResponse(const DpaMessage& response) override;
   void parseCommand(const std::string& command) override;
@@ -49,9 +50,14 @@ public:
   uint8_t getCntSum() const { return m_cntsum; }
   uint8_t getDataSum() const { return m_datasum; }
 
-private:
+  bool getStoreCounterResult() const { return m_storeCounterResult; }
+  bool getDisableAutosleepResult() const { return m_disableAutosleepResult; }
+
   Cmd getCmd() const;
+
+private:
   void setCmd(Cmd cmd);
+
   Cmd m_cmd = Cmd::READ_COUNTERS;
 
   uint8_t m_thermometerType = 1;
@@ -69,6 +75,8 @@ private:
   uint8_t m_cntsum = 0xff;
   uint8_t m_datasum = 0xff;
 
+  bool m_storeCounterResult = false;
+  bool m_disableAutosleepResult = false;
 };
 
 class PrfPulseMeterJson : public PrfPulseMeter

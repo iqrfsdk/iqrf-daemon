@@ -196,16 +196,19 @@ void ClientServicePm::processPulseMeterFromScheduler(const std::string& task)
   }
   
   //send read
+  pms->getDpa().commandReadCounters(std::chrono::seconds(SLEEP_SEC - 2));
   DpaTransactionTask transRead(pms->getDpa());
   m_daemon->executeDpaTransaction(transRead);
   int resultRead = transRead.waitFinish();
   
+#ifdef THERM_SIM
   //send sleep - temporary for testing with just ordinary node
   PrfOs prfOs(pms->getDpa().getAddress());
   prfOs.sleep(std::chrono::milliseconds(SLEEP_MILIS - 2000), (uint8_t)PrfOs::TimeControl::LEDG_FLASH);
   DpaTransactionTask transSleep(prfOs);
   m_daemon->executeDpaTransaction(transSleep);
   int resultSleep = transSleep.waitFinish();
+#endif
 
   //encode output message
   std::ostringstream os;
