@@ -302,15 +302,28 @@ void MessagingController::startClients()
     }
   }
 
-  MqMessaging* mqMessaging(nullptr);
-  try {
-    std::unique_ptr<MqMessaging> uptr = std::unique_ptr<MqMessaging>(ant_new MqMessaging());
-    mqMessaging = uptr.get();
-    insertMessaging(std::move(uptr));
+  fnd = m_componentMap.find("MqMessaging");
+  if (fnd != m_componentMap.end() && fnd->second.m_enabled) {
+    try {
+      std::unique_ptr<MqMessaging> uptr(ant_new MqMessaging());
+      //TODO
+      //uptr->updateConfiguration(fnd->second.m_doc); 
+      insertMessaging(std::move(uptr));
+    }
+    catch (std::exception &e) {
+      CATCH_EX("Cannot create MqMessaging ", std::exception, e);
+    }
   }
-  catch (std::exception &e) {
-    CATCH_EX("Cannot create MqMessaging ", std::exception, e);
-  }
+
+  //MqMessaging* mqMessaging(nullptr);
+  //try {
+  //  std::unique_ptr<MqMessaging> uptr = std::unique_ptr<MqMessaging>(ant_new MqMessaging());
+  //  mqMessaging = uptr.get();
+  //  insertMessaging(std::move(uptr));
+  //}
+  //catch (std::exception &e) {
+  //  CATCH_EX("Cannot create MqMessaging ", std::exception, e);
+  //}
 
   ///////// Serializers ///////////////////////////////////
   //TODO load Serializers plugins
