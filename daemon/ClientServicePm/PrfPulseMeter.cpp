@@ -39,6 +39,11 @@ void PrfPulseMeter::commandReadCounters(const std::chrono::seconds& sec)
   m_request.DpaPacket().DpaRequestPacket_t.DpaMessage.Request.PData[0] = tm & 0xff; //LB
   m_request.DpaPacket().DpaRequestPacket_t.DpaMessage.Request.PData[1] = tm >> 8;   //HB
   //TODO HWPID
+#ifdef THERM_SIM
+  m_request.SetLength(sizeof(TDpaIFaceHeader));
+#else
+  m_request.SetLength(sizeof(TDpaIFaceHeader) + 2);
+#endif
 }
 
 void PrfPulseMeter::commandStoreCounter(CntNum cntNum, uint32_t value)
@@ -54,12 +59,14 @@ void PrfPulseMeter::commandStoreCounter(CntNum cntNum, uint32_t value)
   uint8_t sum = 0xff - (p[1] + 0x01) - (p[1] + 0x01) - (p[1] + 0x01) - (p[1] + 0x01);
   p[5] = sum;
   //TODO HWPID
+  m_request.SetLength(sizeof(TDpaIFaceHeader) + 6);
 }
 
 void PrfPulseMeter::commandDisableAutosleep(bool enable)
 {
   setCmd(Cmd::DISABLE_AUTO_SLEEP);
   m_request.DpaPacket().DpaRequestPacket_t.DpaMessage.Request.PData[0] = (uint8_t)(enable ? 0 : 1);
+  m_request.SetLength(sizeof(TDpaIFaceHeader) + 1);
 }
 
 void PrfPulseMeter::parseResponse(const DpaMessage& response)
