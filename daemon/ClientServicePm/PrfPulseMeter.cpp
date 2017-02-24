@@ -81,7 +81,7 @@ void PrfPulseMeter::parseResponse(const DpaMessage& response)
     m_cnt2 = m_cnt1;
     m_temperature = (double)m_cnt1 * 0.0625;
 #else
-    const uint8_t* p = response.DpaPacket().DpaRequestPacket_t.DpaMessage.Response.PData;
+    const uint8_t* p = response.DpaPacket().DpaResponsePacket_t.DpaMessage.Response.PData;
 
     m_thermometerType = p[0];
 
@@ -103,6 +103,7 @@ void PrfPulseMeter::parseResponse(const DpaMessage& response)
     m_cntlen = p[8];
     m_cnts = p[9];
 
+    //TODO use cnts for counters
     m_cnt1 = p[13];
     m_cnt1 <<= 8;
     m_cnt1 |= p[12];
@@ -119,15 +120,18 @@ void PrfPulseMeter::parseResponse(const DpaMessage& response)
     m_cnt2 <<= 8;
     m_cnt2 |= p[14];
 
+    m_cntsum = p[18];
+    m_datasum = p[19];
+
     uint8_t cntsum = 0xff;
     const uint8_t* pp = &p[9];
-    for (int i = 0; i < m_cntlen; i++)
-      cntsum -= pp[i] + 1;
+    for (int i = 0; i < m_cntlen-1; i++)
+      cntsum -= pp[i] - 1;
 
     uint8_t datasum = 0xff;
     pp = &p[0];
     for (int i = 0; i < 19; i++)
-      datasum -= pp[i] + 1;
+      datasum -= pp[i] - 1;
 
     m_cntsum ^= cntsum;
     m_datasum ^= datasum;
@@ -137,13 +141,13 @@ void PrfPulseMeter::parseResponse(const DpaMessage& response)
 
   case (uint8_t)Cmd::STORE_COUNTER:
   {
-    m_storeCounterResult = response.DpaPacket().DpaRequestPacket_t.DpaMessage.Response.PData[0] != 0;
+    m_storeCounterResult = response.DpaPacket().DpaResponsePacket_t.DpaMessage.Response.PData[0] != 0;
   }
   break;
 
   case (uint8_t)Cmd::DISABLE_AUTO_SLEEP:
   {
-    m_disableAutosleepResult = response.DpaPacket().DpaRequestPacket_t.DpaMessage.Response.PData[0] != 0;
+    m_disableAutosleepResult = response.DpaPacket().DpaResponsePacket_t.DpaMessage.Response.PData[0] != 0;
   }
   break;
 

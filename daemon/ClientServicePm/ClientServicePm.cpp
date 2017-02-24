@@ -8,9 +8,6 @@
 const std::string SCHEDULED_SEND_FRC_TASK("SND_FRC");
 const std::string SCHEDULED_SEND_PMT_TASK("SND_PMT");
 
-const unsigned SLEEP_SEC(60);
-const unsigned SLEEP_MILIS(SLEEP_SEC * 1000);
-
 ClientServicePm::ClientServicePm(const std::string & name)
   :m_name(name)
   , m_messaging(nullptr)
@@ -25,6 +22,24 @@ ClientServicePm::ClientServicePm(const std::string & name)
 
 ClientServicePm::~ClientServicePm()
 {
+}
+
+//------------------------
+void ClientServicePm::updateConfiguration(const rapidjson::Value& cfg)
+{
+  TRC_ENTER("");
+  jutils::assertIsObject("", cfg);
+
+  m_frcPeriod = jutils::getPossibleMemberAs<int>("FrcPeriod", cfg, m_frcPeriod);
+  m_sleepPeriod = jutils::getPossibleMemberAs<int>("SleepPeriod", cfg, m_sleepPeriod);
+
+  std::vector<int> vect = jutils::getMemberAsVector<int>("Pulsemeters", cfg);
+  for (int node : vect) {
+    PrfPulseMeterSchd pm(PrfPulseMeterJson(node), m_daemon->getScheduler());
+    m_watchedPm.push_back(pm);
+  }
+
+  TRC_LEAVE("");
 }
 
 void ClientServicePm::setDaemon(IDaemon* daemon)
@@ -56,13 +71,6 @@ void ClientServicePm::start()
   m_daemon->getScheduler()->registerMessageHandler(m_name, [this](const std::string& task) {
     this->handleTaskFromScheduler(task);
   });
-
-  //TODO get from config
-  PrfPulseMeterJson pmj1(1);
-  PrfPulseMeterSchd pm1(pmj1, m_daemon->getScheduler());
-  m_watchedPm.push_back(pm1);
-  PrfPulseMeterSchd pm2(PrfPulseMeterJson(2), m_daemon->getScheduler());
-  m_watchedPm.push_back(pm2);
 
   //schedule FRCs to get running nodes
   setFrc(true);
@@ -112,7 +120,8 @@ void ClientServicePm::setFrc(bool val)
 
   if (val && !m_frcActive) {
     TRC_DBG("Start FRC");
-    m_frcHandle = m_daemon->getScheduler()->scheduleTaskPeriodic(getClientName(), SCHEDULED_SEND_FRC_TASK, std::chrono::seconds(5));
+    m_frcHandle = m_daemon->getScheduler()->scheduleTaskPeriodic(getClientName(),
+      SCHEDULED_SEND_FRC_TASK, std::chrono::seconds(m_frcPeriod));
     m_frcActive = true;
   }
 
@@ -126,6 +135,19 @@ void ClientServicePm::setFrc(bool val)
 //Process FRC sent from Scheduler
 void ClientServicePm::processFrcFromScheduler(const std::string& task)
 {
+  // test ///////////////////////////////
+  //PrfPulseMeterJson pm = m_watchedPm[0].getDpa();
+  //
+  //ustring umsg = {
+  //  0x02, 0x00, 0x22, 0x80, 0x0f, 0x00, 0x00, 0x46,
+  //  0x01, 0x01, 0x57, 0x01, 0x03, 0xff, 0x27, 0x46,
+  //  0x0a, 0x02, 0x30, 0x01, 0x00, 0x00, 0x00, 0x00,
+  //  0x00, 0x00, 0xd5, 0x37
+  //};
+  //DpaMessage msg(umsg);
+  //pm.parseResponse(umsg);
+  /////////////////////////////////
+
   //prepare FRC
 #ifdef THERM_SIM
   PrfFrc frc(PrfFrc::Cmd::SEND, PrfFrc::FrcCmd::Prebonding);
@@ -164,7 +186,7 @@ void ClientServicePm::processPulseMeterFromTaskQueue(PrfPulseMeterSchd& pm)
     //Schedule next read
     std::ostringstream os;
     os << SCHEDULED_SEND_PMT_TASK << ' ' << pm.getDpa().getAddress();
-    pm.scheduleTaskPeriodic(getClientName(), os.str(), std::chrono::seconds(SLEEP_SEC));
+    pm.scheduleTaskPeriodic(getClientName(), os.str(), std::chrono::seconds(m_sleepPeriod));
   }
 }
 
@@ -196,7 +218,8 @@ void ClientServicePm::processPulseMeterFromScheduler(const std::string& task)
   }
 
   //send read
-  pms->getDpa().commandReadCounters(std::chrono::seconds(SLEEP_SEC - 2));
+  int sleepPeriod = m_sleepPeriod > 2 ? m_sleepPeriod - 2 : 0;
+  pms->getDpa().commandReadCounters(std::chrono::seconds(sleepPeriod));
   DpaTransactionTask transRead(pms->getDpa());
   m_daemon->executeDpaTransaction(transRead);
   int resultRead = transRead.waitFinish();
@@ -204,7 +227,7 @@ void ClientServicePm::processPulseMeterFromScheduler(const std::string& task)
 #ifdef THERM_SIM
   //send sleep - temporary for testing with just ordinary node
   PrfOs prfOs(pms->getDpa().getAddress());
-  prfOs.sleep(std::chrono::milliseconds(SLEEP_MILIS - 2000), (uint8_t)PrfOs::TimeControl::LEDG_FLASH);
+  prfOs.sleep(std::chrono::milliseconds(sleepPeriod * 1000), (uint8_t)PrfOs::TimeControl::LEDG_FLASH);
   DpaTransactionTask transSleep(prfOs);
   m_daemon->executeDpaTransaction(transSleep);
   int resultSleep = transSleep.waitFinish();
@@ -240,8 +263,6 @@ void ClientServicePm::processPulseMeterFromScheduler(const std::string& task)
       //there isn't pmeter device in the address - stop trying
       pms->removeSchedule(getClientName());
       TRC_DBG("Stop seeking Pulsemeter");
-      //pms->setSync(false);
-      //setFrc(true);
     }
     break;
 
@@ -249,8 +270,6 @@ void ClientServicePm::processPulseMeterFromScheduler(const std::string& task)
     { //other error
       pms->removeSchedule(getClientName());
       TRC_DBG("Stop seeking Pulsemeter");
-      //pms->setSync(false);
-      //setFrc(true);
     }
   }
 }

@@ -21,6 +21,10 @@
     {
       "ComponentName": "Scheduler",
       "Enabled":  true
+    },
+    {
+      "ComponentName": "ClientServicePm",
+      "Enabled":  true
     }
   ]
 }

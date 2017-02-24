@@ -1,5 +1,6 @@
 #pragma once
 
+#include "JsonUtils.h"
 #include "PrfPulseMeter.h"
 #include "IClient.h"
 #include "ISerializer.h"
@@ -79,6 +80,8 @@ public:
   ClientServicePm(const std::string& name);
   virtual ~ClientServicePm();
 
+  void updateConfiguration(const rapidjson::Value& cfg);
+
   void setDaemon(IDaemon* daemon) override;
   virtual void setSerializer(ISerializer* serializer) override;
   virtual void setMessaging(IMessaging* messaging) override;
@@ -100,6 +103,9 @@ private:
   void setFrc(bool val);
 
   std::string m_name;
+
+  uint16_t m_frcPeriod = 5;
+  uint16_t m_sleepPeriod = 60;
 
   IMessaging* m_messaging;
   IDaemon* m_daemon;

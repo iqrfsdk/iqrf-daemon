@@ -1,0 +1,5 @@
+{
+  "FrcPeriod": 5,
+  "SleepPeriod": 60,
+  "Pulsemeters": [1,2]
+}

@@ -351,11 +351,28 @@ void MessagingController::startClients()
   //TODO will be solved by ClientServicePlain cfg
   auto found2 = m_messagings.find("MqttMessaging");
   if (found2 != m_messagings.end()) {
-    IClient* client2 = ant_new ClientServicePm("ClientServicePm");
-    client2->setDaemon(this);
-    client2->setMessaging(found2->second.get());
-    client2->setSerializer(jsonSerializer);
-    m_clients.insert(std::make_pair(client2->getClientName(), client2));
+  
+    fnd = m_componentMap.find("ClientServicePm");
+    if (fnd != m_componentMap.end() && fnd->second.m_enabled) {
+      try {
+        ClientServicePm* client2 = ant_new ClientServicePm("ClientServicePm");
+        client2->setDaemon(this);
+        client2->setMessaging(found2->second.get());
+        client2->setSerializer(jsonSerializer);
+        client2->updateConfiguration(fnd->second.m_doc);
+        m_clients.insert(std::make_pair(client2->getClientName(), client2));
+      }
+      catch (std::exception &e) {
+        CATCH_EX("Cannot create ClientServicePm", std::exception, e);
+      }
+    }
+
+    //IClient* client2 = ant_new ClientServicePm("ClientServicePm");
+    //client2->setDaemon(this);
+    //client2->setMessaging(found2->second.get());
+    //client2->setSerializer(jsonSerializer);
+    //m_clients.insert(std::make_pair(client2->getClientName(), client2));
+  
   }
 
   //auto found2 = m_messagings.find("MqttMessaging");
