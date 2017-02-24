@@ -15,6 +15,10 @@
       "Enabled":  true
     },
     {
+      "ComponentName": "MqMessaging",
+      "Enabled":  true
+    },
+    {
       "ComponentName": "Scheduler",
       "Enabled":  true
     }
