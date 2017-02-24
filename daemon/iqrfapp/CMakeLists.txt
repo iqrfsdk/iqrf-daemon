@@ -12,9 +12,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_executable(${PROJECT_NAME} ${iqrfapp_SRC_FILES} ${iqrfapp_INC_FILES})
 
 if (WIN32) 
-	target_link_libraries(${PROJECT_NAME} MqChannel DpaExtension dpa)
+	target_link_libraries(${PROJECT_NAME} MqChannel DpaExtension Dpa)
 else()
-	target_link_libraries(${PROJECT_NAME} MqChannel DpaExtension dpa pthread rt)
+	target_link_libraries(${PROJECT_NAME} MqChannel DpaExtension Dpa pthread rt)
 endif()
 
 if (WIN32)

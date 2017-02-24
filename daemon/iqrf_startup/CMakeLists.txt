@@ -56,7 +56,7 @@ if (WIN32)
 	MqChannel
 	IqrfCdcChannel
 	IqrfSpiChannel
-	dpa
+	Dpa
 	UdpMessaging
 	UdpChannel
 	cdc
@@ -79,7 +79,7 @@ else()
 	MqChannel
 	IqrfCdcChannel
 	IqrfSpiChannel
-	dpa
+	Dpa
 	UdpMessaging
 	UdpChannel
 	cdc
@@ -132,4 +132,3 @@ add_custom_command(
     # RUNTIME DESTINATION bin
     # LIBRARY DESTINATION lib)
 # endif()
-

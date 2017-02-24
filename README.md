@@ -45,7 +45,7 @@ Configure main and each component's JSON file.
 
 ```Bash
 cd scripts/
-sudo ./install-systemd.sh install default 
+sudo ./install-systemd.sh
 ```
 
 ## How to start/stop/restart/status the daemon
