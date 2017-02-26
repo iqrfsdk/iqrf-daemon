@@ -207,7 +207,8 @@ void Scheduler::timer()
         
         // fire
     	TRC_INF("Task fired at: " << ScheduleRecord::asString(timePoint));
-        m_dpaTaskQueue->pushToQueue(*record); //copy record
+        int retval = m_dpaTaskQueue->pushToQueue(*record); //copy record
+        TRC_DBG("Returned from pushToQueue():" << PAR(retval));
 
         // erase fired
         m_scheduledTasksByTime.erase(begin);

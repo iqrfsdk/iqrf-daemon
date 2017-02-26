@@ -1,3 +1,4 @@
+#include "IqrfLogging.h"
 #include "MessagingController.h"
 #include "IqrfCdcChannel.h"
 #include "IqrfSpiChannel.h"
@@ -18,7 +19,6 @@
 #include "SimpleSerializer.h"
 #include "JsonSerializer.h"
 
-#include "IqrfLogging.h"
 #include "PlatformDep.h"
 
 TRC_INIT()
