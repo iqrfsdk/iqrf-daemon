@@ -24,62 +24,64 @@ public:
   virtual ~TaskQueue()
   {
     {
+      std::unique_lock<std::mutex> lck(m_taskQueueMutex);
       m_runWorkerThread = false;
-      std::unique_lock<std::mutex> lck(m_conditionVariableMutex);
       m_taskPushed = true;
-      m_conditionVariable.notify_one();
     }
+    m_conditionVariable.notify_all();
 
     if (m_workerThread.joinable())
       m_workerThread.join();
   }
 
-  void pushToQueue(const T& task)
+  int pushToQueue(const T& task)
   {
+    int retval = 0;
     {
-      std::lock_guard<std::mutex> lck(m_taskQueueMutex);
+      std::unique_lock<std::mutex> lck(m_taskQueueMutex);
       m_taskQueue.push(task);
-    }
-    {
-      std::unique_lock<std::mutex> lck(m_conditionVariableMutex);
+      retval = m_taskQueue.size();
       m_taskPushed = true;
-      m_conditionVariable.notify_one();
     }
+    m_conditionVariable.notify_all();
+    return retval;
   }
 
 private:
   //thread function
   void worker()
   {
+    std::unique_lock<std::mutex> lck(m_taskQueueMutex, std::defer_lock);
+
     while (m_runWorkerThread) {
 
-      { //wait for something in the queue
-        std::unique_lock<std::mutex> lck(m_conditionVariableMutex);
-        m_conditionVariable.wait(lck, [&]{ return m_taskPushed; });
-        m_taskPushed = false;
-      }
-
+      //wait for something in the queue
+      lck.lock();
+      m_conditionVariable.wait(lck, [&] { return m_taskPushed; }); //lock is released in wait
+      //lock is reacquired here
+      m_taskPushed = false;
+      
       while (true) {
-        m_taskQueueMutex.lock();
         if (!m_taskQueue.empty()) {
-          T toBeProcessed = m_taskQueue.front();
+          auto task = m_taskQueue.front();
           m_taskQueue.pop();
-          m_taskQueueMutex.unlock();
-          m_processTaskFunc(toBeProcessed);
+          lck.unlock();
+          m_processTaskFunc(task);
         }
         else {
-          m_taskQueueMutex.unlock();
+          lck.unlock(); 
           break;
         }
+        lck.lock(); //lock for next iteration
       }
     }
   }
 
-  std::mutex m_taskQueueMutex, m_conditionVariableMutex;
+  std::mutex m_taskQueueMutex;
   std::condition_variable m_conditionVariable;
   std::queue<T> m_taskQueue;
   bool m_taskPushed;
-  std::atomic_bool m_runWorkerThread;
+  bool m_runWorkerThread;
   std::thread m_workerThread;
 
   ProcessTaskFunc m_processTaskFunc;

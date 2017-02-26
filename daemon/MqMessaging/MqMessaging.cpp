@@ -1,7 +1,7 @@
+#include "IqrfLogging.h"
 #include "MqMessaging.h"
 #include "MqChannel.h"
 #include "IDaemon.h"
-#include "IqrfLogging.h"
 
 const unsigned IQRF_MQ_BUFFER_SIZE = 1024;
 

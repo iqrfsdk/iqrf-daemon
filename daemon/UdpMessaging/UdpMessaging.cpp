@@ -1,10 +1,10 @@
+#include "IqrfLogging.h"
 #include "DpaTask.h"
 #include "DpaMessage.h"
 #include "UdpMessaging.h"
 #include "MessagingController.h"
 #include "UdpMessage.h"
 #include "helpers.h"
-#include "IqrfLogging.h"
 #include "PlatformDep.h"
 #include <climits>
 #include <ctime>
