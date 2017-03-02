@@ -3,6 +3,8 @@
 # Tested on AAEON UP, UbiLinux
 # External dependencies: IBM Paho, Oracle Java
 
+set -e
+
 DAEMON_DIRECTORY=iqrf-daemon
 UTILS_DIRECTORY=cutils
 LIBDPA_DIRECTORY=clibdpa
