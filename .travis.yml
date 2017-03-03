@@ -1,0 +1,26 @@
+language: cpp
+sudo: required
+dist: trusty
+services:
+  - docker
+compiler:
+  - clang
+  - gcc
+env:
+  - BUILD_SPI_JAVASTUB=0
+  - BUILD_SPI_JAVASTUB=1
+matrix:
+  allow_failures:
+    - compiler: clang
+before_install:
+  - docker pull ubuntu:16.04
+  - docker run --name travis-ci -v $TRAVIS_BUILD_DIR:/iqrfsdk -td ubuntu:16.04 /bin/bash
+install:
+  - docker exec travis-ci bash -c "apt-get update"
+  - docker exec travis-ci bash -c "apt-get install -y build-essential cmake linux-libc-dev git libssl-dev"
+  - if [[ "$CC" == "clang" ]]; then docker exec travis-ci bash -c "apt-get install -y clang"; fi
+  - if [[ "$BUILD_SPI_JAVASTUB" == 1 ]]; then docker exec travis-ci bash -c "apt-get install -y default-jre default-jdk"; fi
+script:
+  - docker exec travis-ci bash -c "cd /iqrfsdk && CC=${CC} CXX=${CXX} bash scripts/build-travis.sh"
+after_script:
+  - docker stop travis-ci
