@@ -62,20 +62,15 @@ include_directories(${PAHO_INCLUDE_DIRS})
 #library build
 add_subdirectory(include)
 add_subdirectory(UdpMessaging)
-add_subdirectory(MqMessaging)
-add_subdirectory(MqttMessaging)
 add_subdirectory(Scheduler)
-add_subdirectory(SimpleSerializer)
-add_subdirectory(JsonSerializer)
 add_subdirectory(iqrf_ide_dummy)
 add_subdirectory(iqrfapp)
-add_subdirectory(ClientServicePlain)
 add_subdirectory(MessagingController)
 add_subdirectory(iqrf_startup)
-add_subdirectory(ClientServicePm)
 
-# Configure config file.
-# This file specifies actions performed and variables exported when using find_package on this project.
-# The find_package requires properly set ${PROJECT_NAME}_DIR variable to a location where the
-# configured config file persists. This variable is usually specified from the outside of CMake.
-#configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}Config.cmake.in ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake @ONLY)
+add_subdirectory(SimpleSerializer)
+add_subdirectory(JsonSerializer)
+add_subdirectory(MqMessaging)
+add_subdirectory(MqttMessaging)
+add_subdirectory(ClientServicePlain)
+add_subdirectory(ClientServicePm)

@@ -14,5 +14,3 @@ set(UdpMessaging_INC_FILES
 include_directories(${CMAKE_SOURCE_DIR}/MessagingController)
 
 add_library(${PROJECT_NAME} STATIC ${UdpMessaging_SRC_FILES} ${UdpMessaging_INC_FILES})
-
-#install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/sbin)

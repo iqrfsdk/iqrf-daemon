@@ -8,7 +8,4 @@ set(JsonSerializer_INC_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/JsonSerializer.h
 )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-
 add_library(${PROJECT_NAME} STATIC ${JsonSerializer_SRC_FILES} ${JsonSerializer_INC_FILES})

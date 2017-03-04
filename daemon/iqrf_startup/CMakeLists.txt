@@ -20,20 +20,10 @@ source_group("Config" FILES ${_CONFIG})
 source_group("ConfigExamples" FILES ${_CONFIG_EX})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_SOURCE_DIR}/UdpChannel)
-include_directories(${CMAKE_SOURCE_DIR}/MqChannel)
 include_directories(${CMAKE_SOURCE_DIR}/UdpMessaging)
-include_directories(${CMAKE_SOURCE_DIR}/MqMessaging)
-include_directories(${CMAKE_SOURCE_DIR}/MqttMessaging)
 include_directories(${CMAKE_SOURCE_DIR}/Scheduler)
-include_directories(${CMAKE_SOURCE_DIR}/DpaExtension)
 include_directories(${CMAKE_SOURCE_DIR}/IqrfCdcChannel)
 include_directories(${CMAKE_SOURCE_DIR}/IqrfSpiChannel)
-include_directories(${CMAKE_SOURCE_DIR}/SimpleSerializer)
-include_directories(${CMAKE_SOURCE_DIR}/JsonSerializer)
-include_directories(${CMAKE_SOURCE_DIR}/JsonSerializer/include)
-include_directories(${CMAKE_SOURCE_DIR}/ClientServicePlain)
-include_directories(${CMAKE_SOURCE_DIR}/ClientServicePm)
 include_directories(${CMAKE_SOURCE_DIR}/MessagingController)
 
 if (WIN32) 
@@ -44,15 +34,17 @@ add_executable(${PROJECT_NAME} ${_HDRFILES} ${_SRCFILES} ${_CONFIG} ${_CONFIG_EX
 
 if (WIN32) 
  	target_link_libraries(${PROJECT_NAME}
-	MessagingController
-	ClientServicePm
-	ClientServicePlain
-	JsonSerializer
+
 	SimpleSerializer
-	Scheduler
-	MqttMessaging
-	paho-mqtt3a
+	JsonSerializer
 	MqMessaging
+	MqttMessaging
+	ClientServicePlain
+	ClientServicePm
+
+	MessagingController
+	Scheduler
+	paho-mqtt3a
 	DpaExtension
 	MqChannel
 	IqrfCdcChannel
@@ -67,15 +59,17 @@ if (WIN32)
 	)
 else()
 	target_link_libraries(${PROJECT_NAME}
-	MessagingController
-	ClientServicePm
-	ClientServicePlain
-	JsonSerializer
+
 	SimpleSerializer
-	Scheduler
-	MqttMessaging
-	paho-mqtt3as
+	JsonSerializer
 	MqMessaging
+	MqttMessaging
+	ClientServicePlain
+	ClientServicePm
+
+	MessagingController
+	Scheduler
+	paho-mqtt3as
 	DpaExtension
 	MqChannel
 	IqrfCdcChannel
