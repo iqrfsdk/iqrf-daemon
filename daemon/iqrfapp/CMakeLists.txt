@@ -7,14 +7,12 @@ set(iqrfapp_SRC_FILES
 set(iqrfapp_INC_FILES
 )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
 add_executable(${PROJECT_NAME} ${iqrfapp_SRC_FILES} ${iqrfapp_INC_FILES})
 
 if (WIN32) 
-	target_link_libraries(${PROJECT_NAME} MqChannel DpaExtension Dpa)
+	target_link_libraries(${PROJECT_NAME} MqChannel )
 else()
-	target_link_libraries(${PROJECT_NAME} MqChannel DpaExtension Dpa pthread rt)
+	target_link_libraries(${PROJECT_NAME} MqChannel pthread rt)
 endif()
 
 if (WIN32)
