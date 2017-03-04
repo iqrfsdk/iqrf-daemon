@@ -58,14 +58,21 @@ typedef PrfLedSimple<PrfLedG> PrfLedGSimple;
 typedef PrfLedSimple<PrfLedR> PrfLedRSimple;
 
 
-class DpaTaskSimpleSerializerFactory : public ObjectFactory<DpaTask, std::istream>, public ISerializer
+class SimpleSerializer : public ObjectFactory<DpaTask, std::istream>, public ISerializer
 {
 public:
-  virtual ~DpaTaskSimpleSerializerFactory() {}
-  DpaTaskSimpleSerializerFactory();
+  SimpleSerializer();
+  SimpleSerializer(const std::string& name);
+  virtual ~SimpleSerializer() {}
 
+  //component
+  const std::string& getName() const override { return m_name; }
+
+  //interface
   std::unique_ptr<DpaTask> parseRequest(const std::string& request) override;
   std::string getLastError() const override;
 private:
+  void init();
   std::string m_lastError;
+  std::string m_name;
 };

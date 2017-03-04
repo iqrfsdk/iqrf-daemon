@@ -6,6 +6,7 @@ set(iqrf_startup_SRC_FILES
 )
 
 set(iqrf_startup_INC_FILES
+	${CMAKE_CURRENT_SOURCE_DIR}/initModules.h
 )
 
 file(GLOB_RECURSE _HDRFILES ${CMAKE_CURRENT_SOURCE_DIR}/*.h)

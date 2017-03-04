@@ -1,8 +1,8 @@
 {
-  "Implements": "IMessaging",
+  "Implements": "ISerializer",
   "Instances": [
     {
-      "Name": "MqMessaging",
+      "Name": "SimpleSerializer",
       "Properties": {
         "TODO": "todo"
       }

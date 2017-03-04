@@ -1,15 +1,17 @@
+#include "LaunchUtils.h"
 #include "IqrfLogging.h"
 #include "MqMessaging.h"
 #include "MqChannel.h"
 #include "IDaemon.h"
 
+INIT_COMPONENT(IMessaging, MqMessaging)
+
 const unsigned IQRF_MQ_BUFFER_SIZE = 1024;
 
-MqMessaging::MqMessaging()
-  :m_daemon(nullptr)
-  , m_mqChannel(nullptr)
+MqMessaging::MqMessaging(const std::string& name)
+  : m_mqChannel(nullptr)
   , m_toMqMessageQueue(nullptr)
-  , m_name("MqMessaging")
+  , m_name(name)
 {
   m_localMqName = "iqrf-daemon-110";
   m_remoteMqName = "iqrf-daemon-100";
@@ -17,12 +19,6 @@ MqMessaging::MqMessaging()
 
 MqMessaging::~MqMessaging()
 {
-}
-
-void MqMessaging::setDaemon(IDaemon* daemon)
-{
-  m_daemon = daemon;
-  m_daemon->registerMessaging(*this);
 }
 
 void MqMessaging::start()
@@ -49,6 +45,13 @@ void MqMessaging::stop()
   delete m_mqChannel;
   delete m_toMqMessageQueue;
   TRC_INF("daemon-MQ-protocol stopped");
+  TRC_LEAVE("");
+}
+
+void MqMessaging::update(const rapidjson::Value& cfg)
+{
+  TRC_ENTER("");
+  //TODO
   TRC_LEAVE("");
 }
 

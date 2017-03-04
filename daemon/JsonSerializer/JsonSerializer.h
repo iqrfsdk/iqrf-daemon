@@ -96,14 +96,21 @@ private:
 typedef PrfLedJson<PrfLedG> PrfLedGJson;
 typedef PrfLedJson<PrfLedR> PrfLedRJson;
 
-class DpaTaskJsonSerializerFactory : public ObjectFactory<DpaTask, rapidjson::Value>, public ISerializer
+class JsonSerializer : public ObjectFactory<DpaTask, rapidjson::Value>, public ISerializer
 {
 public:
-  virtual ~DpaTaskJsonSerializerFactory() {}
-  DpaTaskJsonSerializerFactory();
+  JsonSerializer();
+  JsonSerializer(const std::string& name);
+  virtual ~JsonSerializer() {}
 
+  //component
+  const std::string& getName() const override { return m_name; }
+
+  //interface
   std::unique_ptr<DpaTask> parseRequest(const std::string& request) override;
   std::string getLastError() const override;
 private:
+  void init();
   std::string m_lastError;
+  std::string m_name;
 };

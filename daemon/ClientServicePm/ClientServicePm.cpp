@@ -1,9 +1,12 @@
+#include "LaunchUtils.h"
 #include "ClientServicePm.h"
 #include "PrfFrc.h"
 #include "PrfOs.h"
 #include "DpaTransactionTask.h"
 #include "IDaemon.h"
 #include "IqrfLogging.h"
+
+INIT_COMPONENT(IClient, ClientServicePm)
 
 const std::string SCHEDULED_SEND_FRC_TASK("SND_FRC");
 const std::string SCHEDULED_SEND_PMT_TASK("SND_PMT");
@@ -22,6 +25,11 @@ ClientServicePm::ClientServicePm(const std::string & name)
 
 ClientServicePm::~ClientServicePm()
 {
+}
+
+void ClientServicePm::update(const rapidjson::Value& cfg)
+{
+  updateConfiguration(cfg);
 }
 
 //------------------------

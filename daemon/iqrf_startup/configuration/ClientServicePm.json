@@ -1,5 +1,17 @@
 {
-  "FrcPeriod": 5,
-  "SleepPeriod": 60,
-  "Pulsemeters": [1,2]
+  "Implements": "IClient",
+  "Instances": [
+    {
+      "Name": "ClientServicePm",
+      "Messaging": "MqttMessaging",
+      "Serializers": [
+        "JsonSerializer"
+      ],
+      "Properties": {
+        "FrcPeriod": 5,
+        "SleepPeriod": 10,
+        "Pulsemeters": [ 1, 2 ]
+      }
+    }
+  ]
 }

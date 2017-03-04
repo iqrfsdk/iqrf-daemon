@@ -88,6 +88,8 @@ public:
   const std::string& getClientName() const override {
     return m_name;
   }
+
+  void update(const rapidjson::Value& cfg) override;
   void start() override;
   void stop() override;
 

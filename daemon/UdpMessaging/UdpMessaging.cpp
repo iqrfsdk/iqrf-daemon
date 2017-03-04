@@ -22,12 +22,6 @@ void UdpMessaging::sendDpaMessageToUdp(const DpaMessage&  dpaMessage)
   m_toUdpMessageQueue->pushToQueue(udpMessage);
 }
 
-void UdpMessaging::setDaemon(IDaemon* daemon)
-{
-  //m_daemon = daemon;
-  //m_daemon->registerMessaging(*this);
-}
-
 void UdpMessaging::setExclusiveAccess()
 {
   if (!m_exclusiveAccess) {
@@ -182,7 +176,7 @@ UdpMessaging::UdpMessaging(MessagingController* messagingController)
   m_remotePort = 55000;
   m_localPort = 55300;
 
-  m_messagingController->registerMessaging(*this);
+  //m_messagingController->registerMessaging(*this);
 
   //m_remotePort = strtoul(remote_ip_port.c_str(), nullptr, 0);
   //if (0 == m_remotePort || ULONG_MAX == m_remotePort)
@@ -273,6 +267,28 @@ void UdpMessaging::stop()
   delete m_udpChannel;
   delete m_toUdpMessageQueue;
   TRC_LEAVE("");
+}
+
+void UdpMessaging::update(const rapidjson::Value& cfg)
+{
+  TRC_ENTER("");
+  //TODO
+  TRC_LEAVE("");
+}
+
+void UdpMessaging::registerMessageHandler(MessageHandlerFunc hndl)
+{
+  TRC_WAR("Not implemented");
+}
+
+void UdpMessaging::unregisterMessageHandler()
+{
+  TRC_WAR("Not implemented");
+}
+
+void UdpMessaging::sendMessage(const ustring& msg)
+{
+  TRC_WAR("Not implemented");
 }
 
 ////////////////////////////////////

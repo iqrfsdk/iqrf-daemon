@@ -1,0 +1,15 @@
+{
+  "Implements": "IClient",
+  "Instances": [
+    {
+      "Name": "ClientServicePlain1",
+      "Messaging": "MqMessaging",
+      "Serializers": [
+        "SimpleSerializer",
+        "JsonSerializer"
+      ],
+      "Properties": {
+      }
+    }
+  ]
+}

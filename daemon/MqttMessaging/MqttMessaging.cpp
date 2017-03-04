@@ -1,3 +1,4 @@
+#include "LaunchUtils.h"
 #include "MqttMessaging.h"
 #include "TaskQueue.h"
 #include "MQTTAsync.h"
@@ -8,10 +9,10 @@
 #include <atomic>
 #include <future>
 
+INIT_COMPONENT(IMessaging, MqttMessaging)
+
 class Impl {
 
-public:
-  IDaemon* m_daemon;
 private:
   //configuration
   std::string m_mqttBrokerAddr;
@@ -25,7 +26,7 @@ private:
   std::string m_mqttPassword;
   bool m_mqttEnabledSSL = false;
 
-  std::string m_myName = "MqttMessaging";
+  std::string m_name;
 
   TaskQueue<ustring>* m_toMqttMessageQueue;
   IMessaging::MessageHandlerFunc m_messageHandlerFunc;
@@ -53,9 +54,9 @@ private:
 
 public:
   //------------------------
-  Impl()
-    :m_daemon(nullptr)
-    , m_toMqttMessageQueue(nullptr)
+  Impl(const std::string& name)
+    : m_toMqttMessageQueue(nullptr)
+    , m_name(name)
   {
     m_connected = false;
   }
@@ -65,7 +66,7 @@ public:
   {}
 
   //------------------------
-  void updateConfiguration(const rapidjson::Value& cfg)
+  void update(const rapidjson::Value& cfg)
   {
     TRC_ENTER("");
     jutils::assertIsObject("", cfg);
@@ -174,7 +175,7 @@ public:
   }
 
   //------------------------
-  const std::string& getName() const { return m_myName; }
+  const std::string& getName() const { return m_name; }
 
   //------------------------
   void registerMessageHandler(IMessaging::MessageHandlerFunc hndl) {
@@ -403,9 +404,9 @@ public:
 };
 
 //////////////////
-MqttMessaging::MqttMessaging()
+MqttMessaging::MqttMessaging(const std::string& name)
 {
-  m_impl = ant_new Impl();
+  m_impl = ant_new Impl(name);
 }
 
 MqttMessaging::~MqttMessaging()
@@ -413,15 +414,9 @@ MqttMessaging::~MqttMessaging()
   delete m_impl;
 }
 
-void MqttMessaging::updateConfiguration(const rapidjson::Value& cfg)
+void MqttMessaging::update(const rapidjson::Value& cfg)
 {
-  m_impl->updateConfiguration(cfg);
-}
-
-void MqttMessaging::setDaemon(IDaemon* daemon)
-{
-  m_impl->m_daemon = daemon;
-  m_impl->m_daemon->registerMessaging(*this);
+  m_impl->update(cfg);
 }
 
 void MqttMessaging::start()

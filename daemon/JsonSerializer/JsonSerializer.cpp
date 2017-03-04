@@ -1,3 +1,4 @@
+#include "LaunchUtils.h"
 #include "JsonSerializer.h"
 #include "DpaTransactionTask.h"
 #include "IqrfLogging.h"
@@ -14,6 +15,8 @@
 //TODO using istream is slower according http://rapidjson.org/md_doc_stream.html
 
 using namespace rapidjson;
+
+INIT_COMPONENT(ISerializer, JsonSerializer)
 
 //////////////////////////////////////////
 PrfCommonJson::PrfCommonJson(DpaTask& dpaTask)
@@ -246,7 +249,19 @@ std::string PrfFrcJson::encodeResponse(const std::string& errStr) const
 }
 
 ///////////////////////////////////////////
-DpaTaskJsonSerializerFactory::DpaTaskJsonSerializerFactory()
+JsonSerializer::JsonSerializer()
+  :m_name("Json")
+{
+  init();
+}
+
+JsonSerializer::JsonSerializer(const std::string& name)
+  :m_name(name)
+{
+  init();
+}
+
+void JsonSerializer::init()
 {
   registerClass<PrfRawJson>(PrfRaw::PRF_NAME);
   registerClass<PrfThermometerJson>(PrfThermometer::PRF_NAME);
@@ -255,7 +270,7 @@ DpaTaskJsonSerializerFactory::DpaTaskJsonSerializerFactory()
   registerClass<PrfFrcJson>(PrfFrc::PRF_NAME);
 }
 
-std::unique_ptr<DpaTask> DpaTaskJsonSerializerFactory::parseRequest(const std::string& request)
+std::unique_ptr<DpaTask> JsonSerializer::parseRequest(const std::string& request)
 {
   std::unique_ptr<DpaTask> obj;
   try {
@@ -273,7 +288,7 @@ std::unique_ptr<DpaTask> DpaTaskJsonSerializerFactory::parseRequest(const std::s
   return std::move(obj);
 }
 
-std::string DpaTaskJsonSerializerFactory::getLastError() const
+std::string JsonSerializer::getLastError() const
 {
   return m_lastError;
 }

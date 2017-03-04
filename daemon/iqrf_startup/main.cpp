@@ -1,3 +1,4 @@
+#include "initModules.h"
 #include "MessagingController.h"
 #include "IqrfLogging.h"
 
@@ -13,7 +14,7 @@
 #include <dlfcn.h>
 #endif
 
-std::unique_ptr<MessagingController> msgCtrl;
+MessagingController& msgCtrl = MessagingController::getController();
 
 //-------------------------------------------------
 //catches CTRL-C to stop main loop
@@ -30,9 +31,7 @@ void SignalHandler(int signal)
   case SIGSTOP:
   case SIGHUP:
 #endif
-    if (nullptr != msgCtrl)
-      msgCtrl->exit();
-    break;
+    msgCtrl.exit();
 
   default:
     // ...
@@ -48,8 +47,7 @@ BOOL WINAPI ConsoleHandlerRoutine(DWORD dwCtrlType)
 {
   if (dwCtrlType == CTRL_CLOSE_EVENT)
   {
-    if (msgCtrl)
-      msgCtrl->exit();
+    msgCtrl.exit();
     std::this_thread::sleep_for(std::chrono::milliseconds(10000)); //Win waits ~10 sec and then exits anyway
     return TRUE;
   }
@@ -65,6 +63,7 @@ int main(int argc, char** argv)
 #endif
 
   std::string configFile;
+  STATIC_INIT
 
   if (SIG_ERR == signal(SIGINT, SignalHandler)) {
     std::cerr << std::endl << "Could not set control handler for SIGINT";
@@ -105,8 +104,8 @@ int main(int argc, char** argv)
   std::cout << std::endl << argv[0] << " started";
 
   try {
-    msgCtrl = std::unique_ptr<MessagingController>(ant_new MessagingController(configFile));
-    msgCtrl->watchDog();
+    msgCtrl.loadConfiguration(configFile);
+    msgCtrl.watchDog();
   }
   catch (std::exception &e) {
     std::cerr << std::endl << "Fatal error: " << e.what();
