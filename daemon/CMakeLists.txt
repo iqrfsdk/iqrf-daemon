@@ -50,7 +50,7 @@ message(STATUS "CMAKE_C_FLAGS:           ${CMAKE_C_FLAGS}")
 message(STATUS "CMAKE_C_FLAGS_RELEASE:   ${CMAKE_C_FLAGS_RELEASE}")
 message(STATUS "CMAKE_C_FLAGS_DEBUG:     ${CMAKE_C_FLAGS_DEBUG}")
 
-include_directories(${CMAKE_SOURCE_DIR}/../include)
+#include_directories(${CMAKE_SOURCE_DIR}/../include)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 include_directories(${clibcdc_INCLUDE_DIRS})
