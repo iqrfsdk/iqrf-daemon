@@ -9,7 +9,7 @@
       ],
       "Properties": {
         "FrcPeriod": 5,
-        "SleepPeriod": 10,
+        "SleepPeriod": 30,
         "Pulsemeters": [ 1, 2 ]
       }
     }

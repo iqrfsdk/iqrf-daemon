@@ -72,6 +72,9 @@ private:
 
 };
 
+//TODO remove after testing
+#define ENH_SCHED 
+
 class ScheduleRecord {
 public:
   ScheduleRecord() = delete;
@@ -98,13 +101,26 @@ private:
   void init();
 
   void parse(const std::string& rec);
-  int parseItem(std::string& item, int mnm, int mxm);
+  int parseItem(const std::string& item, int mnm, int mxm, std::vector<int>& vec);
+#ifdef ENH_SCHED
+  //return true - continue false - finish
+  bool compareTimeValVect(int& cval, const std::vector<int>& tvalV, bool& lw) const;
+#else
   //return true - continue false - finish
   bool compareTimeVal(int& cval, int tval, bool& lw) const;
   std::tm m_tm = { -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-  //std::string m_next;
+#endif
   std::string m_task;
   std::string m_clientId;
+
+  //multi record
+  std::vector<int> m_vsec;
+  std::vector<int> m_vmin;
+  std::vector<int> m_vhour;
+  std::vector<int> m_vmday;
+  std::vector<int> m_vmon;
+  std::vector<int> m_vyear;
+  std::vector<int> m_vwday;
 
   //explicit timing
   bool m_periodic = false;
