@@ -1,6 +1,7 @@
 #include "Scheduler.h"
 #include "IqrfLogging.h"
 #include "PlatformDep.h"
+#include <algorithm>
 
 using namespace std::chrono;
 
