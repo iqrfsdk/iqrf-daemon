@@ -4,6 +4,7 @@
 #include "ObjectFactory.h"
 #include "PrfRaw.h"
 #include "PrfThermometer.h"
+#include "PrfIo.h"
 #include "PrfLeds.h"
 #include "PlatformDep.h"
 #include "rapidjson/rapidjson.h"
@@ -31,6 +32,18 @@ public:
   explicit PrfThermometerJson(rapidjson::Value& val);
   virtual ~PrfThermometerJson() {}
   std::string encodeResponse(const std::string& errStr) const  override;
+};
+
+class PrfIoJson : public PrfIo
+{
+public:
+  explicit PrfIoJson(rapidjson::Value& val);
+  virtual ~PrfIoJson() {}
+  std::string encodeResponse(const std::string& errStr) const  override;
+private:
+  Port m_port;
+  uint8_t m_bit;
+  bool m_val;
 };
 
 template <typename L>

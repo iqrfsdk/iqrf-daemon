@@ -135,6 +135,119 @@ std::string PrfThermometerJson::encodeResponse(const std::string& errStr) const
   return buffer.GetString();
 }
 
+//-------------------------------
+PrfIoJson::PrfIoJson(rapidjson::Value& val)
+{
+  parseRequestJson(*this, val);
+  switch (getCmd()) {
+  
+  case PrfIo::Cmd::DIRECTION:
+  {
+    Port port = parsePort(jutils::getMemberAs<std::string>("Port", val));
+    int bit = jutils::getMemberAs<int>("Bit", val);
+    bool inp = jutils::getMemberAs<bool>("Inp", val);
+    directionCommand(port, bit, inp);
+    m_port = port;
+    m_bit = bit;
+    m_val = inp;
+  }
+  break;
+
+  case PrfIo::Cmd::SET:
+  {
+    Port port = parsePort(jutils::getMemberAs<std::string>("Port", val));
+    int bit = jutils::getMemberAs<int>("Bit", val);
+    bool value = jutils::getMemberAs<bool>("Val", val);
+    setCommand(port, bit, value);
+    m_port = port;
+    m_bit = bit;
+    m_val = value;
+  }
+  break;
+
+  case PrfIo::Cmd::GET:
+  {
+    Port port = parsePort(jutils::getMemberAs<std::string>("Port", val));
+    int bit = jutils::getMemberAs<int>("Bit", val);
+    m_port = port;
+    m_bit = bit;
+    getCommand();
+  }
+  break;
+
+  default:
+    ;
+  }
+}
+
+std::string PrfIoJson::encodeResponse(const std::string& errStr) const
+{
+  //00 00 09 82 00 00 00 00 fb 49 40 00 08
+  Document doc;
+  doc.SetObject();
+  rapidjson::Value v;
+
+  encodeResponseJson(*this, doc, doc.GetAllocator());
+
+  switch (getCmd()) {
+
+  case PrfIo::Cmd::DIRECTION:
+  {
+    v.SetString(encodePort(m_port).c_str(), doc.GetAllocator());
+    doc.AddMember("Port", v, doc.GetAllocator());
+
+    v = m_bit;
+    doc.AddMember("Bit", v, doc.GetAllocator());
+
+    v = m_val;
+    doc.AddMember("Out", v, doc.GetAllocator());
+  }
+  break;
+
+  case PrfIo::Cmd::SET:
+  {
+    v.SetString(encodePort(m_port).c_str(), doc.GetAllocator());
+    doc.AddMember("Port", v, doc.GetAllocator());
+
+    v = m_bit;
+    doc.AddMember("Bit", v, doc.GetAllocator());
+
+    v = m_val;
+    doc.AddMember("Val", v, doc.GetAllocator());
+  }
+  break;
+
+  case PrfIo::Cmd::GET:
+  {
+    v.SetString(encodePort(m_port).c_str(), doc.GetAllocator());
+    doc.AddMember("Port", v, doc.GetAllocator());
+
+    v = m_bit;
+    doc.AddMember("Bit", v, doc.GetAllocator());
+
+    v = getInput(m_port, m_bit);
+    doc.AddMember("Val", v, doc.GetAllocator());
+  }
+  break;
+
+  default:
+    ;
+  }
+
+
+  //"Port\":\"PORTB\",\"Bit\":4,\"Out\"
+  //v = getFloatTemperature();
+  //doc.AddMember("Temperature", v, doc.GetAllocator());
+
+  v.SetString(errStr.c_str(), doc.GetAllocator());
+  doc.AddMember("Status", v, doc.GetAllocator());
+
+  StringBuffer buffer;
+  PrettyWriter<StringBuffer> writer(buffer);
+  doc.Accept(writer);
+  return buffer.GetString();
+}
+
 ///////////////////////////////////////////
 DpaTaskJsonSerializerFactory::DpaTaskJsonSerializerFactory()
 {
@@ -142,6 +255,7 @@ DpaTaskJsonSerializerFactory::DpaTaskJsonSerializerFactory()
   registerClass<PrfThermometerJson>(PrfThermometer::PRF_NAME);
   registerClass<PrfLedGJson>(PrfLedG::PRF_NAME);
   registerClass<PrfLedRJson>(PrfLedR::PRF_NAME);
+  registerClass<PrfIoJson>(PrfIo::PRF_NAME);
 }
 
 std::unique_ptr<DpaTask> DpaTaskJsonSerializerFactory::parseRequest(const std::string& request)
