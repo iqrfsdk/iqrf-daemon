@@ -74,3 +74,9 @@ add_subdirectory(MqMessaging)
 add_subdirectory(MqttMessaging)
 add_subdirectory(ClientServicePlain)
 add_subdirectory(ClientServicePm)
+
+# Configure config file.
+# This file specifies actions performed and variables exported when using find_package on this project.
+# The find_package requires properly set ${PROJECT_NAME}_DIR variable to a location where the
+# configured config file persists. This variable is usually specified from the outside of CMake.
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/iqrfdConfig.cmake.in ${PROJECT_BINARY_DIR}/iqrfdConfig.cmake @ONLY)
