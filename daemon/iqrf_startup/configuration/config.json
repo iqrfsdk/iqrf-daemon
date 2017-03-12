@@ -36,7 +36,7 @@
     },
     {
       "ComponentName": "ClientServicePm",
-      "Enabled":  true
+      "Enabled":  false
     }
   ]
 }

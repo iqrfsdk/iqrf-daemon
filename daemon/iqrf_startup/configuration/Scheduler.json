@@ -1,5 +1,5 @@
 {
   "Tasks": [
-    "*/5 * * * * * * ClientServicePlain2 {\"Type\":\"Thermometer\",\"Addr\":1,\"Comd\":\"READ\"}"
+    "*/5 * * * * * * ClientServicePlain1 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}"
   ]
 }
