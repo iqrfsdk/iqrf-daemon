@@ -1,5 +1,6 @@
 {
   "Tasks": [
-    "*/5 * * * * * * ClientServicePlain1 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}"
+    "*/5 * * * * * * ClientServicePlainForMQ {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+    "0,10,20,25,40,53 * * * * * * ClientServicePlainForMQTT {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}"
   ]
 }

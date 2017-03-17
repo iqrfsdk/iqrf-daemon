@@ -65,7 +65,6 @@ Startup::~Startup()
 int Startup::run(int argc, char** argv)
 {
   std::string configFile;
-  //STATIC_INIT
 
   if (SIG_ERR == signal(SIGINT, SignalHandler)) {
     std::cerr << std::endl << "Could not set control handler for SIGINT";

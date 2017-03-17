@@ -33,10 +33,6 @@
     {
       "ComponentName": "ClientServicePlain",
       "Enabled": true
-    },
-    {
-      "ComponentName": "ClientServicePm",
-      "Enabled":  false
     }
   ]
 }
