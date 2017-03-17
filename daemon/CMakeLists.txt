@@ -68,7 +68,6 @@ add_subdirectory(JsonSerializer)
 add_subdirectory(MqMessaging)
 add_subdirectory(MqttMessaging)
 add_subdirectory(ClientServicePlain)
-add_subdirectory(ClientServicePm)
 
 # Configure config file.
 # This file specifies actions performed and variables exported when using find_package on this project.

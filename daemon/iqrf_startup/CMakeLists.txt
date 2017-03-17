@@ -41,7 +41,6 @@ if (WIN32)
 	MqMessaging
 	MqttMessaging
 	ClientServicePlain
-	ClientServicePm
 
 	MessagingController
 	Scheduler
@@ -67,7 +66,6 @@ else()
 	MqMessaging
 	MqttMessaging
 	ClientServicePlain
-	ClientServicePm
 
 	MessagingController
 	Scheduler
