@@ -21,10 +21,6 @@ ENDIF()
 
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS $<$<CONFIG:Debug>:_DEBUG>)
 
-#if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-#  set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_DEBUG "_DEBUG")
-#endif()
-
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -61,9 +57,9 @@ include_directories(${PAHO_INCLUDE_DIRS})
 
 #library build
 add_subdirectory(include)
+add_subdirectory(Startup)
 add_subdirectory(UdpMessaging)
 add_subdirectory(Scheduler)
-add_subdirectory(iqrfapp)
 add_subdirectory(MessagingController)
 add_subdirectory(iqrf_startup)
 

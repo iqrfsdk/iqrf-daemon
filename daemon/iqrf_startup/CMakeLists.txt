@@ -34,6 +34,7 @@ add_executable(${PROJECT_NAME} ${_HDRFILES} ${_SRCFILES} ${_CONFIG} ${_CONFIG_EX
 
 if (WIN32) 
  	target_link_libraries(${PROJECT_NAME}
+	Startup
 
 	SimpleSerializer
 	JsonSerializer
@@ -59,6 +60,7 @@ if (WIN32)
 	)
 else()
 	target_link_libraries(${PROJECT_NAME}
+	Startup
 
 	SimpleSerializer
 	JsonSerializer

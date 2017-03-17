@@ -4,7 +4,6 @@
 #include "UdpMessaging.h"
 #include "MessagingController.h"
 #include "UdpMessage.h"
-//#include "helpers.h"
 #include "crc.h"
 #include "PlatformDep.h"
 #include <climits>
@@ -25,14 +24,16 @@ void UdpMessaging::sendDpaMessageToUdp(const DpaMessage&  dpaMessage)
 
 void UdpMessaging::setExclusiveAccess()
 {
-  if (!m_exclusiveAccess) {
-    m_exclusiveAccess = true;
-    m_watchDog.start(30000, [&]() {resetExclusiveAccess(); });
-    m_messagingController->exclusiveAccess(true);
-    m_messagingController->getIqrfInterface()->registerReceiveFromHandler([&](const ustring& received)->int {
-      sendDpaMessageToUdp(received);
-      return 0;
-    });
+  if (nullptr != m_messagingController->getIqrfInterface()) {
+    if (!m_exclusiveAccess) {
+      m_exclusiveAccess = true;
+      m_watchDog.start(30000, [&]() {resetExclusiveAccess(); });
+      m_messagingController->exclusiveAccess(true);
+      m_messagingController->getIqrfInterface()->registerReceiveFromHandler([&](const ustring& received)->int {
+        sendDpaMessageToUdp(received);
+        return 0;
+      });
+    }
   }
 }
 
@@ -47,8 +48,8 @@ void UdpMessaging::resetExclusiveAccess()
 
 int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
 {
-  //TRC_DBG("==================================" << std::endl <<
-  //  "Received from UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
+  TRC_DBG("==================================" << std::endl <<
+    "Received from UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
 
   if (!m_exclusiveAccess)
     setExclusiveAccess();
@@ -98,7 +99,7 @@ int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
   case IQRF_UDP_WRITE_IQRF:       // --- Writes data to the TR module ---
   {
     m_messagingController->getIqrfInterface()->sendTo(message);
-    
+
     //send response
     ustring udpResponse(udpMessage.substr(0, IQRF_UDP_HEADER_SIZE));
     udpResponse[cmd] = udpResponse[cmd] | 0x80;

@@ -1,4 +1,4 @@
-set project=iqrf_ide_dummy
+set project=iqrfapp
 
 rem //expected build dir structure
 set buildexp=build\\Visual_Studio_14_2015\\x64

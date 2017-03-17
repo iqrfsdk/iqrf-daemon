@@ -391,31 +391,37 @@ void MessagingController::startClients()
 
   //load serializer components
   for (const auto & mc : m_componentMap) {
-    try {
-      loadSerializerComponent(mc.second);
-    }
-    catch (std::exception &e) {
-      CATCH_EX("Cannot create component" << NAME_PAR(componentName, mc.first), std::exception, e);
+    if (mc.second.m_enabled) {
+      try {
+        loadSerializerComponent(mc.second);
+      }
+      catch (std::exception &e) {
+        CATCH_EX("Cannot create component" << NAME_PAR(componentName, mc.first), std::exception, e);
+      }
     }
   }
 
   //load messaging components
   for (const auto & mc : m_componentMap) {
-    try {
-      loadMessagingComponent(mc.second);
-    }
-    catch (std::exception &e) {
-      CATCH_EX("Cannot create component" << NAME_PAR(componentName, mc.first), std::exception, e);
+    if (mc.second.m_enabled) {
+      try {
+        loadMessagingComponent(mc.second);
+      }
+      catch (std::exception &e) {
+        CATCH_EX("Cannot create component" << NAME_PAR(componentName, mc.first), std::exception, e);
+      }
     }
   }
 
   //load client components
   for (const auto & mc : m_componentMap) {
-    try {
-      loadClientComponent(mc.second);
-    }
-    catch (std::exception &e) {
-      CATCH_EX("Cannot create component" << NAME_PAR(componentName, mc.first), std::exception, e);
+    if (mc.second.m_enabled) {
+      try {
+        loadClientComponent(mc.second);
+      }
+      catch (std::exception &e) {
+        CATCH_EX("Cannot create component" << NAME_PAR(componentName, mc.first), std::exception, e);
+      }
     }
   }
 
