@@ -1,0 +1,6 @@
+# Build directory
+[Bb]uild*/
+
+# backup files
+*~
+
