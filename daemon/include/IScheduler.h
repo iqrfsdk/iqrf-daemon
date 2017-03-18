@@ -9,6 +9,8 @@ class IScheduler
 {
 public:
   typedef long TaskHandle;
+  static const TaskHandle TASK_HANDLE_INVALID = 0;
+
 
   typedef std::function<void(const std::string&)> TaskHandlerFunc;
 

@@ -1,0 +1,46 @@
+@PACKAGE_INIT@
+
+# @GENERATED_FILE_WARNING@
+
+#---------------------------------------------------------------------------------------------------
+# Automatically exported variables.
+
+# CMake modules path.
+set(@PROJECT_NAME@_CMAKE_MODULE_PATH "@PROJECT_CMAKE_MODULE_PATH@")
+
+# Cxx compiler flags.
+set(@PROJECT_NAME@_CXX_FLAGS         "@PROJECT_CMAKE_CXX_FLAGS@")
+set(@PROJECT_NAME@_CXX_FLAGS_RELEASE "@PROJECT_CMAKE_CXX_FLAGS_RELEASE@")
+set(@PROJECT_NAME@_CXX_FLAGS_DEBUG   "@PROJECT_CMAKE_CXX_FLAGS_DEBUG@")
+
+# C compiler flags.
+set(@PROJECT_NAME@_C_FLAGS           "@PROJECT_CMAKE_C_FLAGS@")
+set(@PROJECT_NAME@_C_FLAGS_RELEASE   "@PROJECT_CMAKE_C_FLAGS_RELEASE@")
+set(@PROJECT_NAME@_C_FLAGS_DEBUG     "@PROJECT_CMAKE_C_FLAGS_DEBUG@")
+
+# CMake source input/binary output directories.
+set(@PROJECT_NAME@_CMAKE_SOURCE_DIR               "@CMAKE_SOURCE_DIR@")
+set(@PROJECT_NAME@_CMAKE_BINARY_DIR               "@CMAKE_BINARY_DIR@")
+set(@PROJECT_NAME@_CMAKE_ARCHIVE_OUTPUT_DIRECTORY "@CMAKE_ARCHIVE_OUTPUT_DIRECTORY@")
+set(@PROJECT_NAME@_CMAKE_LIBRARY_OUTPUT_DIRECTORY "@CMAKE_LIBRARY_OUTPUT_DIRECTORY@")
+set(@PROJECT_NAME@_CMAKE_RUNTIME_OUTPUT_DIRECTORY "@CMAKE_RUNTIME_OUTPUT_DIRECTORY@")
+
+#---------------------------------------------------------------------------------------------------
+# Manually specified exported variables.
+
+# Include directories (directories with include header files).
+set(@PROJECT_NAME@_INCLUDE_DIRS
+    "${@PROJECT_NAME@_CMAKE_SOURCE_DIR}/include"
+    "${@PROJECT_NAME@_CMAKE_SOURCE_DIR}/JsonSerializer")
+
+#---------------------------------------------------------------------------------------------------
+# Actions performed on find_package(...).
+
+# Automatically set library directories.
+link_directories(${@PROJECT_NAME@_CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
+link_directories(${@PROJECT_NAME@_CMAKE_LIBRARY_OUTPUT_DIRECTORY}) # Needed also, on some platforms.
+
+# Note:
+#   Use include_directories(${@PROJECT_NAME@_INCLUDE_DIRS}) to add include directories.
+#   Use target_link_libraries(*YOUR_TARGET* ${@PROJECT_NAME@_LIBRARIES}) to link libraries to your target.
+

@@ -3,6 +3,7 @@
 #include "ISerializer.h"
 #include "ObjectFactory.h"
 #include "PrfRaw.h"
+#include "PrfFrc.h"
 #include "PrfThermometer.h"
 #include "PrfIo.h"
 #include "PrfLeds.h"
@@ -15,8 +16,17 @@
 #include <memory>
 #include <string>
 
-void parseRequestJson(DpaTask& dpaTask, rapidjson::Value& val);
-void encodeResponseJson(DpaTask& dpaTask, rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc);
+class PrfCommonJson
+{
+public:
+  PrfCommonJson() = delete;
+  PrfCommonJson(DpaTask& dpaTask);
+  void parseRequestJson(rapidjson::Value& val);
+  void encodeResponseJson(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const;
+private:
+  DpaTask& m_dpaTask;
+  bool m_explicitTimeout = false;
+};
 
 class PrfRawJson : public PrfRaw
 {
@@ -24,6 +34,9 @@ public:
   explicit PrfRawJson(rapidjson::Value& val);
   virtual ~PrfRawJson() {}
   std::string encodeResponse(const std::string& errStr) const  override;
+private:
+  PrfCommonJson m_common = *this;
+  bool m_dotNotation = false;
 };
 
 class PrfThermometerJson : public PrfThermometer
@@ -32,6 +45,19 @@ public:
   explicit PrfThermometerJson(rapidjson::Value& val);
   virtual ~PrfThermometerJson() {}
   std::string encodeResponse(const std::string& errStr) const  override;
+private:
+  PrfCommonJson m_common = *this;
+};
+
+class PrfFrcJson : public PrfFrc
+{
+public:
+  explicit PrfFrcJson(rapidjson::Value& val);
+  virtual ~PrfFrcJson() {}
+  std::string encodeResponse(const std::string& errStr) const  override;
+private:
+  PrfCommonJson m_common = *this;
+  bool m_predefinedFrcCommand = false;
 };
 
 class PrfIoJson : public PrfIo
@@ -41,6 +67,7 @@ public:
   virtual ~PrfIoJson() {}
   std::string encodeResponse(const std::string& errStr) const  override;
 private:
+  PrfCommonJson m_common = *this;
   Port m_port;
   uint8_t m_bit;
   bool m_val;
@@ -51,7 +78,7 @@ class PrfLedJson : public L
 {
 public:
   explicit PrfLedJson(rapidjson::Value& val) {
-    parseRequestJson(*this, val);
+    m_common.parseRequestJson(val);
   }
 
   virtual ~PrfLedJson() {}
@@ -61,7 +88,7 @@ public:
     rapidjson::Document doc;
     doc.SetObject();
 
-    encodeResponseJson(*this, doc, doc.GetAllocator());
+    m_common.encodeResponseJson(doc, doc.GetAllocator());
 
     rapidjson::Value v;
     v = L::getLedState();
@@ -76,19 +103,28 @@ public:
     return buffer.GetString();
   }
 
+private:
+  PrfCommonJson m_common = *this;
 };
 
 typedef PrfLedJson<PrfLedG> PrfLedGJson;
 typedef PrfLedJson<PrfLedR> PrfLedRJson;
 
-class DpaTaskJsonSerializerFactory : public ObjectFactory<DpaTask, rapidjson::Value>, public ISerializer
+class JsonSerializer : public ObjectFactory<DpaTask, rapidjson::Value>, public ISerializer
 {
 public:
-  virtual ~DpaTaskJsonSerializerFactory() {}
-  DpaTaskJsonSerializerFactory();
+  JsonSerializer();
+  JsonSerializer(const std::string& name);
+  virtual ~JsonSerializer() {}
 
+  //component
+  const std::string& getName() const override { return m_name; }
+
+  //interface
   std::unique_ptr<DpaTask> parseRequest(const std::string& request) override;
   std::string getLastError() const override;
 private:
+  void init();
   std::string m_lastError;
+  std::string m_name;
 };

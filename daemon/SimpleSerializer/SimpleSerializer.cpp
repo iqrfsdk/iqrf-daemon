@@ -1,8 +1,11 @@
+#include "LaunchUtils.h"
 #include "SimpleSerializer.h"
 #include "IqrfLogging.h"
 #include <vector>
 #include <iterator>
 #include <array>
+
+INIT_COMPONENT(ISerializer, SimpleSerializer)
 
 std::vector<std::string> parseTokens(DpaTask& dpaTask, std::istream& istr)
 {
@@ -128,7 +131,19 @@ std::string PrfThermometerSimple::encodeResponse(const std::string& errStr) cons
 }
 
 ///////////////////////////////////////////
-DpaTaskSimpleSerializerFactory::DpaTaskSimpleSerializerFactory()
+SimpleSerializer::SimpleSerializer()
+  :m_name("Simple")
+{
+  init();
+}
+
+SimpleSerializer::SimpleSerializer(const std::string& name)
+  :m_name(name)
+{
+  init();
+}
+
+void SimpleSerializer::init()
 {
   registerClass<PrfThermometerSimple>(PrfThermometer::PRF_NAME);
   registerClass<PrfLedGSimple>(PrfLedG::PRF_NAME);
@@ -136,7 +151,7 @@ DpaTaskSimpleSerializerFactory::DpaTaskSimpleSerializerFactory()
   registerClass<PrfRawSimple>(PrfRawSimple::PRF_NAME);
 }
 
-std::unique_ptr<DpaTask> DpaTaskSimpleSerializerFactory::parseRequest(const std::string& request)
+std::unique_ptr<DpaTask> SimpleSerializer::parseRequest(const std::string& request)
 {
   std::unique_ptr<DpaTask> obj;
   try {
@@ -152,7 +167,7 @@ std::unique_ptr<DpaTask> DpaTaskSimpleSerializerFactory::parseRequest(const std:
   return std::move(obj);
 }
 
-std::string DpaTaskSimpleSerializerFactory::getLastError() const
+std::string SimpleSerializer::getLastError() const
 {
   return m_lastError;
 }

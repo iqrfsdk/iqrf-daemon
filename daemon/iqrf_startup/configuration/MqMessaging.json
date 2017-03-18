@@ -1,3 +1,11 @@
 {
-  "NotImplemented": true
+  "Implements": "IMessaging",
+  "Instances": [
+    {
+      "Name": "MqMessaging",
+      "Properties": {
+        "TODO": "todo"
+      }
+    }
+  ]
 }

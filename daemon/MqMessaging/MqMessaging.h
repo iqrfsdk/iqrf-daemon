@@ -12,22 +12,25 @@ typedef std::basic_string<unsigned char> ustring;
 class MqMessaging : public IMessaging
 {
 public:
-  MqMessaging();
+  MqMessaging() = delete;
+  MqMessaging(const std::string& name);
+
   virtual ~MqMessaging();
 
-  virtual void setDaemon(IDaemon* daemon);
-  virtual void start();
-  virtual void stop();
+  //component
+  void start() override;
+  void stop() override;
+  void update(const rapidjson::Value& cfg) override;
+  const std::string& getName() const override { return m_name; }
 
+  //interface
   void registerMessageHandler(MessageHandlerFunc hndl) override;
   void unregisterMessageHandler() override;
   void sendMessage(const ustring& msg) override;
-  const std::string& getName() const override { return m_name; }
 
 private:
   int handleMessageFromMq(const ustring& mqMessage);
 
-  IDaemon* m_daemon;
   MqChannel* m_mqChannel;
   TaskQueue<ustring>* m_toMqMessageQueue;
 

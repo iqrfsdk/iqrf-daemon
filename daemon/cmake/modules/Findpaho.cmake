@@ -34,7 +34,7 @@ find_library(PAHO_C_LIB
     paho-mqtt3c
 )
 
-get_filename_component(PAHO_LIB_DIR ${PAHO_C_LIB} DIRECTORY CACHE)
+get_filename_component(PAHO_LIB_DIR ${PAHO_C_LIB} DIRECTORY)
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LOGGING_FOUND to TRUE

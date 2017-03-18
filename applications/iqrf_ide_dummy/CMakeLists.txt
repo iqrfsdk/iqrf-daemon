@@ -1,12 +1,18 @@
 project(iqrf_ide_dummy)
 
+cmake_minimum_required(VERSION 3.0)
+
+FIND_PACKAGE(iqrfd REQUIRED)
+FIND_PACKAGE(cutils REQUIRED)
+
 set(iqrf_ide_dummy_SRC_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_SOURCE_DIR}/UdpChannel)
-include_directories(${CMAKE_SOURCE_DIR}/UdpMessaging)
+# TODO
+#include_directories(${iqrfd_INCLUDE_DIRS})
+include_directories(${daemon_INCLUDE_DIRS})
+include_directories(${cutils_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME} ${iqrf_ide_dummy_SRC_FILES} ${iqrf_ide_dummy_INC_FILES})
 

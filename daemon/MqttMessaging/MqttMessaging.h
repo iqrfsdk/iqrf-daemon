@@ -4,7 +4,6 @@
 #include "IMessaging.h"
 #include <string>
 
-class IDaemon;
 class Impl;
 
 typedef std::basic_string<unsigned char> ustring;
@@ -12,19 +11,21 @@ typedef std::basic_string<unsigned char> ustring;
 class MqttMessaging : public IMessaging
 {
 public:
-  MqttMessaging();
+  MqttMessaging() = delete;
+  MqttMessaging(const std::string& name);
+
   virtual ~MqttMessaging();
 
-  virtual void setDaemon(IDaemon* daemon);
-  virtual void start();
-  virtual void stop();
+  //component
+  void start() override;
+  void stop() override;
+  void update(const rapidjson::Value& cfg) override;
+  const std::string& getName() const override;
 
+  //interface
   void registerMessageHandler(MessageHandlerFunc hndl) override;
   void unregisterMessageHandler() override;
   void sendMessage(const ustring& msg) override;
-  const std::string& getName() const override;
-
-  void updateConfiguration(const rapidjson::Value& cfg);
 
 private:
   Impl* m_impl;

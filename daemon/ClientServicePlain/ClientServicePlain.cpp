@@ -1,7 +1,10 @@
+#include "LaunchUtils.h"
 #include "ClientServicePlain.h"
 #include "DpaTransactionTask.h"
 #include "IDaemon.h"
 #include "IqrfLogging.h"
+
+INIT_COMPONENT(IClient, ClientServicePlain)
 
 ClientServicePlain::ClientServicePlain(const std::string & name)
   :m_name(name)
@@ -30,6 +33,12 @@ void ClientServicePlain::setSerializer(ISerializer* serializer)
 void ClientServicePlain::setMessaging(IMessaging* messaging)
 {
   m_messaging = messaging;
+}
+
+void ClientServicePlain::update(const rapidjson::Value& cfg)
+{
+  TRC_ENTER("");
+  TRC_LEAVE("");
 }
 
 void ClientServicePlain::start()

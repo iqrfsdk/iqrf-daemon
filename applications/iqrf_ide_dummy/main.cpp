@@ -1,6 +1,6 @@
 #include "UdpChannel.h"
 #include "UdpMessage.h"
-#include "helpers.h"
+#include "crc.h"
 #include "PlatformDep.h"
 #include "IqrfLogging.h"
 #include <string>
@@ -25,7 +25,7 @@ void encodeMessageUdp(unsigned char command, unsigned char subcommand, const ust
 
   udpMessage.insert(IQRF_UDP_HEADER_SIZE, message);
 
-  uint16_t crc = GetCRC_CCITT((unsigned char*)udpMessage.data(), dlen + IQRF_UDP_HEADER_SIZE);
+  uint16_t crc = Crc::get().GetCRC_CCITT((unsigned char*)udpMessage.data(), dlen + IQRF_UDP_HEADER_SIZE);
   udpMessage[dlen + IQRF_UDP_HEADER_SIZE] = (unsigned char)((crc >> 8) & 0xFF);
   udpMessage[dlen + IQRF_UDP_HEADER_SIZE + 1] = (unsigned char)(crc & 0xFF);
 }

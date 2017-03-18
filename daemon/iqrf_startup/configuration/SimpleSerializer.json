@@ -1,0 +1,11 @@
+{
+  "Implements": "ISerializer",
+  "Instances": [
+    {
+      "Name": "SimpleSerializer",
+      "Properties": {
+        "TODO": "todo"
+      }
+    }
+  ]
+}

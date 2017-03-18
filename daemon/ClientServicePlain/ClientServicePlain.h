@@ -1,13 +1,11 @@
 #pragma once
 
+#include "JsonUtils.h"
 #include "IClient.h"
 #include "ISerializer.h"
 #include "IMessaging.h"
 #include "IScheduler.h"
 #include <string>
-//#include <chrono>
-//#include <map>
-//#include <memory>
 #include <vector>
 
 class IDaemon;
@@ -27,6 +25,8 @@ public:
   const std::string& getClientName() const override {
     return m_name;
   }
+  
+  void update(const rapidjson::Value& cfg) override;
   void start() override;
   void stop() override;
 

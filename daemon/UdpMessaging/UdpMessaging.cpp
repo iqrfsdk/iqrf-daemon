@@ -4,7 +4,7 @@
 #include "UdpMessaging.h"
 #include "MessagingController.h"
 #include "UdpMessage.h"
-#include "helpers.h"
+#include "crc.h"
 #include "PlatformDep.h"
 #include <climits>
 #include <ctime>
@@ -22,22 +22,18 @@ void UdpMessaging::sendDpaMessageToUdp(const DpaMessage&  dpaMessage)
   m_toUdpMessageQueue->pushToQueue(udpMessage);
 }
 
-void UdpMessaging::setDaemon(IDaemon* daemon)
-{
-  //m_daemon = daemon;
-  //m_daemon->registerMessaging(*this);
-}
-
 void UdpMessaging::setExclusiveAccess()
 {
-  if (!m_exclusiveAccess) {
-    m_exclusiveAccess = true;
-    m_watchDog.start(30000, [&]() {resetExclusiveAccess(); });
-    m_messagingController->exclusiveAccess(true);
-    m_messagingController->getIqrfInterface()->registerReceiveFromHandler([&](const ustring& received)->int {
-      sendDpaMessageToUdp(received);
-      return 0;
-    });
+  if (nullptr != m_messagingController->getIqrfInterface()) {
+    if (!m_exclusiveAccess) {
+      m_exclusiveAccess = true;
+      m_watchDog.start(30000, [&]() {resetExclusiveAccess(); });
+      m_messagingController->exclusiveAccess(true);
+      m_messagingController->getIqrfInterface()->registerReceiveFromHandler([&](const ustring& received)->int {
+        sendDpaMessageToUdp(received);
+        return 0;
+      });
+    }
   }
 }
 
@@ -103,7 +99,7 @@ int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
   case IQRF_UDP_WRITE_IQRF:       // --- Writes data to the TR module ---
   {
     m_messagingController->getIqrfInterface()->sendTo(message);
-    
+
     //send response
     ustring udpResponse(udpMessage.substr(0, IQRF_UDP_HEADER_SIZE));
     udpResponse[cmd] = udpResponse[cmd] | 0x80;
@@ -141,7 +137,7 @@ void UdpMessaging::encodeMessageUdp(ustring& udpMessage, const ustring& message)
   if (0 < dlen)
     udpMessage.insert(IQRF_UDP_HEADER_SIZE, message);
 
-  uint16_t crc = GetCRC_CCITT((unsigned char*)udpMessage.data(), dlen + IQRF_UDP_HEADER_SIZE);
+  uint16_t crc = Crc::get().GetCRC_CCITT((unsigned char*)udpMessage.data(), dlen + IQRF_UDP_HEADER_SIZE);
   udpMessage[dlen + IQRF_UDP_HEADER_SIZE] = (unsigned char)((crc >> 8) & 0xFF);
   udpMessage[dlen + IQRF_UDP_HEADER_SIZE + 1] = (unsigned char)(crc & 0xFF);
 }
@@ -167,7 +163,7 @@ void UdpMessaging::decodeMessageUdp(const ustring& udpMessage, ustring& message)
 
   // CRC check
   unsigned short crc = (udpMessage[IQRF_UDP_HEADER_SIZE + dlen] << 8) + udpMessage[IQRF_UDP_HEADER_SIZE + dlen + 1];
-  if (crc != GetCRC_CCITT((unsigned char*)udpMessage.data(), dlen + IQRF_UDP_HEADER_SIZE))
+  if (crc != Crc::get().GetCRC_CCITT((unsigned char*)udpMessage.data(), dlen + IQRF_UDP_HEADER_SIZE))
     THROW_EX(UdpChannelException, "Message has wrong CRC");
 
   message = udpMessage.substr(IQRF_UDP_HEADER_SIZE, dlen);
@@ -182,7 +178,7 @@ UdpMessaging::UdpMessaging(MessagingController* messagingController)
   m_remotePort = 55000;
   m_localPort = 55300;
 
-  m_messagingController->registerMessaging(*this);
+  //m_messagingController->registerMessaging(*this);
 
   //m_remotePort = strtoul(remote_ip_port.c_str(), nullptr, 0);
   //if (0 == m_remotePort || ULONG_MAX == m_remotePort)
@@ -273,6 +269,28 @@ void UdpMessaging::stop()
   delete m_udpChannel;
   delete m_toUdpMessageQueue;
   TRC_LEAVE("");
+}
+
+void UdpMessaging::update(const rapidjson::Value& cfg)
+{
+  TRC_ENTER("");
+  //TODO
+  TRC_LEAVE("");
+}
+
+void UdpMessaging::registerMessageHandler(MessageHandlerFunc hndl)
+{
+  TRC_WAR("Not implemented");
+}
+
+void UdpMessaging::unregisterMessageHandler()
+{
+  TRC_WAR("Not implemented");
+}
+
+void UdpMessaging::sendMessage(const ustring& msg)
+{
+  TRC_WAR("Not implemented");
 }
 
 ////////////////////////////////////

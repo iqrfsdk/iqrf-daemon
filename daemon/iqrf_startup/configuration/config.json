@@ -21,6 +21,18 @@
     {
       "ComponentName": "Scheduler",
       "Enabled":  true
+    },
+    {
+      "ComponentName": "SimpleSerializer",
+      "Enabled":  true
+    },
+    {
+      "ComponentName": "JsonSerializer",
+      "Enabled":  true
+    },
+    {
+      "ComponentName": "ClientServicePlain",
+      "Enabled": true
     }
   ]
 }

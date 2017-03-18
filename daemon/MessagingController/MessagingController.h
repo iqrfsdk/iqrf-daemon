@@ -30,6 +30,7 @@ public:
   }
 
   std::string m_componentName;
+  std::string m_interfaceName;
   bool m_enabled = false;
   rapidjson::Document m_doc;
 };
@@ -37,17 +38,21 @@ public:
 class MessagingController : public IDaemon
 {
 public:
-  MessagingController(const std::string& cfgFileName);
-  virtual ~MessagingController();
-  virtual void executeDpaTransaction(DpaTransaction& dpaTransaction);
-  void abortAllDpaTransactions();
-  //TODO unregister
-  virtual void registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> message_handler);
-  virtual void unregisterAsyncDpaMessageHandler();
-  virtual std::set<IMessaging*>& getSetOfMessaging();
-  virtual void registerMessaging(IMessaging& messaging);
-  virtual void unregisterMessaging(IMessaging& messaging);
-  virtual IScheduler* getScheduler() { return m_scheduler; }
+  MessagingController(const MessagingController &) = delete;
+
+  static MessagingController& getController();
+  void loadConfiguration(const std::string& cfgFileName);
+
+  //from IDaemon
+  virtual void executeDpaTransaction(DpaTransaction& dpaTransaction) override;
+  virtual void registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> message_handler) override;
+
+  //virtual std::set<IMessaging*>& getSetOfMessaging() override;
+  //virtual void registerMessaging(IMessaging& messaging) override;
+  //virtual void unregisterMessaging(IMessaging& messaging) override;
+  //virtual void registerClientService(IClient& cs) override;
+  //virtual void unregisterClientService(IClient& cs) override;
+  virtual IScheduler* getScheduler() override { return m_scheduler; }
 
   void exit();
   void watchDog();
@@ -55,7 +60,14 @@ public:
   void exclusiveAccess(bool mode); 
   IChannel* getIqrfInterface();
 
+  //virtual void unregisterAsyncDpaMessageHandler();
+  //void abortAllDpaTransactions();
+  //TODO unregister
+
 private:
+  MessagingController();
+  virtual ~MessagingController();
+
   void startTrace();
   void startIqrfIf();
   void startUdp();
@@ -73,20 +85,21 @@ private:
   void start();
   void stop();
 
+  void * getFunction(const std::string& methodName, bool mandatory) const;
+  void * getCreateFunction(const std::string& componentName, bool mandatory) const;
+  
   IChannel* m_iqrfInterface;
   DpaHandler* m_dpaHandler;
   std::atomic_bool m_exclusiveMode;
 
   void executeDpaTransactionFunc(DpaTransaction* dpaTransaction);
 
-  void insertMessaging(std::unique_ptr<IMessaging> messaging);
-
   TaskQueue<DpaTransaction*> *m_dpaTransactionQueue;
   std::atomic_bool m_running;
-  std::set<IMessaging*> m_protocols;
   
-  std::map<std::string, IClient*> m_clients;
-  std::vector<ISerializer*> m_serializers;
+  //std::vector<ISerializer*> m_serializers;
+  std::map<std::string, std::unique_ptr<ISerializer>> m_serializers;
+  std::map<std::string, std::unique_ptr<IClient>> m_clients;
   std::map<std::string, std::unique_ptr<IMessaging>> m_messagings;
 
   UdpMessaging* m_udpMessaging = nullptr;
@@ -102,8 +115,11 @@ private:
   int m_traceFileSize = 0;
   std::string m_iqrfInterfaceName;
 
-  //
   std::string m_configurationDir;
   std::map<std::string, ComponentDescriptor> m_componentMap;
+
+  void loadSerializerComponent(const ComponentDescriptor& componentDescriptor);
+  void loadMessagingComponent(const ComponentDescriptor& componentDescriptor);
+  void loadClientComponent(const ComponentDescriptor& componentDescriptor);
 
 };

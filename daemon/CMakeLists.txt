@@ -21,10 +21,6 @@ ENDIF()
 
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS $<$<CONFIG:Debug>:_DEBUG>)
 
-#if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-#  set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_DEBUG "_DEBUG")
-#endif()
-
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -50,7 +46,7 @@ message(STATUS "CMAKE_C_FLAGS:           ${CMAKE_C_FLAGS}")
 message(STATUS "CMAKE_C_FLAGS_RELEASE:   ${CMAKE_C_FLAGS_RELEASE}")
 message(STATUS "CMAKE_C_FLAGS_DEBUG:     ${CMAKE_C_FLAGS_DEBUG}")
 
-include_directories(${CMAKE_SOURCE_DIR}/../include)
+#include_directories(${CMAKE_SOURCE_DIR}/../include)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 include_directories(${clibcdc_INCLUDE_DIRS})
@@ -61,20 +57,20 @@ include_directories(${PAHO_INCLUDE_DIRS})
 
 #library build
 add_subdirectory(include)
+add_subdirectory(Startup)
 add_subdirectory(UdpMessaging)
-add_subdirectory(MqMessaging)
-add_subdirectory(MqttMessaging)
 add_subdirectory(Scheduler)
-add_subdirectory(SimpleSerializer)
-add_subdirectory(JsonSerializer)
-add_subdirectory(iqrf_ide_dummy)
-add_subdirectory(iqrfapp)
-add_subdirectory(ClientServicePlain)
 add_subdirectory(MessagingController)
 add_subdirectory(iqrf_startup)
+
+add_subdirectory(SimpleSerializer)
+add_subdirectory(JsonSerializer)
+add_subdirectory(MqMessaging)
+add_subdirectory(MqttMessaging)
+add_subdirectory(ClientServicePlain)
 
 # Configure config file.
 # This file specifies actions performed and variables exported when using find_package on this project.
 # The find_package requires properly set ${PROJECT_NAME}_DIR variable to a location where the
 # configured config file persists. This variable is usually specified from the outside of CMake.
-#configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}Config.cmake.in ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/iqrfdConfig.cmake.in ${PROJECT_BINARY_DIR}/iqrfdConfig.cmake @ONLY)

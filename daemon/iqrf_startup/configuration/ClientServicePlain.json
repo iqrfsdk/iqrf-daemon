@@ -1,0 +1,24 @@
+{
+  "Implements": "IClient",
+  "Instances": [
+    {
+      "Name": "ClientServicePlainForMQ",
+      "Messaging": "MqMessaging",
+      "Serializers": [
+        "SimpleSerializer",
+        "JsonSerializer"
+      ],
+      "Properties": {
+      }
+    },
+    {
+      "Name": "ClientServicePlainForMQTT",
+      "Messaging": "MqttMessaging",
+      "Serializers": [
+        "JsonSerializer"
+      ],
+      "Properties": {
+      }
+    }
+  ]
+}

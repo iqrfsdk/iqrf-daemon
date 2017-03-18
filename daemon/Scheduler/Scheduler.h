@@ -66,6 +66,7 @@ private:
   std::mutex m_conditionVariableMutex;
   std::condition_variable m_conditionVariable;
   void timer();
+  void nextWakeupAndUnlock(std::chrono::system_clock::time_point& timePoint);
 
   std::map<TaskHandle, std::shared_ptr<ScheduleRecord>> m_scheduledTasksByHandle;
 

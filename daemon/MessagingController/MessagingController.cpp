@@ -1,4 +1,5 @@
 #include "IqrfLogging.h"
+#include "LaunchUtils.h"
 #include "MessagingController.h"
 #include "IqrfCdcChannel.h"
 #include "IqrfSpiChannel.h"
@@ -6,18 +7,10 @@
 #include "JsonUtils.h"
 
 #include "IClient.h"
-//TODO temporary here
-#include "ClientServicePlain.h"
 
-//TODO temporary here
 #include "IMessaging.h"
 #include "UdpMessaging.h"
-#include "MqMessaging.h"
-#include "MqttMessaging.h"
 #include "Scheduler.h"
-
-#include "SimpleSerializer.h"
-#include "JsonSerializer.h"
 
 #include "PlatformDep.h"
 
@@ -25,16 +18,22 @@ TRC_INIT()
 
 using namespace rapidjson;
 
+MessagingController& MessagingController::getController()
+{
+  static MessagingController mc;
+  return mc;
+}
+
 void MessagingController::executeDpaTransaction(DpaTransaction& dpaTransaction)
 {
   m_dpaTransactionQueue->pushToQueue(&dpaTransaction);
 }
 
-void MessagingController::abortAllDpaTransactions()
-{
-  TRC_ENTER("");
-  TRC_LEAVE("");
-}
+//void MessagingController::abortAllDpaTransactions()
+//{
+//  TRC_ENTER("");
+//  TRC_LEAVE("");
+//}
 
 //called from task queue thread passed by lambda in task queue ctor
 void MessagingController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
@@ -58,14 +57,6 @@ void MessagingController::executeDpaTransactionFunc(DpaTransaction* dpaTransacti
   }
 }
 
-void MessagingController::insertMessaging(std::unique_ptr<IMessaging> messaging)
-{
-  auto ret = m_messagings.insert(std::make_pair(messaging->getName(), std::move(messaging)));
-  if (!ret.second) {
-    THROW_EX(std::logic_error, "Duplicit Messaging configuration: " << NAME_PAR(name,ret.first->first));
-  }
-}
-
 void MessagingController::registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> asyncHandler)
 {
   m_asyncHandler = asyncHandler;
@@ -79,64 +70,52 @@ void MessagingController::registerAsyncDpaMessageHandler(std::function<void(cons
   });
 }
 
-void MessagingController::unregisterAsyncDpaMessageHandler()
-{
-  m_asyncHandler = nullptr;
-}
+//void MessagingController::unregisterAsyncDpaMessageHandler()
+//{
+//  m_asyncHandler = nullptr;
+//}
 
-MessagingController::MessagingController(const std::string& cfgFileName)
+MessagingController::MessagingController()
   :m_iqrfInterface(nullptr)
   , m_dpaHandler(nullptr)
   , m_dpaTransactionQueue(nullptr)
   , m_scheduler(nullptr)
-  , m_cfgFileName(cfgFileName)
 {
-    std::cout << std::endl << "Loading configuration file: " << PAR(cfgFileName);
+  m_exclusiveMode = false;
+}
 
-    m_exclusiveMode = false;
+void MessagingController::loadConfiguration(const std::string& cfgFileName)
+{
+  std::cout << std::endl << "Loading configuration file: " << PAR(cfgFileName);
+  m_cfgFileName = cfgFileName;
 
-    jutils::parseJsonFile(m_cfgFileName, m_configuration);
-    jutils::assertIsObject("", m_configuration);
-    
-    // check cfg version
-    // TODO major.minor ...
-    std::string cfgVersion = jutils::getMemberAs<std::string>("Configuration", m_configuration);
-    if (cfgVersion != m_cfgVersion) {
-      THROW_EX(std::logic_error, "Unexpected configuration: " << PAR(cfgVersion) << "expected: " << m_cfgVersion);
-    }
+  jutils::parseJsonFile(m_cfgFileName, m_configuration);
+  jutils::assertIsObject("", m_configuration);
 
-    //prepare list
-    m_configurationDir = jutils::getMemberAs<std::string>("ConfigurationDir", m_configuration);
-    const auto m = jutils::getMember("Components", m_configuration);
-    const rapidjson::Value& vct = m->value;
-    jutils::assertIsArray("Components", vct);
+  // check cfg version
+  // TODO major.minor ...
+  std::string cfgVersion = jutils::getMemberAs<std::string>("Configuration", m_configuration);
+  if (cfgVersion != m_cfgVersion) {
+    THROW_EX(std::logic_error, "Unexpected configuration: " << PAR(cfgVersion) << "expected: " << m_cfgVersion);
+  }
 
-    for (auto itr = vct.Begin(); itr != vct.End(); ++itr) {
-      jutils::assertIsObject("Components[]", *itr);
-      std::string componentName = jutils::getMemberAs<std::string>("ComponentName", *itr);
-      bool enabled = jutils::getMemberAs<bool>("Enabled", *itr);
-      auto inserted = m_componentMap.insert(make_pair(componentName, ComponentDescriptor(componentName,enabled)));
-      inserted.first->second.loadConfiguration(m_configurationDir);
-    }
+  //prepare list
+  m_configurationDir = jutils::getMemberAs<std::string>("ConfigurationDir", m_configuration);
+  const auto m = jutils::getMember("Components", m_configuration);
+  const rapidjson::Value& vct = m->value;
+  jutils::assertIsArray("Components", vct);
+
+  for (auto itr = vct.Begin(); itr != vct.End(); ++itr) {
+    jutils::assertIsObject("Components[]", *itr);
+    std::string componentName = jutils::getMemberAs<std::string>("ComponentName", *itr);
+    bool enabled = jutils::getMemberAs<bool>("Enabled", *itr);
+    auto inserted = m_componentMap.insert(make_pair(componentName, ComponentDescriptor(componentName, enabled)));
+    inserted.first->second.loadConfiguration(m_configurationDir);
+  }
 }
 
 MessagingController::~MessagingController()
 {
-}
-
-std::set<IMessaging*>& MessagingController::getSetOfMessaging()
-{
-  return m_protocols;
-}
-
-void MessagingController::registerMessaging(IMessaging& messaging)
-{
-  m_protocols.insert(&messaging);
-}
-
-void MessagingController::unregisterMessaging(IMessaging& messaging)
-{
-  m_protocols.erase(&messaging);
 }
 
 void MessagingController::watchDog()
@@ -244,7 +223,6 @@ void MessagingController::startUdp()
 {
   try {
     m_udpMessaging = ant_new UdpMessaging(this);
-    m_udpMessaging->setDaemon(this);
     m_udpMessaging->start();
   }
   catch (std::exception &e) {
@@ -282,83 +260,173 @@ void MessagingController::startScheduler()
   m_scheduler->start();
 }
 
+void MessagingController::loadSerializerComponent(const ComponentDescriptor& componentDescriptor)
+{
+  if (componentDescriptor.m_interfaceName != "ISerializer")
+    return;
+
+  typedef std::unique_ptr<ISerializer>(*CreateSerializer)(const std::string&);
+
+  const auto instancesMember = jutils::getMember("Instances", componentDescriptor.m_doc);
+  const rapidjson::Value& instances = instancesMember->value;
+  jutils::assertIsArray("Instances[]", instances);
+
+  for (auto itr = instances.Begin(); itr != instances.End(); ++itr) {
+    //parse instance descriptor
+    jutils::assertIsObject("Instances[]{}", *itr);
+    std::string instanceName = jutils::getMemberAs<std::string>("Name", *itr);
+    const auto propertiesMember = jutils::getMember("Properties", *itr);
+    const rapidjson::Value& properties = propertiesMember->value;
+    jutils::assertIsObject("Properties{}", properties);
+
+    //create instance
+    CreateSerializer createSerializer = (CreateSerializer)getCreateFunction(componentDescriptor.m_componentName, true);
+    std::unique_ptr<ISerializer> serializer = createSerializer(instanceName);
+
+    //get properties - not implemented
+    //serializer->update(properties);
+
+    //register instance
+    auto ret = m_serializers.insert(std::make_pair(serializer->getName(), std::move(serializer)));
+    if (!ret.second) {
+      THROW_EX(std::logic_error, "Duplicit Serializer configuration: " << NAME_PAR(name, ret.first->first));
+    }
+  }
+}
+
+void MessagingController::loadMessagingComponent(const ComponentDescriptor& componentDescriptor)
+{
+  if (componentDescriptor.m_interfaceName != "IMessaging")
+    return;
+
+  typedef std::unique_ptr<IMessaging>(*CreateMessaging)(const std::string&);
+
+  const auto instancesMember = jutils::getMember("Instances", componentDescriptor.m_doc);
+  const rapidjson::Value& instances = instancesMember->value;
+  jutils::assertIsArray("Instances[]", instances);
+
+  for (auto itr = instances.Begin(); itr != instances.End(); ++itr) {
+    //parse instance descriptor
+    jutils::assertIsObject("Instances[]{}", *itr);
+    std::string instanceName = jutils::getMemberAs<std::string>("Name", *itr);
+    const auto propertiesMember = jutils::getMember("Properties", *itr);
+    const rapidjson::Value& properties = propertiesMember->value;
+    jutils::assertIsObject("Properties{}", properties);
+
+    //create instance
+    CreateMessaging createMessaging = (CreateMessaging)getCreateFunction(componentDescriptor.m_componentName, true);
+    std::unique_ptr<IMessaging> messaging = createMessaging(instanceName);
+
+    //get properties
+    messaging->update(properties);
+
+    //register instance
+    auto ret = m_messagings.insert(std::make_pair(messaging->getName(), std::move(messaging)));
+    if (!ret.second) {
+      THROW_EX(std::logic_error, "Duplicit Messaging configuration: " << NAME_PAR(name, ret.first->first));
+    }
+  }
+}
+
+void MessagingController::loadClientComponent(const ComponentDescriptor& componentDescriptor)
+{
+  if (componentDescriptor.m_interfaceName != "IClient")
+    return;
+
+  typedef std::unique_ptr<IClient>(*CreateClientService)(const std::string&);
+
+  const auto instancesMember = jutils::getMember("Instances", componentDescriptor.m_doc);
+  const rapidjson::Value& instances = instancesMember->value;
+  jutils::assertIsArray("Instances[]", instances);
+
+  for (auto itr = instances.Begin(); itr != instances.End(); ++itr) {
+    //parse instance descriptor
+    jutils::assertIsObject("Instances[]{}", *itr);
+    std::string instanceName = jutils::getMemberAs<std::string>("Name", *itr);
+    std::string messagingName = jutils::getMemberAs<std::string>("Messaging", *itr);
+    std::vector<std::string> serializersVector = jutils::getMemberAsVector<std::string>("Serializers", *itr);
+    const auto propertiesMember = jutils::getMember("Properties", *itr);
+    const rapidjson::Value& properties = propertiesMember->value;
+    jutils::assertIsObject("Properties{}", properties);
+
+    //create instance
+    CreateClientService createService = (CreateClientService)getCreateFunction(componentDescriptor.m_componentName, true);
+    std::unique_ptr<IClient> client = createService(instanceName);
+    client->setDaemon(this);
+
+    //get messaging
+    {
+      auto found = m_messagings.find(messagingName);
+      if (found != m_messagings.end()) {
+        client->setMessaging(found->second.get());
+      }
+      else
+        THROW_EX(std::logic_error, "Cannot find: " << PAR(messagingName));
+    }
+
+    //get serializers
+    for (auto & serializerName : serializersVector) {
+      auto ss = m_serializers.find(serializerName);
+      if (ss != m_serializers.end())
+        client->setSerializer(ss->second.get());
+      else
+        THROW_EX(std::logic_error, "Cannot find: " << PAR(serializerName));
+    }
+
+    //get properties
+    client->update(properties);
+
+    //register instance
+    auto ret = m_clients.insert(std::make_pair(client->getClientName(), std::move(client)));
+    if (!ret.second) {
+      THROW_EX(std::logic_error, "Duplicit ClientService configuration: " << NAME_PAR(name, ret.first->first));
+    }
+
+  }
+}
+
 void MessagingController::startClients()
 {
   TRC_ENTER("");
 
-  ///////// Messagings ///////////////////////////////////
-  //TODO load Messagings plugins
-
-  auto fnd = m_componentMap.find("MqttMessaging");
-  if (fnd != m_componentMap.end() && fnd->second.m_enabled) {
-    try {
-      std::unique_ptr<MqttMessaging> uptr(ant_new MqttMessaging());
-      uptr->updateConfiguration(fnd->second.m_doc);
-      insertMessaging(std::move(uptr));
-    }
-    catch (std::exception &e) {
-      CATCH_EX("Cannot create MqttMessaging ", std::exception, e);
+  //load serializer components
+  for (const auto & mc : m_componentMap) {
+    if (mc.second.m_enabled) {
+      try {
+        loadSerializerComponent(mc.second);
+      }
+      catch (std::exception &e) {
+        CATCH_EX("Cannot create component" << NAME_PAR(componentName, mc.first), std::exception, e);
+      }
     }
   }
 
-  fnd = m_componentMap.find("MqMessaging");
-  if (fnd != m_componentMap.end() && fnd->second.m_enabled) {
-    try {
-      std::unique_ptr<MqMessaging> uptr(ant_new MqMessaging());
-      //TODO
-      //uptr->updateConfiguration(fnd->second.m_doc); 
-      insertMessaging(std::move(uptr));
+  //load messaging components
+  for (const auto & mc : m_componentMap) {
+    if (mc.second.m_enabled) {
+      try {
+        loadMessagingComponent(mc.second);
+      }
+      catch (std::exception &e) {
+        CATCH_EX("Cannot create component" << NAME_PAR(componentName, mc.first), std::exception, e);
+      }
     }
-    catch (std::exception &e) {
-      CATCH_EX("Cannot create MqMessaging ", std::exception, e);
+  }
+
+  //load client components
+  for (const auto & mc : m_componentMap) {
+    if (mc.second.m_enabled) {
+      try {
+        loadClientComponent(mc.second);
+      }
+      catch (std::exception &e) {
+        CATCH_EX("Cannot create component" << NAME_PAR(componentName, mc.first), std::exception, e);
+      }
     }
   }
 
-  //MqMessaging* mqMessaging(nullptr);
-  //try {
-  //  std::unique_ptr<MqMessaging> uptr = std::unique_ptr<MqMessaging>(ant_new MqMessaging());
-  //  mqMessaging = uptr.get();
-  //  insertMessaging(std::move(uptr));
-  //}
-  //catch (std::exception &e) {
-  //  CATCH_EX("Cannot create MqMessaging ", std::exception, e);
-  //}
-
-  ///////// Serializers ///////////////////////////////////
-  //TODO load Serializers plugins
-  DpaTaskSimpleSerializerFactory* simpleSerializer = ant_new DpaTaskSimpleSerializerFactory();
-  m_serializers.push_back(simpleSerializer);
-
-  DpaTaskJsonSerializerFactory* jsonSerializer = ant_new DpaTaskJsonSerializerFactory();
-  m_serializers.push_back(jsonSerializer);
-
-  //////// Clients //////////////////////////////////
-  //TODO load Clients plugins
-  auto found1 = m_messagings.find("MqMessaging");
-  if (found1 != m_messagings.end()) {
-    IClient* client1 = ant_new ClientServicePlain("ClientServicePlain1");
-    client1->setDaemon(this);
-    client1->setMessaging(found1->second.get());
-
-    //multi-serializer support
-    client1->setSerializer(simpleSerializer);
-    client1->setSerializer(jsonSerializer);
-
-    m_clients.insert(std::make_pair(client1->getClientName(), client1));
-  }
-
-  //TODO will be solved by ClientServicePlain cfg
-  auto found2 = m_messagings.find("MqttMessaging");
-  if (found2 != m_messagings.end()) {
-    IClient* client2 = ant_new ClientServicePlain("ClientServicePlain2");
-    client2->setDaemon(this);
-    client2->setMessaging(found2->second.get());
-    client2->setSerializer(jsonSerializer);
-    m_clients.insert(std::make_pair(client2->getClientName(), client2));
-  }
-
-  /////////////////////
-  for (auto cli : m_clients) {
+  //start clients
+  for (auto & cli : m_clients) {
     try {
       cli.second->start();
     }
@@ -367,6 +435,7 @@ void MessagingController::startClients()
     }
   }
 
+  //start messagings
   for (auto & ms : m_messagings) {
     try {
       ms.second->start();
@@ -404,7 +473,7 @@ void MessagingController::stopIqrfIf()
 {
   delete m_dpaTransactionQueue;
   m_dpaTransactionQueue = nullptr;
-  
+
   delete m_iqrfInterface;
   m_iqrfInterface = nullptr;
 }
@@ -425,9 +494,8 @@ void MessagingController::stopDpa()
 void MessagingController::stopClients()
 {
   TRC_ENTER("");
-  for (auto cli : m_clients) {
+  for (auto & cli : m_clients) {
     cli.second->stop();
-    delete cli.second;
   }
   m_clients.clear();
 
@@ -436,8 +504,7 @@ void MessagingController::stopClients()
   }
   m_messagings.clear();
 
-  for (auto sr : m_serializers) {
-    delete sr;
+  for (auto & sr : m_serializers) {
   }
   m_serializers.clear();
 
@@ -472,8 +539,31 @@ void MessagingController::exit()
   m_running = false;
 }
 
-/////////////////////////////////////
+//////////////// Launch
+void * MessagingController::getCreateFunction(const std::string& componentName, bool mandatory) const
+{
+  std::string fname = ("__launch_create_");
+  fname += componentName;
+  return getFunction(fname, mandatory);
+}
 
+void * MessagingController::getFunction(const std::string& methodName, bool mandatory) const
+{
+  void * func = nullptr;
+
+  func = StaticBuildFunctionMap::get().getFunction(methodName);
+  if (!func) {
+    if (mandatory) {
+      THROW_EX(std::logic_error, PAR(methodName) << ": cannot be found. The binary isn't probably correctly linked");
+    }
+    else {
+      TRC_WAR(PAR(methodName) << ": cannot be found. The binary isn't probably correctly linked");
+    }
+  }
+  return func;
+}
+
+///////////////////////////////////// ComponentDescriptor
 void ComponentDescriptor::loadConfiguration(const std::string configurationDir)
 {
   std::ostringstream os;
@@ -481,6 +571,7 @@ void ComponentDescriptor::loadConfiguration(const std::string configurationDir)
 
   try {
     jutils::parseJsonFile(os.str(), m_doc);
+    m_interfaceName = jutils::getPossibleMemberAs<std::string>("Implements", m_doc, "");
   }
   catch (std::exception &e) {
     CATCH_EX("Cannot load file " << NAME_PAR(fname, os.str()), std::exception, e);
