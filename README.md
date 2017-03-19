@@ -4,11 +4,9 @@
 
 IQRF GW daemon with the multiple communication channels - UDP/MQ/MQTT.
 
-[See the daemon architecture](/doc/iqrf-linux-gw.png){:target="_blank"}
-
-[See the daemon component model](/doc/iqrf-daemon-component-model.png){:target="_blank"}
-
-[See the daemon component instances](/doc/iqrf-daemon-component-instances.png){:target="_blank"}
+<a href="https://github.com/iqrfsdk/iqrf-daemon/blob/master/doc/iqrf-linux-gw.png" target="_blank">See the daemon architecture</a><br/>
+<a href="https://github.com/iqrfsdk/iqrf-daemon/blob/master/doc/iqrf-daemon-component-model.png" target="_blank">See the daemon component model</a><br/>
+<a href="https://github.com/iqrfsdk/iqrf-daemon/blob/master/doc/iqrf-daemon-component-instances.png" target="_blank">See the daemon component instances</a><br/>
 
 ## How to download the daemon
 
