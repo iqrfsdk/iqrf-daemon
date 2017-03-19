@@ -4,7 +4,9 @@
 
 IQRF GW daemon with the multiple communication channels - UDP/MQ/MQTT.
 
-![See the daemon architecture](/doc/iqrf-linux-gw.png)
+[See the daemon architecture](/doc/iqrf-linux-gw.png)
+[See the daemon component model](/doc/iqrf-daemon-component-model.png)
+[See the daemon component instances](/doc/iqrf-daemon-component-instances.png)
 
 ## How to download the daemon
 
@@ -72,6 +74,7 @@ cd scripts/
 
 ```Bash
 sudo apt-get install mosquitto
+sudo apt-get install mosquitto-clients
 
 cd scripts/
 ./mqtt-local-pub-test.sh
