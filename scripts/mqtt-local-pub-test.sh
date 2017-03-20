@@ -5,4 +5,4 @@
 # Tested on AAEON UP, UbiLinux
 
 echo "Sending DPA request to pulse red led on the node 1"
-/usr/local/bin/mosquitto_pub -t "Iqrf/DpaRequest" -m "{\"Type\":\"Raw\",\"Request\":\"01 00 06 03 ff ff\",\"Timeout\":0}"
+mosquitto_pub -t "Iqrf/DpaRequest" -m "{\"Type\":\"Raw\",\"Request\":\"01 00 06 03 ff ff\",\"Timeout\":0}"

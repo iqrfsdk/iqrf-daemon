@@ -12,8 +12,17 @@
       }
     },
     {
-      "Name": "ClientServicePlainForMQTT",
-      "Messaging": "MqttMessaging",
+      "Name": "ClientServicePlainForMQTT1",
+      "Messaging": "MqttMessaging1",
+      "Serializers": [
+        "JsonSerializer"
+      ],
+      "Properties": {
+      }
+    },
+    {
+      "Name": "ClientServicePlainForMQTT2",
+      "Messaging": "MqttMessaging2",
       "Serializers": [
         "JsonSerializer"
       ],

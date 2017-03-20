@@ -2,11 +2,27 @@
   "Implements": "IMessaging",
   "Instances": [
     {
-      "Name": "MqttMessaging",
+      "Name": "MqttMessaging1",
       "Properties": {
-        "BrokerAddr": "tcp://192.168.1.26:1883",
-        "ClientId": "IqrfDpaMessaging",
+        "BrokerAddr": "tcp://127.0.0.1:1883",
+        "ClientId": "IqrfDpaMessaging1",
         "Enabled": true,
+        "Persistence": 1,
+        "Qos": 1,
+        "Timeout:": 10000,
+        "TopicRequest": "Iqrf/DpaRequest",
+        "TopicResponse": "Iqrf/DpaResponse",
+        "User": "",
+        "Password": "",
+        "EnabledSSL": false
+      }
+    },
+    {
+      "Name": "MqttMessaging2",
+      "Properties": {
+        "BrokerAddr": "tcp://iot.eclipse.org:1883",
+        "ClientId": "IqrfDpaMessaging2",
+        "Enabled": false,
         "Persistence": 1,
         "Qos": 1,
         "Timeout:": 10000,

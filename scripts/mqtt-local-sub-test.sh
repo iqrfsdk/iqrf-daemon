@@ -5,4 +5,4 @@
 # Tested on AAEON UP, UbiLinux
 
 echo "Listening for DPA responses from IQRF network:"
-/usr/local/bin/mosquitto_sub -t "Iqrf/DpaResponse"
+mosquitto_sub -t "Iqrf/DpaResponse"
