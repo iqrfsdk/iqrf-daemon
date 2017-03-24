@@ -41,28 +41,17 @@ public:
   MessagingController(const MessagingController &) = delete;
 
   static MessagingController& getController();
-  void loadConfiguration(const std::string& cfgFileName);
+  void run(const std::string& cfgFileName);
 
   //from IDaemon
   virtual void executeDpaTransaction(DpaTransaction& dpaTransaction) override;
   virtual void registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> message_handler) override;
-
-  //virtual std::set<IMessaging*>& getSetOfMessaging() override;
-  //virtual void registerMessaging(IMessaging& messaging) override;
-  //virtual void unregisterMessaging(IMessaging& messaging) override;
-  //virtual void registerClientService(IClient& cs) override;
-  //virtual void unregisterClientService(IClient& cs) override;
   virtual IScheduler* getScheduler() override { return m_scheduler; }
 
   void exit();
-  void watchDog();
 
   void exclusiveAccess(bool mode); 
   IChannel* getIqrfInterface();
-
-  //virtual void unregisterAsyncDpaMessageHandler();
-  //void abortAllDpaTransactions();
-  //TODO unregister
 
 private:
   MessagingController();
@@ -95,9 +84,7 @@ private:
   void executeDpaTransactionFunc(DpaTransaction* dpaTransaction);
 
   TaskQueue<DpaTransaction*> *m_dpaTransactionQueue;
-  std::atomic_bool m_running;
-  
-  //std::vector<ISerializer*> m_serializers;
+
   std::map<std::string, std::unique_ptr<ISerializer>> m_serializers;
   std::map<std::string, std::unique_ptr<IClient>> m_clients;
   std::map<std::string, std::unique_ptr<IMessaging>> m_messagings;
@@ -107,7 +94,16 @@ private:
 
   std::function<void(const DpaMessage&)> m_asyncHandler;
 
+  //watchDog
+  void watchDogPet();
+  bool m_running = false;
+  std::mutex m_stopConditionMutex;
+  std::condition_variable m_stopConditionVariable;
+  std::chrono::system_clock::time_point m_lastRefreshTime;
+  std::chrono::milliseconds m_timeout;
+
   //configuration
+  void loadConfiguration(const std::string& cfgFileName);
   rapidjson::Document m_configuration;
   std::string m_cfgFileName;
   const std::string m_cfgVersion = "v0.0";
@@ -116,6 +112,7 @@ private:
   std::string m_iqrfInterfaceName;
 
   std::string m_configurationDir;
+  int m_watchDogTimeoutMilis = 10000;
   std::map<std::string, ComponentDescriptor> m_componentMap;
 
   void loadSerializerComponent(const ComponentDescriptor& componentDescriptor);
