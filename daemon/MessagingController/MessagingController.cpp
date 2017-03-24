@@ -29,12 +29,6 @@ void MessagingController::executeDpaTransaction(DpaTransaction& dpaTransaction)
   m_dpaTransactionQueue->pushToQueue(&dpaTransaction);
 }
 
-//void MessagingController::abortAllDpaTransactions()
-//{
-//  TRC_ENTER("");
-//  TRC_LEAVE("");
-//}
-
 //called from task queue thread passed by lambda in task queue ctor
 void MessagingController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
 {
@@ -55,6 +49,10 @@ void MessagingController::executeDpaTransactionFunc(DpaTransaction* dpaTransacti
     TRC_ERR("Dpa interface is not working");
     dpaTransaction->processFinish(DpaRequest::kCreated);
   }
+
+  //Pet WatchDog
+  watchDogPet();
+
 }
 
 void MessagingController::registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> asyncHandler)
@@ -101,6 +99,8 @@ void MessagingController::loadConfiguration(const std::string& cfgFileName)
 
   //prepare list
   m_configurationDir = jutils::getMemberAs<std::string>("ConfigurationDir", m_configuration);
+  m_watchDogTimeoutMilis = jutils::getPossibleMemberAs<int>("WatchDogTimeoutMilis", m_configuration, m_watchDogTimeoutMilis);
+
   const auto m = jutils::getMember("Components", m_configuration);
   const rapidjson::Value& vct = m->value;
   jutils::assertIsArray("Components", vct);
@@ -118,26 +118,41 @@ MessagingController::~MessagingController()
 {
 }
 
-void MessagingController::watchDog()
+void MessagingController::run(const std::string& cfgFileName)
 {
   TRC_ENTER("");
+
+  loadConfiguration(cfgFileName);
+
+  m_timeout = std::chrono::milliseconds(m_watchDogTimeoutMilis);
+  m_lastRefreshTime = std::chrono::system_clock::now();
   m_running = true;
+
   try {
     start();
-    //TODO wait on condition until 3000
-    while (m_running)
-    {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-      //TODO
-      //watch worker threads and possibly restart
-    }
   }
   catch (std::exception& e) {
     CATCH_EX("error", std::exception, e);
   }
 
-  stop();
+  std::unique_lock<std::mutex> lock(m_stopConditionMutex);
+  while (m_running && ((std::chrono::system_clock::now() - m_lastRefreshTime)) < m_timeout)
+    m_stopConditionVariable.wait_for(lock, m_timeout);
+
+  try {
+    stop();
+  }
+  catch (std::exception& e) {
+    CATCH_EX("error", std::exception, e);
+  }
+
   TRC_LEAVE("");
+}
+
+void MessagingController::watchDogPet()
+{
+  std::unique_lock<std::mutex> lock(m_stopConditionMutex);
+  m_lastRefreshTime = std::chrono::system_clock::now();
 }
 
 void MessagingController::exclusiveAccess(bool mode)
@@ -258,6 +273,14 @@ void MessagingController::startScheduler()
   }
 
   m_scheduler->start();
+  
+  //Pet WatchDog at least from Scheduler if there is no DpaTransaction
+  m_scheduler->registerMessageHandler("WatchDogPet", [this](const std::string& msg) {
+    watchDogPet();
+  });
+  m_scheduler->scheduleTaskPeriodic("WatchDogPet", "WatchDogPet",
+    std::chrono::duration_cast<std::chrono::seconds>(std::chrono::milliseconds(m_watchDogTimeoutMilis/2)));
+
 }
 
 void MessagingController::loadSerializerComponent(const ComponentDescriptor& componentDescriptor)
@@ -536,7 +559,11 @@ void MessagingController::stop()
 void MessagingController::exit()
 {
   TRC_INF("exiting ...");
-  m_running = false;
+  {
+    std::unique_lock<std::mutex> lock(m_stopConditionMutex);
+    m_running = false;
+  }
+  m_stopConditionVariable.notify_all();
 }
 
 //////////////// Launch

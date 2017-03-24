@@ -184,73 +184,6 @@ void Scheduler::removeScheduleRecords(std::vector<std::shared_ptr<ScheduleRecord
   }
 }
 
-/*
-//thread function
-void Scheduler::timer()
-{
-  system_clock::time_point timePoint;
-  std::tm timeStr;
-  ScheduleRecord::getTime(timePoint, timeStr);
-  TRC_DBG(ScheduleRecord::asString(timePoint));
-
-  while (m_runTimerThread) {
-
-    { // wait for something in the m_scheduledTasks;
-      std::unique_lock<std::mutex> lck(m_conditionVariableMutex);
-      m_conditionVariable.wait_until(lck, timePoint, [&] { return m_scheduledTaskPushed; });
-      m_scheduledTaskPushed = false;
-    }
-
-    // get actual time
-    ScheduleRecord::getTime(timePoint, timeStr);
-
-    //std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
-    m_scheduledTasksMutex.lock();
-
-    // fire all expired tasks
-    while (!m_scheduledTasksByTime.empty()) {
-
-      auto begin = m_scheduledTasksByTime.begin();
-      std::shared_ptr<ScheduleRecord> record = begin->second;
-
-      if (begin->first < timePoint) {
-
-        // fire
-        TRC_INF("Task fired at: " << ScheduleRecord::asString(timePoint) << PAR(record->getTask()));
-        int retval = m_dpaTaskQueue->pushToQueue(*record); //copy record
-        TRC_DBG("Returned from pushToQueue():" << PAR(retval));
-
-        // erase fired
-        m_scheduledTasksByTime.erase(begin);
-
-        // get and schedule next
-        system_clock::time_point nextTimePoint = record->getNext(timePoint, timeStr);
-        if (nextTimePoint >= timePoint) {
-          m_scheduledTasksByTime.insert(std::make_pair(nextTimePoint, record));
-        }
-        else {
-          //TODO remove from m_scheduledTasksByHandle
-        }
-      }
-      else {
-        break;
-      }
-    }
-
-    // get next wakeup time
-    if (!m_scheduledTasksByTime.empty()) {
-      timePoint = m_scheduledTasksByTime.begin()->first;
-    }
-    else {
-      timePoint += seconds(10);
-    }
-
-    TRC_DBG("UNLOCKING MUTEX");
-    m_scheduledTasksMutex.unlock();
-
-  }
-}
-*/
 //thread function
 void Scheduler::timer()
 {
@@ -436,7 +369,6 @@ ScheduleRecord::ScheduleRecord(const std::string& clientId, const std::string& t
   std::time_t tt = system_clock::to_time_t(tp);
   struct std::tm * ptm = std::localtime(&tt);
 
-#ifdef ENH_SCHED
   m_vsec.push_back(ptm->tm_sec);
   m_vmin.push_back(ptm->tm_min);
   m_vhour.push_back(ptm->tm_hour);
@@ -444,19 +376,6 @@ ScheduleRecord::ScheduleRecord(const std::string& clientId, const std::string& t
   m_vmon.push_back(ptm->tm_mon);
   m_vyear.push_back(ptm->tm_year);
   m_vwday.push_back(ptm->tm_wday);
-  //m_vyday.push_back(ptm->tm_yday);
-  //m_visdst.push_back(ptm->tm_isdst);
-#else
-  m_tm.tm_sec = ptm->tm_sec;
-  m_tm.tm_min = ptm->tm_min;
-  m_tm.tm_hour = ptm->tm_hour;
-  m_tm.tm_mday = ptm->tm_mday;
-  m_tm.tm_mon = ptm->tm_mon;
-  m_tm.tm_year = ptm->tm_year;
-  m_tm.tm_wday = ptm->tm_wday;
-  m_tm.tm_yday = ptm->tm_yday;
-  m_tm.tm_isdst = ptm->tm_isdst;
-#endif
   m_task = task;
 
 }
@@ -521,7 +440,6 @@ void ScheduleRecord::parse(const std::string& rec)
   is >> sec >> mnt >> hrs >> day >> mon >> yer >> dow >> m_clientId;
   std::getline(is, m_task, '|'); // just to get rest of line with spaces
 
-#ifdef ENH_SCHED
   parseItem(sec, 0, 59, m_vsec);
   parseItem(mnt, 0, 59, m_vmin);
   parseItem(hrs, 0, 23, m_vhour);
@@ -529,15 +447,6 @@ void ScheduleRecord::parse(const std::string& rec)
   parseItem(mon, 1, 12, m_vmon) - 1;
   parseItem(yer, 0, 9000, m_vyear); //TODO maximum?
   parseItem(dow, 0, 6, m_vwday);
-#else
-  m_tm.tm_sec = parseItem(sec, 0, 59, m_vsec);
-  m_tm.tm_min = parseItem(mnt, 0, 59, m_vmin);
-  m_tm.tm_hour = parseItem(hrs, 0, 23, m_vhour);
-  m_tm.tm_mday = parseItem(day, 1, 31, m_vmday);
-  m_tm.tm_mon = parseItem(mon, 1, 12, m_vmon) - 1;
-  m_tm.tm_year = parseItem(yer, 0, 9000, m_vyear); //TODO maximum?
-  m_tm.tm_wday = parseItem(dow, 0, 6, m_vwday);
-#endif
 }
 
 int ScheduleRecord::parseItem(const std::string& item, int mnm, int mxm, std::vector<int>& vec)
@@ -598,7 +507,6 @@ system_clock::time_point ScheduleRecord::getNext(const std::chrono::system_clock
   system_clock::time_point tp;
 
   if (!m_periodic) {
-#ifdef ENH_SCHED
     bool lower = false;
     std::tm c_tm = actualTime;
 
@@ -624,38 +532,6 @@ system_clock::time_point ScheduleRecord::getNext(const std::chrono::system_clock
 
       break;
     }
-#else
-    bool lower = false;
-    std::tm c_tm = actualTime;
-
-    while (true) {
-      if (!compareTimeVal(c_tm.tm_sec, m_tm.tm_sec, lower))
-        break;
-      if (!compareTimeVal(c_tm.tm_min, m_tm.tm_min, lower))
-        break;
-      if (!compareTimeVal(c_tm.tm_hour, m_tm.tm_hour, lower))
-        break;
-      //Compare Day of Week if present
-      if (m_tm.tm_wday >= 0) {
-        int dif = c_tm.tm_wday - m_tm.tm_wday;
-        if (dif == 0 && !lower)
-          c_tm.tm_mday++;
-        else if (dif > 0)
-          c_tm.tm_mday += 7 - dif;
-        else
-          c_tm.tm_mday -= dif;
-        break;
-      }
-      if (!compareTimeVal(c_tm.tm_mday, m_tm.tm_mday, lower))
-        break;
-      if (!compareTimeVal(c_tm.tm_mon, m_tm.tm_mon, lower))
-        break;
-      if (!compareTimeVal(c_tm.tm_year, m_tm.tm_year, lower))
-        break;
-
-      break;
-    }
-#endif
 
     std::time_t tt = std::mktime(&c_tm);
     if (tt == -1) {
@@ -675,7 +551,6 @@ system_clock::time_point ScheduleRecord::getNext(const std::chrono::system_clock
   return tp;
 }
 
-#ifdef ENH_SCHED
 //return true - continue false - finish
 bool ScheduleRecord::compareTimeValVect(int& cval, const std::vector<int>& tvalV, bool& lw) const
 {
@@ -710,23 +585,6 @@ bool ScheduleRecord::compareTimeValVect(int& cval, const std::vector<int>& tvalV
     return false;
   }
 }
-
-#else
-//return true - continue false - finish
-bool ScheduleRecord::compareTimeVal(int& cval, int tval, bool& lw) const
-{
-  int dif;
-  if (tval >= 0) {
-    lw = (dif = cval - tval) < 0 ? true : dif > 0 ? false : lw;
-    cval = tval;
-    return true;
-  }
-  else {
-    if (!lw) cval++;
-    return false;
-  }
-}
-#endif
 
 std::string ScheduleRecord::asString(const std::chrono::system_clock::time_point& tp)
 {

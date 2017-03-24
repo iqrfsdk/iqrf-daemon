@@ -104,13 +104,7 @@ int Startup::run(int argc, char** argv)
 
   std::cout << std::endl << argv[0] << " started";
 
-  try {
-    msgCtrl.loadConfiguration(configFile);
-    msgCtrl.watchDog();
-  }
-  catch (std::exception &e) {
-    std::cerr << std::endl << "Fatal error: " << e.what();
-  }
+  msgCtrl.run(configFile);
 
   std::cout << std::endl << argv[0] << " finished";
 }
