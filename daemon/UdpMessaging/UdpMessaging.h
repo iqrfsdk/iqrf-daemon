@@ -49,6 +49,12 @@ private:
 class UdpMessaging : public IMessaging
 {
 public:
+  enum class Mode {
+    Operational,
+    Service,
+    Forwarding
+  };
+
   UdpMessaging() = delete;
   UdpMessaging(MessagingController* messagingController);
   virtual ~UdpMessaging();
@@ -73,6 +79,8 @@ public:
   void encodeMessageUdp(ustring& udpMessage, const ustring& message = ustring());
   void decodeMessageUdp(const ustring& udpMessage, ustring& message);
 
+  UdpMessaging::Mode parseMode(const std::string& mode);
+
 private:
   void setExclusiveAccess();
   void resetExclusiveAccess();
@@ -88,6 +96,8 @@ private:
 
   // configuration
   std::string m_name;
-  unsigned long int m_remotePort;
-  unsigned long int m_localPort;
+  unsigned m_remotePort = 55000;
+  unsigned m_localPort = 55300;
+  Mode m_mode = Mode::Operational;
+  unsigned m_timeout = 30000;
 };

@@ -252,12 +252,16 @@ void MessagingController::startIqrfIf()
 
 void MessagingController::startUdp()
 {
-  try {
-    m_udpMessaging = ant_new UdpMessaging(this);
-    m_udpMessaging->start();
-  }
-  catch (std::exception &e) {
-    CATCH_EX("Cannot create UdpMessaging ", std::exception, e);
+  auto fnd = m_componentMap.find("UdpMessaging");
+  if (fnd != m_componentMap.end() && fnd->second.m_enabled) {
+    try {
+      m_udpMessaging = ant_new UdpMessaging(this);
+      m_udpMessaging->update(fnd->second.m_doc);
+      m_udpMessaging->start();
+    }
+    catch (std::exception &e) {
+      CATCH_EX("Cannot create UdpMessaging ", std::exception, e);
+    }
   }
 }
 

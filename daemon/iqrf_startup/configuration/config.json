@@ -13,6 +13,10 @@
       "Enabled":  true
     },
     {
+      "ComponentName": "UdpMessaging",
+      "Enabled":  true
+    },
+    {
       "ComponentName": "MqttMessaging",
       "Enabled":  true
     },

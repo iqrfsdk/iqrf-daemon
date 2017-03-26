@@ -27,6 +27,10 @@
 #include <ratio>
 #include <chrono>
 
+const std::string Operational_STR("Operational");
+const std::string Service_STR("Service");
+const std::string Forwarding_STR("Forwarding");
+
 void UdpMessaging::sendDpaMessageToUdp(const DpaMessage&  dpaMessage)
 {
   ustring message(dpaMessage.DpaPacketData(), dpaMessage.Length());
@@ -43,7 +47,7 @@ void UdpMessaging::setExclusiveAccess()
   if (nullptr != m_messagingController->getIqrfInterface()) {
     if (!m_exclusiveAccess) {
       m_exclusiveAccess = true;
-      m_watchDog.start(30000, [&]() {resetExclusiveAccess(); });
+      m_watchDog.start(m_timeout, [&]() {resetExclusiveAccess(); });
       m_messagingController->exclusiveAccess(true);
       m_messagingController->getIqrfInterface()->registerReceiveFromHandler([&](const ustring& received)->int {
         sendDpaMessageToUdp(received);
@@ -191,17 +195,6 @@ UdpMessaging::UdpMessaging(MessagingController* messagingController)
   , m_toUdpMessageQueue(nullptr)
 {
   m_exclusiveAccess = false;
-  m_remotePort = 55000;
-  m_localPort = 55300;
-
-  //m_messagingController->registerMessaging(*this);
-
-  //m_remotePort = strtoul(remote_ip_port.c_str(), nullptr, 0);
-  //if (0 == m_remotePort || ULONG_MAX == m_remotePort)
-  //  m_remotePort = 55000;
-  //m_localPort = strtoul(local_ip_port.c_str(), nullptr, 0);
-  //if (0 == m_localPort || ULONG_MAX == m_localPort)
-  //  m_localPort = 55300;
 }
 
 UdpMessaging::~UdpMessaging()
@@ -290,7 +283,10 @@ void UdpMessaging::stop()
 void UdpMessaging::update(const rapidjson::Value& cfg)
 {
   TRC_ENTER("");
-  //TODO
+  m_remotePort = jutils::getPossibleMemberAs<int>("RemotePort", cfg, m_remotePort);
+  m_localPort = jutils::getPossibleMemberAs<int>("LocalPort", cfg, m_localPort);
+  m_mode = parseMode(jutils::getPossibleMemberAs<std::string>("Mode", cfg, Operational_STR));
+  m_timeout = jutils::getPossibleMemberAs<int>("ServiceTimeoutMillis", cfg, m_timeout);
   TRC_LEAVE("");
 }
 
@@ -307,6 +303,18 @@ void UdpMessaging::unregisterMessageHandler()
 void UdpMessaging::sendMessage(const ustring& msg)
 {
   TRC_WAR("Not implemented");
+}
+
+UdpMessaging::Mode UdpMessaging::parseMode(const std::string& mode)
+{
+  if (Operational_STR == mode)
+    return Mode::Operational;
+  else if (Service_STR == mode)
+    return Mode::Service;
+  else if (Forwarding_STR == mode)
+    return Mode::Forwarding;
+  else
+    THROW_EX(std::logic_error, "Invalid mode: " << PAR(mode));
 }
 
 ////////////////////////////////////

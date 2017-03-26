@@ -1,0 +1,6 @@
+{
+  "RemotePort": 55000,
+  "LocalPort": 55300,
+  "Mode": "Service",
+  "ServiceTimeoutMillis": 30000
+}
