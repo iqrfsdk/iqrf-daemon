@@ -30,7 +30,7 @@
         "TopicResponse": "Iqrf/DpaResponse",
         "User": "",
         "Password": "",
-        "EnabledSSL": false
+        "EnabledSSL": false,
         "TrustStore": "/etc/letsencrypt/live/mqtt.example.com/chain.pem",
         "KeyStore": "/etc/letsencrypt/live/mqtt.example.com/cert.pem",
         "PrivateKey": "/etc/letsencrypt/live/mqtt.example.com/privkey.pem",
