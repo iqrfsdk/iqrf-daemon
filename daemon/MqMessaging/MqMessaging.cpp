@@ -12,9 +12,9 @@ MqMessaging::MqMessaging(const std::string& name)
   : m_mqChannel(nullptr)
   , m_toMqMessageQueue(nullptr)
   , m_name(name)
+  , m_localMqName("iqrf-daemon-110")
+  , m_remoteMqName("iqrf-daemon-100")
 {
-  m_localMqName = "iqrf-daemon-110";
-  m_remoteMqName = "iqrf-daemon-100";
 }
 
 MqMessaging::~MqMessaging()
@@ -51,7 +51,8 @@ void MqMessaging::stop()
 void MqMessaging::update(const rapidjson::Value& cfg)
 {
   TRC_ENTER("");
-  //TODO
+  m_localMqName = jutils::getPossibleMemberAs<std::string>("LocalMqName", cfg, m_localMqName);
+  m_remoteMqName = jutils::getPossibleMemberAs<std::string>("RemoteMqName", cfg, m_remoteMqName);
   TRC_LEAVE("");
 }
 
