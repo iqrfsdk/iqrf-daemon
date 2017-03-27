@@ -21,6 +21,6 @@ install:
   - if [[ "$CC" == "clang" ]]; then docker exec travis-ci bash -c "apt-get install -y clang"; fi
   - if [[ "$BUILD_SPI_JAVASTUB" == 1 ]]; then docker exec travis-ci bash -c "apt-get install -y default-jre default-jdk"; fi
 script:
-  - docker exec travis-ci bash -c "cd /iqrfsdk && CC=${CC} CXX=${CXX} bash scripts/build-travis.sh"
+  - docker exec travis-ci bash -c "cd /iqrfsdk/scripts && CC=${CC} CXX=${CXX} bash build-travis.sh"
 after_script:
   - docker stop travis-ci
