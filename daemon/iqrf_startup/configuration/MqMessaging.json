@@ -5,7 +5,7 @@
       "Name": "MqMessaging",
       "Properties": {
         "LocalMqName": "iqrf-daemon-110",
-        "RemoteMqName": "iqrf-daemon-100",
+        "RemoteMqName": "iqrf-daemon-100"
       }
     }
   ]
