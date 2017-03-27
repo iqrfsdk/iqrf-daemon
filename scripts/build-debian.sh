@@ -71,9 +71,10 @@ if [ -d "${LIBDPA_DIRECTORY}" ]; then
 	echo "Building libdpa ..."
 	cd ${LIBDPA_DIRECTORY}
 	bash buildMake.sh
+	cd ..
 fi
 
 # building daemon
 echo "Building daemon ..."
-cd ../../daemon
+cd ../daemon
 bash buildMake.sh

@@ -5,7 +5,7 @@
 
 set -e
 
-LIB_DIRECTORY=../lib
+LIB_DIRECTORY=/iqrfsdk/lib
 DAEMON_DIRECTORY=iqrf-daemon
 UTILS_DIRECTORY=cutils
 LIBDPA_DIRECTORY=clibdpa
@@ -72,9 +72,10 @@ if [ -d "${LIBDPA_DIRECTORY}" ]; then
 	echo "Building libdpa ..."
 	cd ${LIBDPA_DIRECTORY}
 	bash buildMake.sh
+	cd ..
 fi
 
 # building daemon
 echo "Building daemon ..."
-cd ../../daemon
+cd /iqrfsdk/daemon
 bash buildMake.sh
