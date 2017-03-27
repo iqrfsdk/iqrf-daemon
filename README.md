@@ -19,16 +19,25 @@ cd iqrf-daemon
 
 ## How to compile the daemon for AAEON UP board
 
+### Ubilinux
+
 ```Bash
 cd scripts/
-./build-up.sh
+./build-debian.sh
+```
+
+### Ubuntu
+
+```Bash
+cd scripts/
+./build-ubuntu.sh
 ```
 
 ## How to compile the daemon for Raspberry PI
 
 ```Bash
 cd scripts/
-./build-rpi.sh
+./build-raspbian.sh
 ```
 
 ## How to install the daemon to /usr/local/bin
