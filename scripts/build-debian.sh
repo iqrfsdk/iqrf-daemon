@@ -30,12 +30,13 @@ if [ -d "${PAHO_DIRECTORY}" ]; then
  	make
 	sudo make install
 	sudo ldconfig
+	cd ..
 fi
 
 # building libspi
 if [ -d "${LIBSPI_DIRECTORY}" ]; then
 	echo "Building libspi ..."
-	cd ../${LIBSPI_DIRECTORY}
+	cd ${LIBSPI_DIRECTORY}
 	if [ ! -d "${JAVA_HOME}" ]; then
 		echo "Getting and installing Oracle Java for IQRF libraries Java stubs"
 		wget --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u112-b15/jdk-8u112-linux-x64.tar.gz
@@ -46,26 +47,29 @@ if [ -d "${LIBSPI_DIRECTORY}" ]; then
 		rm -rf jdk-8u112-linux-x64.tar.gz
 	fi
 	bash buildMake.sh
+	cd ..
 fi
 
 # building libcdc
 if [ -d "${LIBCDC_DIRECTORY}" ]; then
 	echo "Building libcdc ..."
-	cd ../${LIBCDC_DIRECTORY}
+	cd ${LIBCDC_DIRECTORY}
 	bash buildMake.sh
+	cd ..
 fi
 
 # building cutils
 if [ -d "${UTILS_DIRECTORY}" ]; then
 	echo "Building utils ..."
-	cd ../${UTILS_DIRECTORY}
+	cd ${UTILS_DIRECTORY}
 	bash buildMake.sh
+	cd ..
 fi
 
 # building libdpa
 if [ -d "${LIBDPA_DIRECTORY}" ]; then
 	echo "Building libdpa ..."
-	cd ../${LIBDPA_DIRECTORY}
+	cd ${LIBDPA_DIRECTORY}
 	bash buildMake.sh
 fi
 

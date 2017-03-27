@@ -14,6 +14,7 @@ PAHO_DIRECTORY=paho.mqtt.c
 
 if [ ! -d "${LIB_DIRECTORY}" ]; then
 	mkdir ${LIB_DIRECTORY}
+	cd ..
 fi
 cd ${LIB_DIRECTORY}
 
@@ -70,5 +71,4 @@ else
 	cd ${PAHO_DIRECTORY}
 	echo "Pulling paho ..."
 	git pull origin
-	cd ..
 fi

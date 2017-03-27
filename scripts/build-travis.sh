@@ -25,33 +25,37 @@ if [ -d "${PAHO_DIRECTORY}" ]; then
  	make
 	make install
 	ldconfig
+	cd ..
 fi
 
 # building libspi
 if [ -d "${LIBSPI_DIRECTORY}" ]; then
 	echo "Building libspi ..."
-	cd ../${LIBSPI_DIRECTORY}
+	cd ${LIBSPI_DIRECTORY}
 	bash buildMake.sh
+	cd ..
 fi
 
 # building libcdc
 if [ -d "${LIBCDC_DIRECTORY}" ]; then
 	echo "Building libcdc ..."
-	cd ../${LIBCDC_DIRECTORY}
+	cd ${LIBCDC_DIRECTORY}
 	bash buildMake.sh
+	cd ..
 fi
 
 # building cutils
 if [ -d "${UTILS_DIRECTORY}" ]; then
 	echo "Building utils ..."
-	cd ../${UTILS_DIRECTORY}
+	cd ${UTILS_DIRECTORY}
 	bash buildMake.sh
+	cd ..
 fi
 
 # building libdpa
 if [ -d "${LIBDPA_DIRECTORY}" ]; then
 	echo "Building libdpa ..."
-	cd ../${LIBDPA_DIRECTORY}
+	cd ${LIBDPA_DIRECTORY}
 	bash buildMake.sh
 fi
 

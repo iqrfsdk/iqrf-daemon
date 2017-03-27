@@ -35,38 +35,42 @@ if [ -d "${PAHO_DIRECTORY}" ]; then
  	make
 	sudo make install
 	sudo ldconfig
+	cd ..
 fi
 
 # building libspi
 if [ -d "${LIBSPI_DIRECTORY}" ]; then
 	echo "Building libspi ..."
-	cd ../${LIBSPI_DIRECTORY}
+	cd ${LIBSPI_DIRECTORY}
 	if [! grep -q "ppa:webupd8team/java" /etc/apt/sources.list /etc/apt/sources.list.d/*]; then
 		sudo add-apt-repository ppa:webupd8team/java
 		sudo apt-get update
 	fi
 	sudo apt-get install oracle-java8-installer
 	bash buildMake.sh
+	cd ..
 fi
 
 # building libcdc
 if [ -d "${LIBCDC_DIRECTORY}" ]; then
 	echo "Building libcdc ..."
-	cd ../${LIBCDC_DIRECTORY}
+	cd ${LIBCDC_DIRECTORY}
 	bash buildMake.sh
+	cd ..
 fi
 
 # building cutils
 if [ -d "${UTILS_DIRECTORY}" ]; then
 	echo "Building utils ..."
-	cd ../${UTILS_DIRECTORY}
+	cd ${UTILS_DIRECTORY}
 	bash buildMake.sh
+	cd ..
 fi
 
 # building libdpa
 if [ -d "${LIBDPA_DIRECTORY}" ]; then
 	echo "Building libdpa ..."
-	cd ../${LIBDPA_DIRECTORY}
+	cd ${LIBDPA_DIRECTORY}
 	bash buildMake.sh
 fi
 
