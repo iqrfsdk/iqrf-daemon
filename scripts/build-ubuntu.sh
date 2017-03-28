@@ -5,7 +5,7 @@
 
 set -e
 
-LIB_DIRECTORY=/iqrfsdk/lib
+LIB_DIRECTORY=../lib
 DAEMON_DIRECTORY=iqrf-daemon
 UTILS_DIRECTORY=cutils
 LIBDPA_DIRECTORY=clibdpa
@@ -77,5 +77,5 @@ fi
 
 # building daemon
 echo "Building daemon ..."
-cd /iqrfsdk/daemon
+cd ../daemon
 bash buildMake.sh
