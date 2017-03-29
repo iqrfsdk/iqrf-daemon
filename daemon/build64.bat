@@ -5,7 +5,7 @@ set buildexp=build\\Visual_Studio_14_2015\\x64
 
 set currentdir=%cd%
 set builddir=.\\%buildexp%
-set libsdir=..\\libs
+set libsdir=..\\..
 
 mkdir %builddir%
 
