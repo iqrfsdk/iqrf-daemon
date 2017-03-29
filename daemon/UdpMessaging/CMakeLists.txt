@@ -2,10 +2,12 @@ project(UdpMessaging)
 
 set(UdpMessaging_SRC_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/UdpMessaging.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/UdpMessagingTransaction.cpp
 )
 
 set(UdpMessaging_INC_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/UdpMessaging.h
+	${CMAKE_CURRENT_SOURCE_DIR}/UdpMessagingTransaction.h
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/MessagingController)
