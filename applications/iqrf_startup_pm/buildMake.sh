@@ -6,6 +6,7 @@ buildexp=build/Unix_Makefiles
 LIB_DIRECTORY=../../libs
 currentdir=$PWD
 builddir=./${buildexp}
+LIB_DIRECTORY=${1:-../../..}
 
 mkdir -p ${builddir}
 

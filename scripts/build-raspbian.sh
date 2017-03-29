@@ -5,7 +5,7 @@
 
 set -e
 
-LIB_DIRECTORY=../libs
+LIB_DIRECTORY=${1:-../..}
 DAEMON_DIRECTORY=iqrf-daemon
 UTILS_DIRECTORY=cutils
 LIBDPA_DIRECTORY=clibdpa
@@ -17,7 +17,7 @@ export JAVA_HOME=/usr/lib/jvm/jdk-8-oracle-arm32-vfp-hflt
 export JAVA_INCLUDE_PATH=${JAVA_HOME}/include
 export JAVA_INCLUDE_PATH2=${JAVA_INCLUDE_PATH}/linux
 
-bash download-dependencies.sh
+bash download-dependencies.sh ${LIB_DIRECTORY}
 
 cd ${LIB_DIRECTORY}
 
@@ -69,4 +69,4 @@ fi
 # building daemon
 echo "Building daemon ..."
 cd ../daemon
-bash buildMake.sh
+bash buildMake.sh ${LIB_DIRECTORY}

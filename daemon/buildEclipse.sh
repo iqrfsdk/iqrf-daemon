@@ -3,7 +3,7 @@ project=clibudp
 #expected build dir structure
 buildexp=build/Eclipse_CDT4-Unix_Makefiles
 
-LIB_DIRECTORY=../libs
+LIB_DIRECTORY=${1:-../..}
 currentdir=$PWD
 builddir=./${buildexp}
 

@@ -5,6 +5,8 @@ buildexp=build/Unix_Makefiles
 
 currentdir=$PWD
 builddir=./${buildexp}
+LIB_DIRECTORY=${1:-../../..}
+
 mkdir -p ${builddir}
 
 #get path to iqrfd libs

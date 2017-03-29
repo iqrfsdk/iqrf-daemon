@@ -5,6 +5,8 @@ buildexp=build/Unix_Makefiles
 
 currentdir=$PWD
 builddir=./${buildexp}
+LIB_DIRECTORY=${1:-../../..}
+
 mkdir -p ${builddir}
 
 #get path to iqrfd libs
@@ -14,7 +16,7 @@ iqrfd=${PWD}
 popd
 
 #get path to cutils libs
-cutils=../../libs/cutils/${buildexp}
+cutils=${LIB_DIRECTORY}/cutils/${buildexp}
 pushd ${cutils}
 cutils=${PWD}
 popd
