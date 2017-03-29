@@ -28,8 +28,6 @@ install:
   - if [[ "$BUILD_SPI_JAVASTUB" == 1 ]]; then docker exec travis-ci bash -c "apt-get install -y default-jre default-jdk"; fi
 script:
   - docker exec travis-ci bash -c "cd /iqrfsdk/scripts && CC=${CC} CXX=${CXX} bash build-travis.sh"
-  - if [[ "$IQRF_APPS" == "iqrfapp" ]]; then docker exec travis-ci bash -c "cd /iqrfsdk/applications/iqrfapp && CC=${CC} CXX=${CXX} bash buildMake.sh"; fi
-  - if [[ "$IQRF_APPS" == "iqrf_ide_dummy" ]]; then docker exec travis-ci bash -c "cd /iqrfsdk/applications/iqrf_ide_dummy && CC=${CC} CXX=${CXX} bash buildMake.sh"; fi
-  - if [[ "$IQRF_APPS" == "iqrf_startup_pm" ]]; then docker exec travis-ci bash -c "cd /iqrfsdk/applications/iqrf_startup_pm && CC=${CC} CXX=${CXX} bash buildMake.sh"; fi
+  - if [[ -v IQRF_APPS ]]; then docker exec travis-ci bash -c "cd /iqrfsdk/applications/$IQRF_APPS && CC=${CC} CXX=${CXX} bash buildMake.sh"; fi
 after_script:
   - docker stop travis-ci
