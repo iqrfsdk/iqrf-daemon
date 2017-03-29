@@ -9,6 +9,8 @@ compiler:
 env:
   - BUILD_SPI_JAVASTUB=0
   - BUILD_SPI_JAVASTUB=1
+  - BUILD_SPI_JAVASTUB=0 APPS=iqrfapp
+  - BUILD_SPI_JAVASTUB=1 APPS=iqrfapp
 matrix:
   allow_failures:
     - compiler: clang
@@ -22,5 +24,6 @@ install:
   - if [[ "$BUILD_SPI_JAVASTUB" == 1 ]]; then docker exec travis-ci bash -c "apt-get install -y default-jre default-jdk"; fi
 script:
   - docker exec travis-ci bash -c "cd /iqrfsdk/scripts && CC=${CC} CXX=${CXX} bash build-travis.sh"
+  - if [[ "$APPS" == "iqrfapp" ]]; then docker exec travis-ci bash -c "cd /iqrfsdk/applications/iqrfapp && CC=${CC} CXX=${CXX} bash buildMake.sh"; fi
 after_script:
   - docker stop travis-ci
