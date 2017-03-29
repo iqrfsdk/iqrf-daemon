@@ -5,29 +5,30 @@ set buildexp=build\\Visual_Studio_14_2015\\x64
 
 set currentdir=%cd%
 set builddir=.\\%buildexp%
+set libsdir=..\\libs
 
 mkdir %builddir%
 
 rem //get path to clibcdc libs
-set clibcdc=..\\..\\clibcdc\\%buildexp%
+set clibcdc=%libsdir%\\clibcdc\\%buildexp%
 pushd %clibcdc%
 set clibcdc=%cd%
 popd
 
 rem //get path to clibspi libs
-set clibspi=..\\..\\clibspi\\%buildexp%
+set clibspi=%libsdir%\\clibspi\\%buildexp%
 pushd %clibspi%
 set clibspi=%cd%
 popd
 
 rem //get path to clibdpa libs
-set clibdpa=..\\..\\clibdpa\\%buildexp%
+set clibdpa=%libsdir%\\clibdpa\\%buildexp%
 pushd %clibdpa%
 set clibdpa=%cd%
 popd
 
 rem //get path to cutils libs
-set cutils=..\\..\\cutils\\%buildexp%
+set cutils=%libsdir%\\cutils\\%buildexp%
 pushd %cutils%
 set cutils=%cd%
 popd

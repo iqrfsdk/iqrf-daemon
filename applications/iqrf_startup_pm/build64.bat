@@ -9,25 +9,25 @@ set builddir=.\\%buildexp%
 mkdir %builddir%
 
 rem //get path to clibcdc libs
-set clibcdc=..\\..\\..\\clibcdc\\%buildexp%
+set clibcdc=..\\..\\libs\\clibcdc\\%buildexp%
 pushd %clibcdc%
 set clibcdc=%cd%
 popd
 
 rem //get path to clibspi libs
-set clibspi=..\\..\\..\\clibspi\\%buildexp%
+set clibspi=..\\..\\libs\\clibspi\\%buildexp%
 pushd %clibspi%
 set clibspi=%cd%
 popd
 
 rem //get path to clibdpa libs
-set clibdpa=..\\..\\..\\clibdpa\\%buildexp%
+set clibdpa=..\\..\\libs\\clibdpa\\%buildexp%
 pushd %clibdpa%
 set clibdpa=%cd%
 popd
 
 rem //get path to cutils libs
-set cutils=..\\..\\..\\cutils\\%buildexp%
+set cutils=..\\..\\libs\\cutils\\%buildexp%
 pushd %cutils%
 set cutils=%cd%
 popd

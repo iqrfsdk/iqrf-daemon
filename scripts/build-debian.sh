@@ -5,7 +5,7 @@
 
 set -e
 
-LIB_DIRECTORY=../lib
+LIB_DIRECTORY=../libs
 DAEMON_DIRECTORY=iqrf-daemon
 UTILS_DIRECTORY=cutils
 LIBDPA_DIRECTORY=clibdpa
@@ -27,7 +27,7 @@ if [ -d "${PAHO_DIRECTORY}" ]; then
 	cd ${PAHO_DIRECTORY}
 	sudo apt-get install build-essential gcc make cmake libssl-dev
 	cmake -G "Unix Makefiles" -DPAHO_WITH_SSL=TRUE -DPAHO_BUILD_DOCUMENTATION=FALSE -DPAHO_BUILD_SAMPLES=TRUE .
- 	make
+	make
 	sudo make install
 	sudo ldconfig
 	cd ..

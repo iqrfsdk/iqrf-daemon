@@ -4,7 +4,7 @@
 
 set -e
 
-LIB_DIRECTORY=../lib
+LIB_DIRECTORY=../libs
 DAEMON_DIRECTORY=iqrf-daemon
 UTILS_DIRECTORY=cutils
 LIBDPA_DIRECTORY=clibdpa

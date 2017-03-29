@@ -5,7 +5,7 @@
 
 set -e
 
-LIB_DIRECTORY=../lib
+LIB_DIRECTORY=../libs
 DAEMON_DIRECTORY=iqrf-daemon
 UTILS_DIRECTORY=cutils
 LIBDPA_DIRECTORY=clibdpa
@@ -22,7 +22,7 @@ if [ -d "${PAHO_DIRECTORY}" ]; then
 	echo "Building paho ..."
 	cd ${PAHO_DIRECTORY}
 	cmake -G "Unix Makefiles" -DPAHO_WITH_SSL=TRUE -DPAHO_BUILD_DOCUMENTATION=FALSE -DPAHO_BUILD_SAMPLES=TRUE .
- 	make
+	make
 	make install
 	ldconfig
 	cd ..

@@ -15,7 +15,7 @@ set iqrfd=%cd%
 popd
 
 rem //get path to cutils libs
-set cutils=..\\..\\..\\cutils\\%buildexp%
+set cutils=..\\..\\libs\\cutils\\%buildexp%
 pushd %cutils%
 set cutils=%cd%
 popd
