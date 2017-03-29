@@ -5,18 +5,37 @@ set buildexp=build\\Visual_Studio_12_2013\\x86
 
 set currentdir=%cd%
 set builddir=.\\%buildexp%
+set libsdir=..\\libs
 
 mkdir %builddir%
 
 rem //get path to clibcdc libs
-set clibcdc=..\\..\\clibcdc\\%buildexp%
+set clibcdc=%libsdir%\\clibcdc\\%buildexp%
 pushd %clibcdc%
 set clibcdc=%cd%
 popd
 
+rem //get path to clibspi libs
+set clibspi=%libsdir%\\clibspi\\%buildexp%
+pushd %clibspi%
+set clibspi=%cd%
+popd
+
+rem //get path to clibdpa libs
+set clibdpa=%libsdir%\\clibdpa\\%buildexp%
+pushd %clibdpa%
+set clibdpa=%cd%
+popd
+
+rem //get path to cutils libs
+set cutils=%libsdir%\\cutils\\%buildexp%
+pushd %cutils%
+set cutils=%cd%
+popd
+
 rem //launch cmake to generate build environment
 pushd %builddir%
-cmake -G "Visual Studio 12 2013" -Dclibcdc_DIR:PATH=%clibcdc% %currentdir%
+cmake -G "Visual Studio 12 2013" -Dclibdpa_DIR:PATH=%clibdpa% -Dcutils_DIR:PATH=%cutils% -Dclibcdc_DIR:PATH=%clibcdc% -Dclibspi_DIR:PATH=%clibspi% %currentdir%
 popd
 
 rem //build from generated build environment
