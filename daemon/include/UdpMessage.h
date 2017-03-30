@@ -1,3 +1,19 @@
+/**
+ * Copyright 2016-2017 MICRORISC s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #pragma once
 
 #include <string>
@@ -49,13 +65,13 @@ enum UdpGwStatus
   trStatus,   //DB1 TR module status(see the IQRF SPI protocol)
   unused2,    //DB2 no used
   supplyExt,  //DB3 0x01 supplied from external source
-  timeSec,    //DB4 GW time – seconds(see Time and date coding)
-  timeMin,    //DB5 GW time – minutes
-  timeHour,    //DB6 GW time – hours
-  timeWday,    //DB7 GW date – day of the week
-  timeMday,    //DB8 GW date – day
-  timeMon,    //DB9 GW date – month
-  timeYear,   //DB10 GW date – year
+  timeSec,    //DB4 GW time â€“ seconds(see Time and date coding)
+  timeMin,    //DB5 GW time â€“ minutes
+  timeHour,    //DB6 GW time â€“ hours
+  timeWday,    //DB7 GW date â€“ day of the week
+  timeMday,    //DB8 GW date â€“ day
+  timeMon,    //DB9 GW date â€“ month
+  timeYear,   //DB10 GW date â€“ year
   unused11,   //DB11 no used
   unused12,   //DB12 no used
 };
