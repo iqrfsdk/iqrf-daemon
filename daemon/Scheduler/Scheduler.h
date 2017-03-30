@@ -1,3 +1,19 @@
+/**
+ * Copyright 2016-2017 MICRORISC s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #pragma once
 
 #include "JsonUtils.h"
@@ -43,7 +59,7 @@ private:
   TaskHandle addScheduleRecordUnlocked(std::shared_ptr<ScheduleRecord>& record);
   TaskHandle addScheduleRecord(std::shared_ptr<ScheduleRecord>& record);
   void addScheduleRecords(std::vector<std::shared_ptr<ScheduleRecord>>& records);
-  
+
   void removeScheduleRecordUnlocked(std::shared_ptr<ScheduleRecord>& record);
   void removeScheduleRecord(std::shared_ptr<ScheduleRecord>& record);
   void removeScheduleRecords(std::vector<std::shared_ptr<ScheduleRecord>>& records);
@@ -73,7 +89,7 @@ private:
 };
 
 //TODO remove after testing
-#define ENH_SCHED 
+#define ENH_SCHED
 
 class ScheduleRecord {
 public:
@@ -97,7 +113,7 @@ private:
   void shuffleHandle(); //change handle it if duplicit exists
   //The only method can do it
   friend void shuffleDuplicitHandle(ScheduleRecord& rec);
-  
+
   void init();
 
   void parse(const std::string& rec);
@@ -130,5 +146,3 @@ private:
 
   Scheduler::TaskHandle m_taskHandle;
 };
-
-
