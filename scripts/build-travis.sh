@@ -6,7 +6,6 @@
 set -e
 
 LIB_DIRECTORY=${1:-../..}
-DAEMON_DIRECTORY=iqrf-daemon
 UTILS_DIRECTORY=cutils
 LIBDPA_DIRECTORY=clibdpa
 LIBCDC_DIRECTORY=clibcdc
@@ -28,37 +27,15 @@ if [ -d "${PAHO_DIRECTORY}" ]; then
 	cd ..
 fi
 
-# building libspi
-if [ -d "${LIBSPI_DIRECTORY}" ]; then
-	echo "Building libspi ..."
-	cd ${LIBSPI_DIRECTORY}
-	bash buildMake.sh
-	cd ..
-fi
-
-# building libcdc
-if [ -d "${LIBCDC_DIRECTORY}" ]; then
-	echo "Building libcdc ..."
-	cd ${LIBCDC_DIRECTORY}
-	bash buildMake.sh
-	cd ..
-fi
-
-# building cutils
-if [ -d "${UTILS_DIRECTORY}" ]; then
-	echo "Building utils ..."
-	cd ${UTILS_DIRECTORY}
-	bash buildMake.sh
-	cd ..
-fi
-
-# building libdpa
-if [ -d "${LIBDPA_DIRECTORY}" ]; then
-	echo "Building libdpa ..."
-	cd ${LIBDPA_DIRECTORY}
-	bash buildMake.sh
-	cd ..
-fi
+# building clibspi, clibcdc, cutils, clibdpa
+for repository in ${LIBSPI_DIRECTORY} ${LIBCDC_DIRECTORY} ${UTILS_DIRECTORY} ${LIBDPA_DIRECTORY}; do
+	if [ -d "${repository}" ]; then
+		echo "Building ${repository} ..."
+		cd ${repository}
+		bash buildMake.sh
+		cd ..
+	fi
+done
 
 # building daemon
 echo "Building daemon ..."

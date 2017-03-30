@@ -27,7 +27,7 @@ for repository in ${UTILS_DIRECTORY} ${LIBDPA_DIRECTORY} ${LIBCDC_DIRECTORY} ${L
 		git pull origin
 		cd ..
 	fi
-done;
+done
 
 # getting paho
 if [ ! -d "${PAHO_DIRECTORY}" ]; then
