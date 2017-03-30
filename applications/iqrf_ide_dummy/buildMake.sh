@@ -1,4 +1,4 @@
-project=iqrfapp
+project=iqrf_ide_dummy
 
 #expected build dir structure
 buildexp=build/Unix_Makefiles
@@ -16,7 +16,7 @@ iqrfd=${PWD}
 popd
 
 #get path to cutils libs
-cutils=${LIB_DIRECTORY}/cutils/${buildexp}
+cutils=../../libs/cutils/${buildexp}
 pushd ${cutils}
 cutils=${PWD}
 popd

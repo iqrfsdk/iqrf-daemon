@@ -3,7 +3,7 @@ project=clibudp
 #expected build dir structure
 buildexp=build/Unix_Makefiles
 
-LIB_DIRECTORY=../lib
+LIB_DIRECTORY=${1:-../..}
 currentdir=$PWD
 builddir=./${buildexp}
 

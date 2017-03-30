@@ -1,11 +1,12 @@
-project=clibudp
+project=iqrf_startup_pm
 
 #expected build dir structure
-buildexp=build/Eclipse_CDT4-Unix_Makefiles
+buildexp=build/Unix_Makefiles
 
-LIB_DIRECTORY=${1:-../..}
+LIB_DIRECTORY=../../libs
 currentdir=$PWD
 builddir=./${buildexp}
+LIB_DIRECTORY=${1:-../../..}
 
 mkdir -p ${builddir}
 
@@ -33,10 +34,16 @@ pushd ${cutils}
 cutils=$PWD
 popd
 
+#get path to iqrfd libs
+iqrfd=../../daemon/${buildexp}
+pushd ${iqrfd}
+iqrfd=${PWD}
+popd
+
 #launch cmake to generate build environment
 pushd ${builddir}
 pwd
-cmake -G "Eclipse CDT4 - Unix Makefiles" -Dclibcdc_DIR:PATH=${clibcdc} -Dclibspi_DIR:PATH=${clibspi} -Dclibdpa_DIR:PATH=${clibdpa} -Dcutils_DIR:PATH=${cutils} ${currentdir}
+cmake -G "Unix Makefiles" -Dclibcdc_DIR:PATH=${clibcdc} -Dclibspi_DIR:PATH=${clibspi} -Dclibdpa_DIR:PATH=${clibdpa} -Dcutils_DIR:PATH=${cutils} -Diqrfd_DIR:PATH=${iqrfd} ${currentdir} -DCMAKE_BUILD_TYPE=Debug
 popd
 
 #build from generated build environment
