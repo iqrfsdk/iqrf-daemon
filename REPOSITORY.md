@@ -1,4 +1,4 @@
-# IQRF GW daemon repository
+# Repository
 
 http://repos.iqrfsdk.org/
 
@@ -18,7 +18,7 @@ sudo add-apt-repository "deb http://repos.iqrfsdk.org xenial testing"
 sudo apt-get update
 ```
 
-## Installthe IQRF daemon
+## Install the daemon
 
 ```Bash
 sudo apt-get install iqrf-daemon
@@ -43,7 +43,7 @@ Configure components JSON file and restart the service.
 sudo systemctl restart iqrf-daemon.service
 ```
 
-## Content of the iqrf-daemon (v0.0.1) package 
+## Content of iqrf-daemon (v0.0.1) package 
 
 ```Bash
 dpkg -L iqrf-daemon
@@ -74,7 +74,7 @@ dpkg -L iqrf-daemon
 /etc/iqrf-daemon/ClientServicePlain.json
 ```
 
-## Content of the libpaho.mqtt.c (v1.1.0) package 
+## Content of libpaho.mqtt.c (v1.1.0) package 
 
 ```Bash
 dpkg -L libpaho.mqtt.c
