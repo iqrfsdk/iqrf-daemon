@@ -16,6 +16,7 @@
 
 #pragma once
 
+//#include "UdpMessaging.h"
 #include "ISerializer.h"
 #include "IMessaging.h"
 #include "IClient.h"
@@ -31,7 +32,9 @@ typedef std::basic_string<unsigned char> ustring;
 
 class IChannel;
 class DpaHandler;
-class UdpMessaging;
+class IDpaMessageForwarding;
+class IDpaExclusiveAccess;
+//class UdpMessaging;
 
 class ComponentDescriptor {
 public:
@@ -54,6 +57,12 @@ public:
 class MessagingController : public IDaemon
 {
 public:
+  enum class Mode {
+    Operational,
+    Service,
+    Forwarding
+  };
+
   MessagingController(const MessagingController &) = delete;
 
   static MessagingController& getController();
@@ -66,22 +75,26 @@ public:
 
   void exit();
 
-  void exclusiveAccess(bool mode);
-  IChannel* getIqrfInterface();
+  void setMode(Mode mode);
+
+  //void exclusiveAccess(bool mode);
+  //IChannel* getIqrfInterface();
 
 private:
+  Mode m_mode;
+
   MessagingController();
   virtual ~MessagingController();
 
   void startTrace();
   void startIqrfIf();
-  void startUdp();
+  //void startUdp();
   void startDpa();
   void startClients();
   void startScheduler();
 
   void stopIqrfIf();
-  void stopUdp();
+  //void stopUdp();
   void stopDpa();
   void stopClients();
   void stopScheduler();
@@ -105,7 +118,10 @@ private:
   std::map<std::string, std::unique_ptr<IClient>> m_clients;
   std::map<std::string, std::unique_ptr<IMessaging>> m_messagings;
 
-  UdpMessaging* m_udpMessaging = nullptr;
+  //UdpMessaging* m_udpMessaging = nullptr;
+  IDpaMessageForwarding* m_dpaMessageForwarding = nullptr;
+  IDpaExclusiveAccess* m_dpaExclusiveAccess = nullptr;
+
   IScheduler* m_scheduler = nullptr;
 
   std::function<void(const DpaMessage&)> m_asyncHandler;

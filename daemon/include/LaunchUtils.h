@@ -69,19 +69,3 @@ public:                                                                         
 void init_##ComponentClassName() {                                                        \
   static __Loader_##ComponentClassName cs;                                                \
 }
-
-//#define CREATE_CLIENT_SERVICE(clientServiceClassName)                                         \
-//std::shared_ptr<IClient> __launch_create_##clientServiceClassName(const std::string& iname) { \
-//   return std::shared_ptr<IClient>(new clientServiceClassName(iname)); }                      \
-//                                                                                              \
-//class __Loader_##clientServiceClassName {                                                     \
-//public:                                                                                       \
-//  __Loader_##clientServiceClassName() {                                                       \
-//      StaticBuildFunctionMap::get().setFunction("__launch_create_" #clientServiceClassName,   \
-//        (void*)&__launch_create_##clientServiceClassName);                                    \
-//  }                                                                                           \
-//};                                                                                            \
-//                                                                                              \
-//void init_##clientServiceClassName() {                                                        \
-//  static __Loader_##clientServiceClassName cs;                                                \
-//}

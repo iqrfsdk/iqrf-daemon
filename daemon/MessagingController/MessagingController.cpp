@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "UdpMessaging.h"
 #include "IqrfLogging.h"
 #include "LaunchUtils.h"
 #include "MessagingController.h"
@@ -34,6 +35,24 @@ TRC_INIT()
 
 using namespace rapidjson;
 
+/*
+const std::string Operational_STR("Operational");
+const std::string Service_STR("Service");
+const std::string Forwarding_STR("Forwarding");
+
+Mode MessagingController::parseMode(const std::string& mode)
+{
+  if (Operational_STR == mode)
+    return Mode::Operational;
+  else if (Service_STR == mode)
+    return Mode::Service;
+  else if (Forwarding_STR == mode)
+    return Mode::Forwarding;
+  else
+    THROW_EX(std::logic_error, "Invalid mode: " << PAR(mode));
+}
+*/
+
 MessagingController& MessagingController::getController()
 {
   static MessagingController mc;
@@ -48,23 +67,55 @@ void MessagingController::executeDpaTransaction(DpaTransaction& dpaTransaction)
 //called from task queue thread passed by lambda in task queue ctor
 void MessagingController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
 {
-  //if (m_exclusiveMode) {
-  if ( m_udpMessaging && m_udpMessaging->getMode() == UdpMessaging::Mode::Service) {
-    TRC_DBG("Dpa interface is in exclusiveMode");
-    dpaTransaction->processFinish(DpaRequest::kCreated);
-  }
-  else if (m_dpaHandler) {
-    try {
-      m_dpaHandler->ExecuteDpaTransaction(*dpaTransaction);
+  switch (m_mode) {
+
+    //TODO lock mutex before change mode
+  case Mode::Operational:
+  {
+    if (m_dpaHandler) {
+      try {
+        m_dpaHandler->ExecuteDpaTransaction(*dpaTransaction);
+      }
+      catch (std::exception& e) {
+        CATCH_EX("Error in ExecuteDpaTransaction: ", std::exception, e);
+        dpaTransaction->processFinish(DpaRequest::kCreated);
+      }
     }
-    catch (std::exception& e) {
-      CATCH_EX("Error in ExecuteDpaTransaction: ", std::exception, e);
+    else {
+      TRC_ERR("Dpa interface is not working");
       dpaTransaction->processFinish(DpaRequest::kCreated);
     }
   }
-  else {
-    TRC_ERR("Dpa interface is not working");
+  break;
+
+  case Mode::Forwarding:
+  {
+    if (m_dpaHandler && m_dpaMessageForwarding) {
+      auto dpaTransactionSniffer = m_dpaMessageForwarding->getDpaTransactionForward(dpaTransaction);
+      try {
+        m_dpaMessageForwarding->sendDpaRequestForward(dpaTransaction);
+        m_dpaHandler->ExecuteDpaTransaction(*dpaTransactionSniffer);
+      }
+      catch (std::exception& e) {
+        CATCH_EX("Error in ExecuteDpaTransaction: ", std::exception, e);
+        dpaTransaction->processFinish(DpaRequest::kCreated);
+      }
+    }
+    else {
+      TRC_ERR("Dpa interface is not working");
+      dpaTransaction->processFinish(DpaRequest::kCreated);
+    }
+  }
+  break;
+
+  case Mode::Service:
+  {
+    TRC_DBG("Dpa interface is in exclusiveMode");
     dpaTransaction->processFinish(DpaRequest::kCreated);
+  }
+  break;
+
+  default:;
   }
 
   //Pet WatchDog
@@ -95,8 +146,8 @@ MessagingController::MessagingController()
   , m_dpaHandler(nullptr)
   , m_dpaTransactionQueue(nullptr)
   , m_scheduler(nullptr)
+  , m_mode(Mode::Operational)
 {
-  //m_exclusiveMode = false;
 }
 
 void MessagingController::loadConfiguration(const std::string& cfgFileName)
@@ -172,31 +223,47 @@ void MessagingController::watchDogPet()
   m_lastRefreshTime = std::chrono::system_clock::now();
 }
 
-void MessagingController::exclusiveAccess(bool mode)
+void MessagingController::setMode(Mode mode)
 {
-  TRC_ENTER(PAR(mode));
-  if (mode == m_exclusiveMode)
-    return;
-  m_exclusiveMode = mode;
-  if (mode) {
-    TRC_INF("Exclusive mode enabled");
-    m_exclusiveMode = mode;
-    //stopClients();
-    //stopScheduler();
-    stopDpa();
+  TRC_ENTER(NAME_PAR(mode, (int)mode));
+  switch (mode) {
+
+  //TODO lock mutex before change mode
+  case Mode::Operational:
+  {
+    if (m_mode == Mode::Service) {
+      m_dpaExclusiveAccess->resetExclusive();
+      startDpa();
+    }
+    TRC_INF("Set Operational mode");
+    m_mode = mode;
   }
-  else {
-    TRC_INF("Exclusive mode disabled");
-    startDpa();
-    //startScheduler();
-    //startClients();
+  break;
+
+  case Mode::Forwarding:
+  {
+    if (m_mode == Mode::Service) {
+      m_dpaExclusiveAccess->resetExclusive();
+      startDpa();
+    }
+    TRC_INF("Set Forwarding mode");
+    m_mode = mode;
+  }
+  break;
+
+  case Mode::Service:
+  {
+    m_mode = mode;
+    stopDpa();
+    m_dpaExclusiveAccess->setExclusive(m_iqrfInterface);
+    TRC_INF("Set Forwarding mode");
+    m_mode = mode;
+  }
+  break;
+
+  default:;
   }
   TRC_LEAVE("");
-}
-
-IChannel* MessagingController::getIqrfInterface()
-{
-  return m_iqrfInterface;
 }
 
 ///////// STARTS ////////////////////////////
@@ -249,21 +316,6 @@ void MessagingController::startIqrfIf()
     executeDpaTransactionFunc(trans);
   });
 
-}
-
-void MessagingController::startUdp()
-{
-  auto fnd = m_componentMap.find("UdpMessaging");
-  if (fnd != m_componentMap.end() && fnd->second.m_enabled) {
-    try {
-      m_udpMessaging = ant_new UdpMessaging(this);
-      m_udpMessaging->update(fnd->second.m_doc);
-      m_udpMessaging->start();
-    }
-    catch (std::exception &e) {
-      CATCH_EX("Cannot create UdpMessaging ", std::exception, e);
-    }
-  }
 }
 
 void MessagingController::startDpa()
@@ -319,6 +371,10 @@ void MessagingController::loadSerializerComponent(const ComponentDescriptor& com
     //parse instance descriptor
     jutils::assertIsObject("Instances[]{}", *itr);
     std::string instanceName = jutils::getMemberAs<std::string>("Name", *itr);
+    bool enabled = jutils::getPossibleMemberAs<bool>("Enabled", *itr, true);
+    if (!enabled)
+      continue;
+
     const auto propertiesMember = jutils::getMember("Properties", *itr);
     const rapidjson::Value& properties = propertiesMember->value;
     jutils::assertIsObject("Properties{}", properties);
@@ -353,6 +409,10 @@ void MessagingController::loadMessagingComponent(const ComponentDescriptor& comp
     //parse instance descriptor
     jutils::assertIsObject("Instances[]{}", *itr);
     std::string instanceName = jutils::getMemberAs<std::string>("Name", *itr);
+    bool enabled = jutils::getPossibleMemberAs<bool>("Enabled", *itr, true);
+    if (!enabled)
+      continue;
+
     const auto propertiesMember = jutils::getMember("Properties", *itr);
     const rapidjson::Value& properties = propertiesMember->value;
     jutils::assertIsObject("Properties{}", properties);
@@ -363,6 +423,16 @@ void MessagingController::loadMessagingComponent(const ComponentDescriptor& comp
 
     //get properties
     messaging->update(properties);
+
+    //temporary hack to get other ifaces implemented by UdpMessaging
+    if (componentDescriptor.m_componentName == "UdpMessaging") {
+      UdpMessaging* udpMessaging = dynamic_cast<UdpMessaging*>(messaging.get());
+      if (udpMessaging != nullptr) {
+        m_dpaExclusiveAccess = udpMessaging;
+        m_dpaMessageForwarding = udpMessaging;
+        udpMessaging->setDaemon(this);
+      }
+    }
 
     //register instance
     auto ret = m_messagings.insert(std::make_pair(messaging->getName(), std::move(messaging)));
@@ -387,6 +457,10 @@ void MessagingController::loadClientComponent(const ComponentDescriptor& compone
     //parse instance descriptor
     jutils::assertIsObject("Instances[]{}", *itr);
     std::string instanceName = jutils::getMemberAs<std::string>("Name", *itr);
+    bool enabled = jutils::getPossibleMemberAs<bool>("Enabled", *itr, true);
+    if (!enabled)
+      continue;
+
     std::string messagingName = jutils::getMemberAs<std::string>("Messaging", *itr);
     std::vector<std::string> serializersVector = jutils::getMemberAsVector<std::string>("Serializers", *itr);
     const auto propertiesMember = jutils::getMember("Properties", *itr);
@@ -498,10 +572,11 @@ void MessagingController::start()
 
   startTrace();
   startIqrfIf();
-  startUdp();
   startDpa();
   startScheduler();
   startClients();
+
+  setMode(Mode::Forwarding);
 
   TRC_INF("daemon started");
   TRC_LEAVE("");
@@ -520,13 +595,6 @@ void MessagingController::stopIqrfIf()
 
   delete m_iqrfInterface;
   m_iqrfInterface = nullptr;
-}
-
-void MessagingController::stopUdp()
-{
-  m_udpMessaging->stop();
-  delete m_udpMessaging;
-  m_udpMessaging = nullptr;
 }
 
 void MessagingController::stopDpa()
@@ -570,7 +638,6 @@ void MessagingController::stop()
   stopClients();
   stopScheduler();
   stopDpa();
-  stopUdp();
   stopIqrfIf();
   stopTrace();
 

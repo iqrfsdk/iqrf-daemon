@@ -1,8 +1,9 @@
 #include "UdpMessaging.h"
 #include "IqrfLogging.h"
 
-UdpMessagingTransaction::UdpMessagingTransaction(UdpMessaging* udpMessaging)
+UdpMessagingTransaction::UdpMessagingTransaction(UdpMessaging* udpMessaging, DpaTransaction* forwarded)
   :m_udpMessaging(udpMessaging)
+  ,m_forwarded(forwarded)
 {
 }
 
@@ -12,8 +13,10 @@ UdpMessagingTransaction::~UdpMessagingTransaction()
 
 const DpaMessage& UdpMessagingTransaction::getMessage() const
 {
-  if (m_sniffedDpaTransaction) {
-    return m_sniffedDpaTransaction->getMessage();
+  if (m_forwarded) {
+    const DpaMessage& msg = m_forwarded->getMessage();
+   // m_udpMessaging->sendDpaMessageToUdp(msg);
+    return msg;
   }
   else {
     return m_message;
@@ -22,8 +25,8 @@ const DpaMessage& UdpMessagingTransaction::getMessage() const
 
 int UdpMessagingTransaction::getTimeout() const
 {
-  if (m_sniffedDpaTransaction) {
-    return m_sniffedDpaTransaction->getTimeout();
+  if (m_forwarded) {
+    return m_forwarded->getTimeout();
   }
   else {
     return -1;
@@ -32,8 +35,8 @@ int UdpMessagingTransaction::getTimeout() const
 
 void UdpMessagingTransaction::processConfirmationMessage(const DpaMessage& confirmation)
 {
-  if (m_sniffedDpaTransaction) {
-    m_sniffedDpaTransaction->processConfirmationMessage(confirmation);
+  if (m_forwarded) {
+    m_forwarded->processConfirmationMessage(confirmation);
   }
   //forward all
   m_udpMessaging->sendDpaMessageToUdp(confirmation);
@@ -41,8 +44,8 @@ void UdpMessagingTransaction::processConfirmationMessage(const DpaMessage& confi
 
 void UdpMessagingTransaction::processResponseMessage(const DpaMessage& response)
 {
-  if (m_sniffedDpaTransaction) {
-    m_sniffedDpaTransaction->processResponseMessage(response);
+  if (m_forwarded) {
+    m_forwarded->processResponseMessage(response);
   }
   //forward all
   m_udpMessaging->sendDpaMessageToUdp(response);
@@ -50,8 +53,8 @@ void UdpMessagingTransaction::processResponseMessage(const DpaMessage& response)
 
 void UdpMessagingTransaction::processFinish(DpaRequest::DpaRequestStatus status)
 {
-  if (m_sniffedDpaTransaction) {
-    m_sniffedDpaTransaction->processFinish(status);
+  if (m_forwarded) {
+    m_forwarded->processFinish(status);
   }
 
   m_success = isProcessed(status);

@@ -17,16 +17,17 @@
 #pragma once
 
 #include "UdpMessagingTransaction.h"
+#include "IDpaMessageForwarding.h"
+#include "IDpaExclusiveAccess.h"
 #include "UdpChannel.h"
 #include "IMessaging.h"
 #include "TaskQueue.h"
-#include "WatchDog.h"
 #include <string>
 #include <atomic>
 
 class MessagingController;
 
-class UdpMessaging : public IMessaging
+class UdpMessaging : public IMessaging, public IDpaMessageForwarding, public IDpaExclusiveAccess
 {
 public:
   enum class Mode {
@@ -36,7 +37,8 @@ public:
   };
 
   UdpMessaging() = delete;
-  UdpMessaging(MessagingController* messagingController);
+  UdpMessaging(const std::string& name);
+
   virtual ~UdpMessaging();
 
   // component
@@ -59,31 +61,27 @@ public:
   void encodeMessageUdp(ustring& udpMessage, const ustring& message = ustring());
   void decodeMessageUdp(const ustring& udpMessage, ustring& message);
 
-  UdpMessaging::Mode parseMode(const std::string& mode);
+  //IDpaMessageForwarding
+  std::unique_ptr<DpaTransaction> getDpaTransactionForward(DpaTransaction* forwarded) override;
+  void sendDpaRequestForward(DpaTransaction* forwarded) override;
 
-  Mode getMode() { return m_mode; };
+  //IDpaExclusiveAccess
+  void setExclusive(IChannel* chan) override;
+  void resetExclusive() override;
+
+  void setDaemon(IDaemon* d) { m_daemon = d; }
 
 private:
-  void setMode(Mode mode);
-  
-  //void setExclusiveAccess();
-  //void resetExclusiveAccess();
+  IDaemon *m_daemon = nullptr;
+  UdpMessagingTransaction* m_operationalTransaction = nullptr;
 
-  //std::atomic_bool m_exclusiveAccess;
-  
-  WatchDog<std::function<void()>> m_watchDog;
-
-  MessagingController *m_messagingController = nullptr;
-  UdpMessagingTransaction* m_transaction = nullptr;
-
-  UdpChannel *m_udpChannel;
-  TaskQueue<ustring> *m_toUdpMessageQueue;
+  IChannel* m_exclusiveChannel = nullptr;
+  UdpChannel* m_udpChannel = nullptr;
+  IMessaging::MessageHandlerFunc m_messageHandlerFunc;
+  TaskQueue<ustring> *m_toUdpMessageQueue = nullptr;
 
   // configuration
   std::string m_name;
   unsigned m_remotePort = 55000;
   unsigned m_localPort = 55300;
-
-  std::atomic<Mode> m_mode;
-  unsigned m_timeout = 30000;
 };

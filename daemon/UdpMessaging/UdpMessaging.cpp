@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
+#include "LaunchUtils.h"
+#include "PrfRaw.h"
+#include "DpaTransactionTask.h"
 #include "UdpMessaging.h"
 #include "MessagingController.h"
 #include "UdpMessage.h"
 #include "IqrfLogging.h"
 #include "crc.h"
-//#include "PlatformDep.h"
-//#include <climits>
-//#include <ctime>
-//#include <ratio>
-//#include <chrono>
 
-const std::string Operational_STR("Operational");
-const std::string Service_STR("Service");
-const std::string Forwarding_STR("Forwarding");
+INIT_COMPONENT(IMessaging, UdpMessaging)
+
+//TODO UdpMessaging works now as any Messaging, but it is not used any Service.
+//It behaves as Service, Serializer and Messaging together
+//This shall be split in future
 
 void UdpMessaging::sendDpaMessageToUdp(const DpaMessage&  dpaMessage)
 {
@@ -40,80 +40,40 @@ void UdpMessaging::sendDpaMessageToUdp(const DpaMessage&  dpaMessage)
   m_toUdpMessageQueue->pushToQueue(udpMessage);
 }
 
-void UdpMessaging::setMode(UdpMessaging::Mode mode)
+std::unique_ptr<DpaTransaction> UdpMessaging::getDpaTransactionForward(DpaTransaction* forwarded)
 {
-  switch (mode) {
-  
-  case UdpMessaging::Mode::Operational:
-  {
-    m_mode = mode;
-    //m_watchDog.stop();
-    m_messagingController->exclusiveAccess(false);
-  }
-  
-  case UdpMessaging::Mode::Forwarding:
-  {
-    m_mode = mode;
-    //m_watchDog.stop();
-    m_messagingController->exclusiveAccess(false);
-  }
-  
-  case UdpMessaging::Mode::Service:
-  {
-    m_mode = mode;
-    //m_watchDog.start(m_timeout, [&]() {resetExclusiveAccess(); });
-    m_watchDog.start(m_timeout, [&]() {setMode(UdpMessaging::Mode::Operational); });
-    m_messagingController->exclusiveAccess(true);
-    m_messagingController->getIqrfInterface()->registerReceiveFromHandler([&](const ustring& received)->int {
-      sendDpaMessageToUdp(received);
-      return 0;
-    });
-  }
-  
-  default:;
-  }
+  std::unique_ptr<DpaTransaction> trn(ant_new UdpMessagingTransaction(this, forwarded));
+  return trn;
 }
 
-/*
-void UdpMessaging::setExclusiveAccess()
+void UdpMessaging::sendDpaRequestForward(DpaTransaction* forwarded)
 {
-  if (nullptr != m_messagingController->getIqrfInterface()) {
-    if (!m_exclusiveAccess) {
-      m_exclusiveAccess = true;
-      m_watchDog.start(m_timeout, [&]() {resetExclusiveAccess(); });
-      m_messagingController->exclusiveAccess(true);
-      m_messagingController->getIqrfInterface()->registerReceiveFromHandler([&](const ustring& received)->int {
-        sendDpaMessageToUdp(received);
-        return 0;
-      });
-    }
-  }
+  sendDpaMessageToUdp(forwarded->getMessage());
 }
 
-void UdpMessaging::resetExclusiveAccess()
+void UdpMessaging::setExclusive(IChannel* chan)
 {
-  if (m_exclusiveAccess) {
-    m_exclusiveAccess = false;
-    //m_watchDog.stop();
-    m_messagingController->exclusiveAccess(false);
-  }
+  TRC_ENTER("");
+  //TODO mutex
+  m_exclusiveChannel = chan;
+  m_exclusiveChannel->registerReceiveFromHandler([&](const ustring& received)->int {
+    sendDpaMessageToUdp(received);
+    return 0;
+  });
+  TRC_LEAVE("");
 }
-*/
+
+void UdpMessaging::resetExclusive()
+{
+  TRC_ENTER("");
+  m_exclusiveChannel = nullptr;
+  TRC_LEAVE("");
+}
 
 int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
 {
   TRC_DBG("==================================" << std::endl <<
     "Received from UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
-
-  //if (!m_exclusiveAccess)
-  //  setExclusiveAccess();
-  //else
-  //  m_watchDog.pet();
-
-  if (m_mode != UdpMessaging::Mode::Service)
-    setMode(UdpMessaging::Mode::Service);
-  else
-    m_watchDog.pet();
 
   size_t msgSize = udpMessage.size();
   std::basic_string<unsigned char> message;
@@ -141,16 +101,6 @@ int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
 
   case IQRF_UDP_GET_GW_STATUS:          // --- Returns GW status ---
   {
-    //if (!m_exclusiveAccess)
-    //  setExclusiveAccess();
-    //else
-    //  m_watchDog.pet();
-
-    if (m_mode != UdpMessaging::Mode::Service)
-      setMode(UdpMessaging::Mode::Service);
-    else
-      m_watchDog.pet();
-
     ustring udpResponse(udpMessage);
     udpResponse[cmd] = udpResponse[cmd] | 0x80;
     ustring msg;
@@ -162,8 +112,6 @@ int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
 
   case IQRF_UDP_WRITE_IQRF:       // --- Writes data to the TR module ---
   {
-    m_messagingController->getIqrfInterface()->sendTo(message);
-
     //send response
     ustring udpResponse(udpMessage.substr(0, IQRF_UDP_HEADER_SIZE));
     udpResponse[cmd] = udpResponse[cmd] | 0x80;
@@ -172,8 +120,13 @@ int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
     //TODO it is required to send back via subcmd write result - implement sync write with appropriate ret code
     m_toUdpMessageQueue->pushToQueue(udpResponse);
 
-    //m_transaction->setMessage(message);
-    //m_messagingController->executeDpaTransaction(*m_transaction);
+    if (m_exclusiveChannel != nullptr) { // exclusiveAccess
+      m_exclusiveChannel->sendTo(message);
+    }
+    else {
+      m_operationalTransaction->setMessage(message);
+      m_daemon->executeDpaTransaction(*m_operationalTransaction);
+    }
   }
   return 0;
 
@@ -233,13 +186,11 @@ void UdpMessaging::decodeMessageUdp(const ustring& udpMessage, ustring& message)
   message = udpMessage.substr(IQRF_UDP_HEADER_SIZE, dlen);
 }
 
-UdpMessaging::UdpMessaging(MessagingController* messagingController)
-  :m_messagingController(messagingController)
-  , m_udpChannel(nullptr)
+UdpMessaging::UdpMessaging(const std::string& name)
+  : m_udpChannel(nullptr)
+  , m_name(name)
   , m_toUdpMessageQueue(nullptr)
 {
-  //m_exclusiveAccess = false;
-  std::atomic<Mode> m_mode = Mode::Operational;
 }
 
 UdpMessaging::~UdpMessaging()
@@ -308,7 +259,7 @@ void UdpMessaging::start()
   m_udpChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) -> int {
     return handleMessageFromUdp(msg); });
 
-  m_transaction = ant_new UdpMessagingTransaction(this);
+  m_operationalTransaction = ant_new UdpMessagingTransaction(this);
 
   TRC_INF("daemon-UDP-protocol started");
 
@@ -319,7 +270,7 @@ void UdpMessaging::stop()
 {
   TRC_ENTER("");
   TRC_INF("udp-daemon-protocol stops");
-  delete m_transaction;
+  delete m_operationalTransaction;
   delete m_udpChannel;
   delete m_toUdpMessageQueue;
   TRC_LEAVE("");
@@ -330,34 +281,22 @@ void UdpMessaging::update(const rapidjson::Value& cfg)
   TRC_ENTER("");
   m_remotePort = jutils::getPossibleMemberAs<int>("RemotePort", cfg, m_remotePort);
   m_localPort = jutils::getPossibleMemberAs<int>("LocalPort", cfg, m_localPort);
-  m_mode = parseMode(jutils::getPossibleMemberAs<std::string>("Mode", cfg, Operational_STR));
-  m_timeout = jutils::getPossibleMemberAs<int>("ServiceTimeoutMillis", cfg, m_timeout);
   TRC_LEAVE("");
 }
 
 void UdpMessaging::registerMessageHandler(MessageHandlerFunc hndl)
 {
-  TRC_WAR("Not implemented");
+  m_messageHandlerFunc = hndl;
 }
 
 void UdpMessaging::unregisterMessageHandler()
 {
-  TRC_WAR("Not implemented");
+  //TODO not used now from any Service
+  m_messageHandlerFunc = IMessaging::MessageHandlerFunc();
 }
 
 void UdpMessaging::sendMessage(const ustring& msg)
 {
-  TRC_WAR("Not implemented");
-}
-
-UdpMessaging::Mode UdpMessaging::parseMode(const std::string& mode)
-{
-  if (Operational_STR == mode)
-    return Mode::Operational;
-  else if (Service_STR == mode)
-    return Mode::Service;
-  else if (Forwarding_STR == mode)
-    return Mode::Forwarding;
-  else
-    THROW_EX(std::logic_error, "Invalid mode: " << PAR(mode));
+  //TODO not used now from any Service
+  m_toUdpMessageQueue->pushToQueue(msg);
 }
