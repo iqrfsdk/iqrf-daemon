@@ -19,7 +19,7 @@ iqrfd=${PWD}
 popd
 
 #get path to cutils libs
-cutils=../../libs/cutils/${buildexp}
+cutils=${LIB_DIRECTORY}/cutils/${buildexp}
 pushd ${cutils}
 cutils=${PWD}
 popd
