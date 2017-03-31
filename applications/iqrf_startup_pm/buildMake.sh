@@ -1,9 +1,11 @@
+#!/bin/bash
+# Script for building IQRF startup application on Linux machine
+
 project=iqrf_startup_pm
 
 #expected build dir structure
 buildexp=build/Unix_Makefiles
 
-LIB_DIRECTORY=../../libs
 currentdir=$PWD
 builddir=./${buildexp}
 LIB_DIRECTORY=${1:-../../..}

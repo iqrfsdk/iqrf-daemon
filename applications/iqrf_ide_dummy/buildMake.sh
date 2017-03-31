@@ -1,3 +1,6 @@
+#!/bin/bash
+# Script for building IQRF IDE dummy application on Linux machine
+
 project=iqrf_ide_dummy
 
 #expected build dir structure

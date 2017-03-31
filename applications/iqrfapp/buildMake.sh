@@ -1,3 +1,6 @@
+#!/bin/bash
+# Script for building IQRF application on Linux machine
+
 project=iqrfapp
 
 #expected build dir structure

@@ -1,3 +1,6 @@
+#!/bin/bash
+# Script for building IQRF daemon on Linux machine
+
 project=clibudp
 
 #expected build dir structure
