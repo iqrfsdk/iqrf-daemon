@@ -23,8 +23,8 @@ typedef std::basic_string<unsigned char> ustring;
 const unsigned IQRF_UDP_BUFFER_SIZE = 1024;
 
 const unsigned char IQRF_UDP_GW_ADR = 0x20;    // 3rd party or user device
-unsigned char IQRF_UDP_HEADER_SIZE = 9; //header length
-unsigned char IQRF_UDP_CRC_SIZE = 2; // CRC has 2 bytes
+const unsigned char IQRF_UDP_HEADER_SIZE = 9; //header length
+const unsigned char IQRF_UDP_CRC_SIZE = 2; // CRC has 2 bytes
 
 //--- IQRF UDP commands (CMD) ---
 const unsigned char IQRF_UDP_GET_GW_INFO = 0x01;	// Returns GW identification

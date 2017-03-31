@@ -48,7 +48,8 @@ void MessagingController::executeDpaTransaction(DpaTransaction& dpaTransaction)
 //called from task queue thread passed by lambda in task queue ctor
 void MessagingController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
 {
-  if (m_exclusiveMode) {
+  //if (m_exclusiveMode) {
+  if ( m_udpMessaging && m_udpMessaging->getMode() == UdpMessaging::Mode::Service) {
     TRC_DBG("Dpa interface is in exclusiveMode");
     dpaTransaction->processFinish(DpaRequest::kCreated);
   }
@@ -95,7 +96,7 @@ MessagingController::MessagingController()
   , m_dpaTransactionQueue(nullptr)
   , m_scheduler(nullptr)
 {
-  m_exclusiveMode = false;
+  //m_exclusiveMode = false;
 }
 
 void MessagingController::loadConfiguration(const std::string& cfgFileName)

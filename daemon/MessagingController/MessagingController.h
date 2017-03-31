@@ -95,8 +95,8 @@ private:
 
   IChannel* m_iqrfInterface;
   DpaHandler* m_dpaHandler;
-  std::atomic_bool m_exclusiveMode;
-
+  
+  //std::atomic_bool m_exclusiveMode;
   void executeDpaTransactionFunc(DpaTransaction* dpaTransaction);
 
   TaskQueue<DpaTransaction*> *m_dpaTransactionQueue;

@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-#include "IqrfLogging.h"
-#include "DpaTask.h"
-#include "DpaMessage.h"
 #include "UdpMessaging.h"
 #include "MessagingController.h"
 #include "UdpMessage.h"
+#include "IqrfLogging.h"
 #include "crc.h"
-#include "PlatformDep.h"
-#include <climits>
-#include <ctime>
-#include <ratio>
-#include <chrono>
+//#include "PlatformDep.h"
+//#include <climits>
+//#include <ctime>
+//#include <ratio>
+//#include <chrono>
 
 const std::string Operational_STR("Operational");
 const std::string Service_STR("Service");
@@ -42,6 +40,41 @@ void UdpMessaging::sendDpaMessageToUdp(const DpaMessage&  dpaMessage)
   m_toUdpMessageQueue->pushToQueue(udpMessage);
 }
 
+void UdpMessaging::setMode(UdpMessaging::Mode mode)
+{
+  switch (mode) {
+  
+  case UdpMessaging::Mode::Operational:
+  {
+    m_mode = mode;
+    //m_watchDog.stop();
+    m_messagingController->exclusiveAccess(false);
+  }
+  
+  case UdpMessaging::Mode::Forwarding:
+  {
+    m_mode = mode;
+    //m_watchDog.stop();
+    m_messagingController->exclusiveAccess(false);
+  }
+  
+  case UdpMessaging::Mode::Service:
+  {
+    m_mode = mode;
+    //m_watchDog.start(m_timeout, [&]() {resetExclusiveAccess(); });
+    m_watchDog.start(m_timeout, [&]() {setMode(UdpMessaging::Mode::Operational); });
+    m_messagingController->exclusiveAccess(true);
+    m_messagingController->getIqrfInterface()->registerReceiveFromHandler([&](const ustring& received)->int {
+      sendDpaMessageToUdp(received);
+      return 0;
+    });
+  }
+  
+  default:;
+  }
+}
+
+/*
 void UdpMessaging::setExclusiveAccess()
 {
   if (nullptr != m_messagingController->getIqrfInterface()) {
@@ -65,14 +98,20 @@ void UdpMessaging::resetExclusiveAccess()
     m_messagingController->exclusiveAccess(false);
   }
 }
+*/
 
 int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
 {
   TRC_DBG("==================================" << std::endl <<
     "Received from UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
 
-  if (!m_exclusiveAccess)
-    setExclusiveAccess();
+  //if (!m_exclusiveAccess)
+  //  setExclusiveAccess();
+  //else
+  //  m_watchDog.pet();
+
+  if (m_mode != UdpMessaging::Mode::Service)
+    setMode(UdpMessaging::Mode::Service);
   else
     m_watchDog.pet();
 
@@ -102,8 +141,13 @@ int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
 
   case IQRF_UDP_GET_GW_STATUS:          // --- Returns GW status ---
   {
-    if (!m_exclusiveAccess)
-      setExclusiveAccess();
+    //if (!m_exclusiveAccess)
+    //  setExclusiveAccess();
+    //else
+    //  m_watchDog.pet();
+
+    if (m_mode != UdpMessaging::Mode::Service)
+      setMode(UdpMessaging::Mode::Service);
     else
       m_watchDog.pet();
 
@@ -194,7 +238,8 @@ UdpMessaging::UdpMessaging(MessagingController* messagingController)
   , m_udpChannel(nullptr)
   , m_toUdpMessageQueue(nullptr)
 {
-  m_exclusiveAccess = false;
+  //m_exclusiveAccess = false;
+  std::atomic<Mode> m_mode = Mode::Operational;
 }
 
 UdpMessaging::~UdpMessaging()
@@ -315,44 +360,4 @@ UdpMessaging::Mode UdpMessaging::parseMode(const std::string& mode)
     return Mode::Forwarding;
   else
     THROW_EX(std::logic_error, "Invalid mode: " << PAR(mode));
-}
-
-////////////////////////////////////
-UdpMessagingTransaction::UdpMessagingTransaction(UdpMessaging* udpMessaging)
-  :m_udpMessaging(udpMessaging)
-{
-}
-
-UdpMessagingTransaction::~UdpMessagingTransaction()
-{
-}
-
-const DpaMessage& UdpMessagingTransaction::getMessage() const
-{
-  return m_message;
-}
-
-int UdpMessagingTransaction::getTimeout() const
-{
-  return -1;
-}
-
-void UdpMessagingTransaction::processConfirmationMessage(const DpaMessage& confirmation)
-{
-  m_udpMessaging->sendDpaMessageToUdp(confirmation);
-}
-
-void UdpMessagingTransaction::processResponseMessage(const DpaMessage& response)
-{
-  m_udpMessaging->sendDpaMessageToUdp(response);
-}
-
-void UdpMessagingTransaction::processFinish(DpaRequest::DpaRequestStatus status)
-{
-  m_success = isProcessed(status);
-}
-
-void UdpMessagingTransaction::setMessage(ustring message)
-{
-  m_message.DataToBuffer(message.data(), message.length());
 }
