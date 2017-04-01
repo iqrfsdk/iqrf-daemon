@@ -60,9 +60,10 @@ public:
   void run(const std::string& cfgFileName);
 
   //from IDaemon
-  virtual void executeDpaTransaction(DpaTransaction& dpaTransaction) override;
-  virtual void registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> message_handler) override;
-  virtual IScheduler* getScheduler() override { return m_scheduler; }
+  void executeDpaTransaction(DpaTransaction& dpaTransaction) override;
+  void registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> message_handler) override;
+  IScheduler* getScheduler() override { return m_scheduler; }
+  std::string doCommand(const std::string& cmd) override;
 
   void exit();
 

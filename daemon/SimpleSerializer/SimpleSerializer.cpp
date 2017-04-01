@@ -161,10 +161,22 @@ SimpleSerializer::SimpleSerializer(const std::string& name)
 
 void SimpleSerializer::init()
 {
-  registerClass<PrfThermometerSimple>(PrfThermometer::PRF_NAME);
-  registerClass<PrfLedGSimple>(PrfLedG::PRF_NAME);
-  registerClass<PrfLedRSimple>(PrfLedR::PRF_NAME);
-  registerClass<PrfRawSimple>(PrfRawSimple::PRF_NAME);
+  m_dpaParser.registerClass<PrfThermometerSimple>(PrfThermometer::PRF_NAME);
+  m_dpaParser.registerClass<PrfLedGSimple>(PrfLedG::PRF_NAME);
+  m_dpaParser.registerClass<PrfLedRSimple>(PrfLedR::PRF_NAME);
+  m_dpaParser.registerClass<PrfRawSimple>(PrfRawSimple::PRF_NAME);
+}
+
+const std::string& SimpleSerializer::parseCategory(const std::string& request)
+{
+  std::istringstream istr(request);
+  std::string category;
+  istr >> category;
+  if (category == CAT_CONF_STR) {
+    return CAT_CONF_STR;
+  }
+  else
+    return CAT_DPA_STR;
 }
 
 std::unique_ptr<DpaTask> SimpleSerializer::parseRequest(const std::string& request)
@@ -174,13 +186,30 @@ std::unique_ptr<DpaTask> SimpleSerializer::parseRequest(const std::string& reque
     std::istringstream istr(request);
     std::string perif;
     istr >> perif;
-    obj = createObject(perif, istr);
+    obj = m_dpaParser.createObject(perif, istr);
     m_lastError = "OK";
   }
   catch (std::exception &e) {
     m_lastError = e.what();
   }
   return std::move(obj);
+}
+
+std::string SimpleSerializer::parseConfig(const std::string& request)
+{
+  std::istringstream istr(request);
+  std::string category, command;
+  istr >> category >> command;
+  if (category == CAT_CONF_STR) {
+    m_lastError = "OK";
+    return command;
+  }
+  else {
+    std::ostringstream ostr;
+    ostr << "Unexpected: " << PAR(category);
+    m_lastError = ostr.str();
+    return "";
+  }
 }
 
 std::string SimpleSerializer::getLastError() const

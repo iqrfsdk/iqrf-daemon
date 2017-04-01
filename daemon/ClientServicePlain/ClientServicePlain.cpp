@@ -94,17 +94,34 @@ void ClientServicePlain::handleMsgFromMessaging(const ustring& msg)
   std::istringstream is(msgs);
 
   std::unique_ptr<DpaTask> dpaTask;
+  std::string command;
+
+  //parse
   for (auto ser : m_serializerVect) {
-    dpaTask = ser->parseRequest(msgs);
-    if (dpaTask) {
-      break;
+    std::string cat = ser->parseCategory(msgs);
+    if (cat == CAT_DPA_STR) {
+      dpaTask = ser->parseRequest(msgs);
+      if (dpaTask) {
+        break;
+      }
+    }
+    else if (cat == CAT_CONF_STR) {
+      command = ser->parseConfig(msgs);
+      if (!command.empty()) {
+        break;
+      }
     }
   }
+
+  // process parse result
   if (dpaTask) {
     DpaTransactionTask trans(*dpaTask);
     m_daemon->executeDpaTransaction(trans);
     int result = trans.waitFinish();
     os << dpaTask->encodeResponse(trans.getErrorStr());
+  }
+  else if (!command.empty()) {
+    os << m_daemon->doCommand(command);
   }
   else {
     //os << m_serializer->getLastError();

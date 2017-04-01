@@ -38,4 +38,5 @@ public:
   //virtual void registerClientService(IClient& cs) = 0;
   //virtual void unregisterClientService(IClient& cs) = 0;
   virtual IScheduler* getScheduler() = 0;
+  virtual std::string doCommand(const std::string& cmd) = 0;
 };
