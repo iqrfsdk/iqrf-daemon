@@ -1,9 +1,9 @@
 # Repository
 
-http://repos.iqrfsdk.org/
+[http://repos.iqrfsdk.org/](http://repos.iqrfsdk.org/)
 
-- iqrf-daemon_0.0.1_amd64.deb 
-- libpaho.mqtt.c_1.1.0_amd64.deb 
+-   iqrf-daemon_0.0.1_amd64.deb
+-   libpaho.mqtt.c_1.1.0_amd64.deb
 
 ## Download public key to verify the packages from the repository
 
@@ -34,7 +34,7 @@ sudo systemctl status iqrf-daemon.service
    Active: active (running) since Čt 2017-03-30 23:46:50 CEST; 2min 58s ago
  Main PID: 9540 (iqrf_startup)
    CGroup: /system.slice/iqrf-daemon.service
-           └─9540 /usr/bin/iqrf_startup /etc/iqrf-daemon/config.json 
+           └─9540 /usr/bin/iqrf_startup /etc/iqrf-daemon/config.json
 ```
 
 Configure components JSON file and restart the service.
@@ -43,7 +43,7 @@ Configure components JSON file and restart the service.
 sudo systemctl restart iqrf-daemon.service
 ```
 
-## Content of iqrf-daemon (v0.0.1) package 
+## Content of iqrf-daemon (v0.0.1) package
 
 ```Bash
 dpkg -L iqrf-daemon
@@ -74,7 +74,7 @@ dpkg -L iqrf-daemon
 /etc/iqrf-daemon/ClientServicePlain.json
 ```
 
-## Content of libpaho.mqtt.c (v1.1.0) package 
+## Content of libpaho.mqtt.c (v1.1.0) package
 
 ```Bash
 dpkg -L libpaho.mqtt.c
@@ -92,5 +92,5 @@ dpkg -L libpaho.mqtt.c
 /usr/share/doc
 /usr/share/doc/libpaho.mqtt.c
 /usr/share/doc/libpaho.mqtt.c/copyright
-/usr/share/doc/libpaho.mqtt.c/changelog.gz 
+/usr/share/doc/libpaho.mqtt.c/changelog.gz
 ```
