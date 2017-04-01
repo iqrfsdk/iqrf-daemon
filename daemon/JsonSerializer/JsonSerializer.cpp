@@ -399,6 +399,12 @@ void JsonSerializer::init()
   registerClass<PrfIoJson>(PrfIo::PRF_NAME);
 }
 
+const std::string& JsonSerializer::parseCategory(const std::string& request)
+{
+  //TODO
+  return CAT_DPA_STR;
+}
+
 std::unique_ptr<DpaTask> JsonSerializer::parseRequest(const std::string& request)
 {
   std::unique_ptr<DpaTask> obj;
@@ -415,6 +421,12 @@ std::unique_ptr<DpaTask> JsonSerializer::parseRequest(const std::string& request
     m_lastError = e.what();
   }
   return std::move(obj);
+}
+
+std::string JsonSerializer::parseConfig(const std::string& request)
+{
+  //TODO
+  return "";
 }
 
 std::string JsonSerializer::getLastError() const

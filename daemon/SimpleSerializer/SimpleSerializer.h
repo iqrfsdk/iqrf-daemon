@@ -73,8 +73,7 @@ public:
 typedef PrfLedSimple<PrfLedG> PrfLedGSimple;
 typedef PrfLedSimple<PrfLedR> PrfLedRSimple;
 
-
-class SimpleSerializer : public ObjectFactory<DpaTask, std::istream>, public ISerializer
+class SimpleSerializer : public ISerializer
 {
 public:
   SimpleSerializer();
@@ -85,9 +84,13 @@ public:
   const std::string& getName() const override { return m_name; }
 
   //interface
+  const std::string& parseCategory(const std::string& request) override;
   std::unique_ptr<DpaTask> parseRequest(const std::string& request) override;
+  std::string parseConfig(const std::string& request) override;
   std::string getLastError() const override;
 private:
+  ObjectFactory<DpaTask, std::istream> m_dpaParser;
+
   void init();
   std::string m_lastError;
   std::string m_name;

@@ -653,6 +653,26 @@ void MessagingController::exit()
   m_stopConditionVariable.notify_all();
 }
 
+std::string MessagingController::doCommand(const std::string& cmd)
+{
+  std::ostringstream ostr;
+  if (cmd == "Operational") {
+    ostr << PAR(cmd) << " done";
+    return ostr.str();
+  }
+  if (cmd == "Service") {
+    ostr << PAR(cmd) << " done";
+    return ostr.str();
+  }
+  if (cmd == "Forwarding") {
+    ostr << PAR(cmd) << " done";
+    return ostr.str();
+  }
+  ostr << PAR(cmd) << " unknown";
+  TRC_LEAVE("");
+  return ostr.str();
+}
+
 //////////////// Launch
 void * MessagingController::getCreateFunction(const std::string& componentName, bool mandatory) const
 {
