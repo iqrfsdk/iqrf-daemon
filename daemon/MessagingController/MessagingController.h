@@ -78,10 +78,8 @@ public:
 
   void setMode(Mode mode);
 
-  //void exclusiveAccess(bool mode);
-  //IChannel* getIqrfInterface();
-
 private:
+  std::mutex m_modeMtx;
   Mode m_mode;
 
   MessagingController();
@@ -89,13 +87,11 @@ private:
 
   void startTrace();
   void startIqrfIf();
-  //void startUdp();
   void startDpa();
   void startClients();
   void startScheduler();
 
   void stopIqrfIf();
-  //void stopUdp();
   void stopDpa();
   void stopClients();
   void stopScheduler();
@@ -110,7 +106,6 @@ private:
   IChannel* m_iqrfInterface;
   DpaHandler* m_dpaHandler;
   
-  //std::atomic_bool m_exclusiveMode;
   void executeDpaTransactionFunc(DpaTransaction* dpaTransaction);
 
   TaskQueue<DpaTransaction*> *m_dpaTransactionQueue;
@@ -119,7 +114,6 @@ private:
   std::map<std::string, std::unique_ptr<IClient>> m_clients;
   std::map<std::string, std::unique_ptr<IMessaging>> m_messagings;
 
-  //UdpMessaging* m_udpMessaging = nullptr;
   IDpaMessageForwarding* m_dpaMessageForwarding = nullptr;
   IDpaExclusiveAccess* m_dpaExclusiveAccess = nullptr;
 

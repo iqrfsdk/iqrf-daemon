@@ -67,6 +67,8 @@ void MessagingController::executeDpaTransaction(DpaTransaction& dpaTransaction)
 //called from task queue thread passed by lambda in task queue ctor
 void MessagingController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
 {
+  std::lock_guard<std::mutex> lck(m_modeMtx);
+
   switch (m_mode) {
 
     //TODO lock mutex before change mode
@@ -225,9 +227,11 @@ void MessagingController::watchDogPet()
 void MessagingController::setMode(Mode mode)
 {
   TRC_ENTER(NAME_PAR(mode, (int)mode));
+  
+  std::lock_guard<std::mutex> lck(m_modeMtx);
+
   switch (mode) {
 
-  //TODO lock mutex before change mode
   case Mode::Operational:
   {
     if (m_mode == Mode::Service) {
@@ -657,14 +661,17 @@ std::string MessagingController::doCommand(const std::string& cmd)
 {
   std::ostringstream ostr;
   if (cmd == "Operational") {
+    setMode(Mode::Operational);
     ostr << PAR(cmd) << " done";
     return ostr.str();
   }
   if (cmd == "Service") {
+    setMode(Mode::Service);
     ostr << PAR(cmd) << " done";
     return ostr.str();
   }
   if (cmd == "Forwarding") {
+    setMode(Mode::Forwarding);
     ostr << PAR(cmd) << " done";
     return ostr.str();
   }
