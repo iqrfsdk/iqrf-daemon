@@ -81,7 +81,7 @@ public:
 
   T& getDpa() { return m_dpa; }
 private:
-  //std::atomic_bool m_sync = false;
+  std::atomic_bool m_sync{false};
   IScheduler::TaskHandle m_taskHandle = IScheduler::TASK_HANDLE_INVALID;
   IScheduler* m_scheduler;
   T m_dpa;
