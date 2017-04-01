@@ -24,6 +24,5 @@ class IDpaMessageForwarding
 {
 public:
   virtual std::unique_ptr<DpaTransaction> getDpaTransactionForward(DpaTransaction* forwarded) = 0;
-  virtual void sendDpaRequestForward(DpaTransaction* forwarded) = 0;
   inline virtual ~IDpaMessageForwarding() {};
 };

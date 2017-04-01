@@ -63,7 +63,6 @@ public:
 
   //IDpaMessageForwarding
   std::unique_ptr<DpaTransaction> getDpaTransactionForward(DpaTransaction* forwarded) override;
-  void sendDpaRequestForward(DpaTransaction* forwarded) override;
 
   //IDpaExclusiveAccess
   void setExclusive(IChannel* chan) override;

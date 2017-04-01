@@ -93,7 +93,6 @@ void MessagingController::executeDpaTransactionFunc(DpaTransaction* dpaTransacti
     if (m_dpaHandler && m_dpaMessageForwarding) {
       auto dpaTransactionSniffer = m_dpaMessageForwarding->getDpaTransactionForward(dpaTransaction);
       try {
-        m_dpaMessageForwarding->sendDpaRequestForward(dpaTransaction);
         m_dpaHandler->ExecuteDpaTransaction(*dpaTransactionSniffer);
       }
       catch (std::exception& e) {
@@ -576,7 +575,7 @@ void MessagingController::start()
   startScheduler();
   startClients();
 
-  setMode(Mode::Forwarding);
+  //setMode(Mode::Forwarding);
 
   TRC_INF("daemon started");
   TRC_LEAVE("");

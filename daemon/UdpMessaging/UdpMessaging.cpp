@@ -42,13 +42,15 @@ void UdpMessaging::sendDpaMessageToUdp(const DpaMessage&  dpaMessage)
 
 std::unique_ptr<DpaTransaction> UdpMessaging::getDpaTransactionForward(DpaTransaction* forwarded)
 {
-  std::unique_ptr<DpaTransaction> trn(ant_new UdpMessagingTransaction(this, forwarded));
-  return trn;
-}
-
-void UdpMessaging::sendDpaRequestForward(DpaTransaction* forwarded)
-{
-  sendDpaMessageToUdp(forwarded->getMessage());
+  if (forwarded != m_operationalTransaction) { 
+    std::unique_ptr<DpaTransaction> trn(ant_new UdpMessagingTransaction(this, forwarded));
+    sendDpaMessageToUdp(forwarded->getMessage()); //forward request
+    return trn;
+  }
+  else { //returns itself to avoid forwarding in this case
+    std::unique_ptr<DpaTransaction> udpTrn(ant_new UdpMessagingTransaction(*m_operationalTransaction));
+    return udpTrn;
+  }
 }
 
 void UdpMessaging::setExclusive(IChannel* chan)
