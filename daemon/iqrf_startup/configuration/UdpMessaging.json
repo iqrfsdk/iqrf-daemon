@@ -6,9 +6,7 @@
       "Enabled": true,
       "Properties": {
         "RemotePort": 55000,
-        "LocalPort": 55300,
-        "Mode": "Service",
-        "ServiceTimeoutMillis": 30000
+        "LocalPort": 55300
       }
     }
   ]

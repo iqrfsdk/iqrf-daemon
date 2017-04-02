@@ -23,8 +23,8 @@ if(NOT CMAKE_BUILD_TOOL MATCHES "(msdev|devenv|nmake|MSBuild)")
 endif()
 
 # TODO
-#include_directories(${iqrfd_INCLUDE_DIRS})
 include_directories(${daemon_INCLUDE_DIRS})
+include_directories(${daemon_INCLUDE_DIRS}/../UdpMessaging)
 include_directories(${cutils_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME} ${iqrf_ide_dummy_SRC_FILES} ${iqrf_ide_dummy_INC_FILES})
