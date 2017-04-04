@@ -6,6 +6,7 @@
 set -e
 
 LIB_DIRECTORY=${1:-../..}
+DAEMON_DIRECTORY=$PWD/../daemon
 UTILS_DIRECTORY=cutils
 LIBDPA_DIRECTORY=clibdpa
 LIBCDC_DIRECTORY=clibcdc
@@ -39,5 +40,5 @@ done
 
 # building daemon
 echo "Building daemon ..."
-cd ../daemon
+cd ${DAEMON_DIRECTORY}
 bash buildMake.sh ${LIB_DIRECTORY}
