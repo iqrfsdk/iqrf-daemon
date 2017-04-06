@@ -37,3 +37,28 @@ if (WIN32)
 else()
 	target_link_libraries(${PROJECT_NAME} MqChannel pthread rt)
 endif()
+
+if (WIN32)
+set (_CONFIG_DEST ${CMAKE_CURRENT_BINARY_DIR})
+
+else()
+set (_CONFIG_DEST $<TARGET_FILE_DIR:${PROJECT_NAME}>)
+
+INSTALL(TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib)
+
+endif()
+
+# do the copying
+set (in_file ${CMAKE_CURRENT_SOURCE_DIR}/iqrfapp.json)
+set (out_file ${_CONFIG_DEST}/iqrfapp.json)    
+
+if(${in_file} IS_NEWER_THAN ${out_file})    
+add_custom_command(
+    TARGET ${PROJECT_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -E copy ${in_file} ${out_file}
+)
+endif()

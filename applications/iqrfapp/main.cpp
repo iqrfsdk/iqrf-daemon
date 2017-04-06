@@ -17,6 +17,7 @@
 #include "MqChannel.h"
 #include "PlatformDep.h"
 #include "IqrfLogging.h"
+#include "JsonUtils.h"
 
 TRC_INIT()
 
@@ -53,7 +54,26 @@ int main(int argc, char** argv)
     command = os.str();
   }
 
-  MqChannel* mqChannel = ant_new MqChannel("iqrf-daemon-110", "iqrf-daemon-100", 1024);
+  std::string cfgFileName("iqrfapp.json");
+  std::string localMqName("iqrf-daemon-100");
+  std::string remoteMqName("iqrf-daemon-110");
+
+  rapidjson::Document cfg;
+
+  try {
+    jutils::parseJsonFile(cfgFileName, cfg);
+    jutils::assertIsObject("", cfg);
+
+    localMqName = jutils::getPossibleMemberAs<std::string>("LocalMqName", cfg, localMqName);
+    remoteMqName = jutils::getPossibleMemberAs<std::string>("RemoteMqName", cfg, remoteMqName);
+  }
+  catch (std::logic_error &e) {
+    CATCH_EX("Cannot read configuration file: " << PAR(cfgFileName), std::logic_error, e);
+  }
+
+  TRC_DBG(PAR(remoteMqName) << PAR(localMqName));
+
+  MqChannel* mqChannel = ant_new MqChannel(remoteMqName, localMqName, 1024);
 
   //Received messages from IQRF channel are pushed to IQRF MessageQueueChannel
   mqChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) -> int {
