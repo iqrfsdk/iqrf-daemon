@@ -134,6 +134,15 @@ std::string PrfRawJson::encodeResponse(const std::string& errStr) const
     doc.AddMember("Response", v, doc.GetAllocator());
   }
 
+  {
+    std::ostringstream ostr;
+    int len = m_confirmation.Length();
+    ostr << iqrf::TracerHexString((unsigned char*)m_confirmation.DpaPacket().Buffer, m_confirmation.Length(), true);
+
+    v.SetString(ostr.str().c_str(), doc.GetAllocator());
+    doc.AddMember("Confirmation", v, doc.GetAllocator());
+  }
+
   if (getTimeout() >= 0) {
     v.SetInt(getTimeout());
     doc.AddMember("Timeout", v, doc.GetAllocator());

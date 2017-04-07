@@ -1,0 +1,6 @@
+{
+  "Tasks": [
+    "*/5 * * * * * * ClientServicePlainForMQTT1 {\"Type\": \"Raw\", \"Request\": \"ff 00 0a 00 ff ff\", \"Timeout\": 1000}",
+    "*/6 * * * * * * ClientServicePlainForMQTT1 {\"Type\": \"Raw\", \"Request\": \"01 00 0a 00 ff ff\", \"Timeout\": 1000}"
+  ]
+}
