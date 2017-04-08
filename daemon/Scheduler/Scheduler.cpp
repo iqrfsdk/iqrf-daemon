@@ -512,6 +512,7 @@ int ScheduleRecord::parseItem(const std::string& item, int mnm, int mxm, std::ve
     if (val < mnm || val > mxm) {
       THROW_EX(std::logic_error, "Invalid value: " << PAR(val));
     }
+    vec.push_back(val);
   }
 
   std::sort(vec.begin(), vec.end());
