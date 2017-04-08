@@ -22,6 +22,7 @@
 #include "PrfFrc.h"
 #include "PrfThermometer.h"
 #include "PrfIo.h"
+#include "PrfOs.h"
 #include "PrfLeds.h"
 #include "PlatformDep.h"
 #include "rapidjson/rapidjson.h"
@@ -87,6 +88,16 @@ private:
   Port m_port;
   uint8_t m_bit;
   bool m_val;
+};
+
+class PrfOsJson : public PrfOs
+{
+public:
+  explicit PrfOsJson(rapidjson::Value& val);
+  virtual ~PrfOsJson() {}
+  std::string encodeResponse(const std::string& errStr) const  override;
+private:
+  PrfCommonJson m_common = *this;
 };
 
 template <typename L>

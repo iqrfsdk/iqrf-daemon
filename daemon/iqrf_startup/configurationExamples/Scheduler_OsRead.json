@@ -1,0 +1,5 @@
+{
+  "Tasks": [
+    "*/5 * * * * * * ClientServicePlainForMQTT1 {\"Type\":\"OS\",\"Addr\":0,\"Comd\":\"READ\"}"
+  ]
+}

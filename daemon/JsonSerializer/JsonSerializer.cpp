@@ -383,7 +383,50 @@ std::string PrfIoJson::encodeResponse(const std::string& errStr) const
   return buffer.GetString();
 }
 
+//////////////////
+//-------------------------------
+PrfOsJson::PrfOsJson(rapidjson::Value& val)
+{
+  m_common.parseRequestJson(val);
+  switch (getCmd()) {
 
+  case Cmd::READ:
+  {
+  }
+  break;
+
+  default:
+    ;
+  }
+}
+
+std::string PrfOsJson::encodeResponse(const std::string& errStr) const
+{
+  Document doc;
+  doc.SetObject();
+  rapidjson::Value v;
+
+  m_common.encodeResponseJson(doc, doc.GetAllocator());
+
+  switch (getCmd()) {
+
+  case Cmd::READ:
+  {
+  }
+  break;
+
+  default:
+    ;
+  }
+
+  v.SetString(errStr.c_str(), doc.GetAllocator());
+  doc.AddMember("Status", v, doc.GetAllocator());
+
+  StringBuffer buffer;
+  PrettyWriter<StringBuffer> writer(buffer);
+  doc.Accept(writer);
+  return buffer.GetString();
+}
 
 ///////////////////////////////////////////
 JsonSerializer::JsonSerializer()
@@ -406,6 +449,7 @@ void JsonSerializer::init()
   registerClass<PrfLedRJson>(PrfLedR::PRF_NAME);
   registerClass<PrfFrcJson>(PrfFrc::PRF_NAME);
   registerClass<PrfIoJson>(PrfIo::PRF_NAME);
+  registerClass<PrfOsJson>(PrfOs::PRF_NAME);
 }
 
 const std::string& JsonSerializer::parseCategory(const std::string& request)

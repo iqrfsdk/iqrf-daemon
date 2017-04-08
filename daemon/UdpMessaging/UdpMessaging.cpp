@@ -216,8 +216,8 @@ void UdpMessaging::getGwIdent(ustring& message)
   //TODO set correct IP adresses, MAC, OS ver, etc
   std::basic_ostringstream<char> ostring;
   ostring << crlf <<
-    "udp-dmn-01" << crlf <<
-    "1.00" << crlf <<
+    "iqrf-daemon" << crlf <<
+    "v0.1.1" << crlf <<
     "00 00 00 00 00 00" << crlf <<
     "5.42" << crlf <<
     ipAddr << crlf <<
