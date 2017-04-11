@@ -24,7 +24,6 @@ include_directories(${CMAKE_SOURCE_DIR}/UdpMessaging)
 include_directories(${CMAKE_SOURCE_DIR}/Scheduler)
 include_directories(${CMAKE_SOURCE_DIR}/IqrfCdcChannel)
 include_directories(${CMAKE_SOURCE_DIR}/IqrfSpiChannel)
-include_directories(${CMAKE_SOURCE_DIR}/MessagingController)
 
 if (WIN32) 
 	link_directories(${PAHO_LIBRARY_DIRS})
@@ -42,7 +41,7 @@ if (WIN32)
 	MqttMessaging
 	ClientServicePlain
 
-	MessagingController
+	DaemonController
 	Scheduler
 	paho-mqtt3a
 	DpaExtension

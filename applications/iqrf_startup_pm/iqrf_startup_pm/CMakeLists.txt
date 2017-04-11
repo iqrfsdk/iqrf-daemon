@@ -26,7 +26,7 @@ if (WIN32)
 	MqttMessaging
 	ClientServicePm
 
-	MessagingController
+	DaemonController
 	Scheduler
 	paho-mqtt3a
 	DpaExtension

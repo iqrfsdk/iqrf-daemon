@@ -25,7 +25,7 @@
 #include <string>
 #include <atomic>
 
-class MessagingController;
+class DaemonController;
 
 class UdpMessaging : public IMessaging, public IDpaMessageForwarding, public IDpaExclusiveAccess
 {

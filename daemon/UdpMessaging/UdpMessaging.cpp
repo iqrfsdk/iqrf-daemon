@@ -18,7 +18,7 @@
 #include "PrfRaw.h"
 #include "DpaTransactionTask.h"
 #include "UdpMessaging.h"
-#include "MessagingController.h"
+#include "IDaemon.h"
 #include "UdpMessage.h"
 #include "IqrfLogging.h"
 #include "crc.h"

@@ -7,6 +7,6 @@ set(STARTUP_SRC_FILES
 set(STARTUP_INC_FILES
 )
 
-include_directories(${CMAKE_SOURCE_DIR}/MessagingController)
+include_directories(${CMAKE_SOURCE_DIR}/DaemonController)
 
 add_library(${PROJECT_NAME} STATIC ${STARTUP_SRC_FILES} ${STARTUP_INC_FILES})

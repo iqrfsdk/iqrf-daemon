@@ -60,7 +60,7 @@ add_subdirectory(include)
 add_subdirectory(Startup)
 add_subdirectory(UdpMessaging)
 add_subdirectory(Scheduler)
-add_subdirectory(MessagingController)
+add_subdirectory(DaemonController)
 add_subdirectory(iqrf_startup)
 
 add_subdirectory(SimpleSerializer)

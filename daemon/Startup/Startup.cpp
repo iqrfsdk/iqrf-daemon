@@ -16,7 +16,7 @@
 
 #include "Startup.h"
 
-#include "MessagingController.h"
+#include "DaemonController.h"
 #include "IqrfLogging.h"
 
 #include <signal.h>
@@ -31,7 +31,7 @@
 #include <dlfcn.h>
 #endif
 
-MessagingController& msgCtrl = MessagingController::getController();
+DaemonController& msgCtrl = DaemonController::getController();
 
 //catches CTRL-C to stop main loop
 void SignalHandler(int signal)

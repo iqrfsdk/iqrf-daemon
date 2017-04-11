@@ -16,7 +16,6 @@
 
 #pragma once
 
-//#include "UdpMessaging.h"
 #include "ISerializer.h"
 #include "IMessaging.h"
 #include "IClient.h"
@@ -54,7 +53,7 @@ public:
   rapidjson::Document m_doc;
 };
 
-class MessagingController : public IDaemon
+class DaemonController : public IDaemon
 {
 public:
   enum class Mode {
@@ -63,9 +62,9 @@ public:
     Forwarding
   };
 
-  MessagingController(const MessagingController &) = delete;
+  DaemonController(const DaemonController &) = delete;
 
-  static MessagingController& getController();
+  static DaemonController& getController();
   void run(const std::string& cfgFileName);
 
   //from IDaemon
@@ -82,8 +81,8 @@ private:
   std::mutex m_modeMtx;
   Mode m_mode;
 
-  MessagingController();
-  virtual ~MessagingController();
+  DaemonController();
+  virtual ~DaemonController();
 
   void startTrace();
   void startIqrfIf();

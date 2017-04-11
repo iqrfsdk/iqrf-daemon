@@ -17,7 +17,7 @@
 #include "UdpMessaging.h"
 #include "IqrfLogging.h"
 #include "LaunchUtils.h"
-#include "MessagingController.h"
+#include "DaemonController.h"
 #include "IqrfCdcChannel.h"
 #include "IqrfSpiChannel.h"
 #include "DpaHandler.h"
@@ -53,19 +53,19 @@ Mode MessagingController::parseMode(const std::string& mode)
 }
 */
 
-MessagingController& MessagingController::getController()
+DaemonController& DaemonController::getController()
 {
-  static MessagingController mc;
+  static DaemonController mc;
   return mc;
 }
 
-void MessagingController::executeDpaTransaction(DpaTransaction& dpaTransaction)
+void DaemonController::executeDpaTransaction(DpaTransaction& dpaTransaction)
 {
   m_dpaTransactionQueue->pushToQueue(&dpaTransaction);
 }
 
 //called from task queue thread passed by lambda in task queue ctor
-void MessagingController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
+void DaemonController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
 {
   std::lock_guard<std::mutex> lck(m_modeMtx);
 
@@ -124,7 +124,7 @@ void MessagingController::executeDpaTransactionFunc(DpaTransaction* dpaTransacti
 
 }
 
-void MessagingController::registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> asyncHandler)
+void DaemonController::registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> asyncHandler)
 {
   m_asyncHandler = asyncHandler;
   m_dpaHandler->RegisterAsyncMessageHandler([&](const DpaMessage& dpaMessage) {
@@ -142,7 +142,7 @@ void MessagingController::registerAsyncDpaMessageHandler(std::function<void(cons
 //  m_asyncHandler = nullptr;
 //}
 
-MessagingController::MessagingController()
+DaemonController::DaemonController()
   :m_iqrfInterface(nullptr)
   , m_dpaHandler(nullptr)
   , m_dpaTransactionQueue(nullptr)
@@ -151,7 +151,7 @@ MessagingController::MessagingController()
 {
 }
 
-void MessagingController::loadConfiguration(const std::string& cfgFileName)
+void DaemonController::loadConfiguration(const std::string& cfgFileName)
 {
   std::cout << std::endl << "Loading configuration file: " << PAR(cfgFileName);
   m_cfgFileName = cfgFileName;
@@ -183,11 +183,11 @@ void MessagingController::loadConfiguration(const std::string& cfgFileName)
   }
 }
 
-MessagingController::~MessagingController()
+DaemonController::~DaemonController()
 {
 }
 
-void MessagingController::run(const std::string& cfgFileName)
+void DaemonController::run(const std::string& cfgFileName)
 {
   TRC_ENTER("");
 
@@ -218,13 +218,13 @@ void MessagingController::run(const std::string& cfgFileName)
   TRC_LEAVE("");
 }
 
-void MessagingController::watchDogPet()
+void DaemonController::watchDogPet()
 {
   std::unique_lock<std::mutex> lock(m_stopConditionMutex);
   m_lastRefreshTime = std::chrono::system_clock::now();
 }
 
-void MessagingController::setMode(Mode mode)
+void DaemonController::setMode(Mode mode)
 {
   TRC_ENTER(NAME_PAR(mode, (int)mode));
   
@@ -270,7 +270,7 @@ void MessagingController::setMode(Mode mode)
 }
 
 ///////// STARTS ////////////////////////////
-void MessagingController::startTrace()
+void DaemonController::startTrace()
 {
   auto fnd = m_componentMap.find("TracerFile");
   if (fnd != m_componentMap.end() && fnd->second.m_enabled) {
@@ -293,7 +293,7 @@ void MessagingController::startTrace()
   }
 }
 
-void MessagingController::startIqrfIf()
+void DaemonController::startIqrfIf()
 {
 
   auto fnd = m_componentMap.find("IqrfInterface");
@@ -321,7 +321,7 @@ void MessagingController::startIqrfIf()
 
 }
 
-void MessagingController::startDpa()
+void DaemonController::startDpa()
 {
   try {
     m_dpaHandler = ant_new DpaHandler(m_iqrfInterface);
@@ -332,7 +332,7 @@ void MessagingController::startDpa()
   }
 }
 
-void MessagingController::startScheduler()
+void DaemonController::startScheduler()
 {
   Scheduler* schd = ant_new Scheduler();
   m_scheduler = schd;
@@ -359,7 +359,7 @@ void MessagingController::startScheduler()
 
 }
 
-void MessagingController::loadSerializerComponent(const ComponentDescriptor& componentDescriptor)
+void DaemonController::loadSerializerComponent(const ComponentDescriptor& componentDescriptor)
 {
   if (componentDescriptor.m_interfaceName != "ISerializer")
     return;
@@ -397,7 +397,7 @@ void MessagingController::loadSerializerComponent(const ComponentDescriptor& com
   }
 }
 
-void MessagingController::loadMessagingComponent(const ComponentDescriptor& componentDescriptor)
+void DaemonController::loadMessagingComponent(const ComponentDescriptor& componentDescriptor)
 {
   if (componentDescriptor.m_interfaceName != "IMessaging")
     return;
@@ -445,7 +445,7 @@ void MessagingController::loadMessagingComponent(const ComponentDescriptor& comp
   }
 }
 
-void MessagingController::loadClientComponent(const ComponentDescriptor& componentDescriptor)
+void DaemonController::loadClientComponent(const ComponentDescriptor& componentDescriptor)
 {
   if (componentDescriptor.m_interfaceName != "IClient")
     return;
@@ -506,7 +506,7 @@ void MessagingController::loadClientComponent(const ComponentDescriptor& compone
   }
 }
 
-void MessagingController::startClients()
+void DaemonController::startClients()
 {
   TRC_ENTER("");
 
@@ -569,7 +569,7 @@ void MessagingController::startClients()
   TRC_LEAVE("");
 }
 
-void MessagingController::start()
+void DaemonController::start()
 {
   TRC_ENTER("");
 
@@ -587,11 +587,11 @@ void MessagingController::start()
 
 ///////// STOPS ////////////////////////////
 
-void MessagingController::stopTrace()
+void DaemonController::stopTrace()
 {
 }
 
-void MessagingController::stopIqrfIf()
+void DaemonController::stopIqrfIf()
 {
   delete m_dpaTransactionQueue;
   m_dpaTransactionQueue = nullptr;
@@ -600,13 +600,13 @@ void MessagingController::stopIqrfIf()
   m_iqrfInterface = nullptr;
 }
 
-void MessagingController::stopDpa()
+void DaemonController::stopDpa()
 {
   delete m_dpaHandler;
   m_dpaHandler = nullptr;
 }
 
-void MessagingController::stopClients()
+void DaemonController::stopClients()
 {
   TRC_ENTER("");
   for (auto & cli : m_clients) {
@@ -627,13 +627,13 @@ void MessagingController::stopClients()
 }
 
 
-void MessagingController::stopScheduler()
+void DaemonController::stopScheduler()
 {
   m_scheduler->stop();
   delete m_scheduler;
 }
 
-void MessagingController::stop()
+void DaemonController::stop()
 {
   TRC_ENTER("");
   TRC_INF("daemon stops");
@@ -647,7 +647,7 @@ void MessagingController::stop()
   TRC_LEAVE("");
 }
 
-void MessagingController::exit()
+void DaemonController::exit()
 {
   TRC_INF("exiting ...");
   {
@@ -657,7 +657,7 @@ void MessagingController::exit()
   m_stopConditionVariable.notify_all();
 }
 
-std::string MessagingController::doCommand(const std::string& cmd)
+std::string DaemonController::doCommand(const std::string& cmd)
 {
   std::ostringstream ostr;
   if (cmd == "Operational") {
@@ -681,14 +681,14 @@ std::string MessagingController::doCommand(const std::string& cmd)
 }
 
 //////////////// Launch
-void * MessagingController::getCreateFunction(const std::string& componentName, bool mandatory) const
+void * DaemonController::getCreateFunction(const std::string& componentName, bool mandatory) const
 {
   std::string fname = ("__launch_create_");
   fname += componentName;
   return getFunction(fname, mandatory);
 }
 
-void * MessagingController::getFunction(const std::string& methodName, bool mandatory) const
+void * DaemonController::getFunction(const std::string& methodName, bool mandatory) const
 {
   void * func = nullptr;
 

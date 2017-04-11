@@ -1,11 +1,11 @@
-project(MessagingController)
+project(DaemonController)
 
 set(MC_SRC_FILES
-	${CMAKE_CURRENT_SOURCE_DIR}/MessagingController.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/DaemonController.cpp
 )
 
 set(MC_INC_FILES
-	${CMAKE_CURRENT_SOURCE_DIR}/MessagingController.h
+	${CMAKE_CURRENT_SOURCE_DIR}/DaemonController.h
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/UdpMessaging)
