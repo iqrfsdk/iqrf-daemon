@@ -13,7 +13,7 @@ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 66CB9A85
 
 ## Add repository to the source list
 
-###For Debian (amd64)
+-	For Debian (amd64)
 
 ```Bash
 sudo apt-get install software-properties-common
@@ -21,7 +21,7 @@ sudo add-apt-repository "deb http://repos.iqrfsdk.org/debian jessie testing"
 sudo apt-get update
 ```
 
-###For Ubuntu (amd64)
+-	For Ubuntu (amd64)
 
 ```Bash
 sudo apt-get install software-properties-common
