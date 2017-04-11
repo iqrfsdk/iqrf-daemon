@@ -66,7 +66,7 @@ else()
 	MqttMessaging
 	ClientServicePlain
 
-	MessagingController
+	DaemonController
 	Scheduler
 	paho-mqtt3as
 	DpaExtension
