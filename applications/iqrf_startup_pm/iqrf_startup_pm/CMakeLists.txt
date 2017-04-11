@@ -49,7 +49,7 @@ else()
 	MqttMessaging
 	ClientServicePm
 
-	MessagingController
+	DaemonController
 	Scheduler
 	paho-mqtt3as
 	DpaExtension
