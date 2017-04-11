@@ -37,7 +37,7 @@
       "Enabled":  true
     },
     {
-      "ComponentName": "ClientServicePlain",
+      "ComponentName": "BaseService",
       "Enabled": true
     }
   ]

@@ -1,0 +1,33 @@
+{
+  "Implements": "IClient",
+  "Instances": [
+    {
+      "Name": "BaseServiceForMQ",
+      "Messaging": "MqMessaging",
+      "Serializers": [
+        "SimpleSerializer",
+        "JsonSerializer"
+      ],
+      "Properties": {
+      }
+    },
+    {
+      "Name": "BaseServiceForMQTT1",
+      "Messaging": "MqttMessaging1",
+      "Serializers": [
+        "JsonSerializer"
+      ],
+      "Properties": {
+      }
+    },
+    {
+      "Name": "BaseServiceForMQTT2",
+      "Messaging": "MqttMessaging2",
+      "Serializers": [
+        "JsonSerializer"
+      ],
+      "Properties": {
+      }
+    }
+  ]
+}

@@ -1,16 +1,16 @@
 {
   "Tasks": [
-    "0 * * * * * * ClientServicePlain1 LedR 0 PULSE",
-    "5 * * * * * * ClientServicePlain1 LedG 0 PULSE",
-    "10 * * * * * * ClientServicePlain2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "15 * * * * * * ClientServicePlain2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "20 * * * * * * ClientServicePlain1 Raw 00 00 06 03 ff ff",
-    "25 * * * * * * ClientServicePlain1 Raw 00 00 07 03 ff ff",
-    "30 * * * * * * ClientServicePlain1 LedR 0 PULSE",
-    "35 * * * * * * ClientServicePlain1 LedG 0 PULSE",
-    "40 * * * * * * ClientServicePlain2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "45 * * * * * * ClientServicePlain2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
-    "50 * * * * * * ClientServicePlain1 Raw 00 00 06 03 ff ff",
-    "55 * * * * * * ClientServicePlain1 Raw 00 00 07 03 ff ff"
+    "0 * * * * * * BaseService1 LedR 0 PULSE",
+    "5 * * * * * * BaseService1 LedG 0 PULSE",
+    "10 * * * * * * BaseService2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "15 * * * * * * BaseService2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "20 * * * * * * BaseService1 Raw 00 00 06 03 ff ff",
+    "25 * * * * * * BaseService1 Raw 00 00 07 03 ff ff",
+    "30 * * * * * * BaseService1 LedR 0 PULSE",
+    "35 * * * * * * BaseService1 LedG 0 PULSE",
+    "40 * * * * * * BaseService2 {\"Type\":\"LedR\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "45 * * * * * * BaseService2 {\"Type\":\"LedG\",\"Addr\":0,\"Comd\":\"PULSE\"}",
+    "50 * * * * * * BaseService1 Raw 00 00 06 03 ff ff",
+    "55 * * * * * * BaseService1 Raw 00 00 07 03 ff ff"
   ]
 }

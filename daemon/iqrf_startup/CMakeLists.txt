@@ -39,7 +39,7 @@ if (WIN32)
 	JsonSerializer
 	MqMessaging
 	MqttMessaging
-	ClientServicePlain
+	BaseService
 
 	DaemonController
 	Scheduler
@@ -64,7 +64,7 @@ else()
 	JsonSerializer
 	MqMessaging
 	MqttMessaging
-	ClientServicePlain
+	BaseService
 
 	DaemonController
 	Scheduler

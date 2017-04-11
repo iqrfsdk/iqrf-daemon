@@ -21,7 +21,7 @@ extern void init_JsonSerializer();
 extern void init_MqMessaging();
 extern void init_MqttMessaging();
 extern void init_UdpMessaging();
-extern void init_ClientServicePlain();
+extern void init_BaseService();
 
 #define STATIC_INIT \
 init_SimpleSerializer(); \
@@ -29,4 +29,4 @@ init_JsonSerializer(); \
 init_MqMessaging(); \
 init_MqttMessaging(); \
 init_UdpMessaging(); \
-init_ClientServicePlain();
+init_BaseService();

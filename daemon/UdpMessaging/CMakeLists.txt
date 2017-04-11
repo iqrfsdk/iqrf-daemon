@@ -12,6 +12,4 @@ set(UdpMessaging_INC_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/UdpMessagingTransaction.h
 )
 
-include_directories(${CMAKE_SOURCE_DIR}/MessagingController)
-
 add_library(${PROJECT_NAME} STATIC ${UdpMessaging_SRC_FILES} ${UdpMessaging_INC_FILES})

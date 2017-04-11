@@ -137,7 +137,7 @@ void DaemonController::registerAsyncDpaMessageHandler(std::function<void(const D
   });
 }
 
-//void MessagingController::unregisterAsyncDpaMessageHandler()
+//void DaemonController::unregisterAsyncDpaMessageHandler()
 //{
 //  m_asyncHandler = nullptr;
 //}

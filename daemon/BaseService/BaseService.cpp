@@ -15,30 +15,30 @@
  */
 
 #include "LaunchUtils.h"
-#include "ClientServicePlain.h"
+#include "BaseService.h"
 #include "DpaTransactionTask.h"
 #include "IDaemon.h"
 #include "IqrfLogging.h"
 
-INIT_COMPONENT(IClient, ClientServicePlain)
+INIT_COMPONENT(IClient, BaseService)
 
-ClientServicePlain::ClientServicePlain(const std::string & name)
+BaseService::BaseService(const std::string & name)
   :m_name(name)
   , m_messaging(nullptr)
   , m_daemon(nullptr)
 {
 }
 
-ClientServicePlain::~ClientServicePlain()
+BaseService::~BaseService()
 {
 }
 
-void ClientServicePlain::setDaemon(IDaemon* daemon)
+void BaseService::setDaemon(IDaemon* daemon)
 {
   m_daemon = daemon;
 }
 
-void ClientServicePlain::setSerializer(ISerializer* serializer)
+void BaseService::setSerializer(ISerializer* serializer)
 {
   m_serializerVect.push_back(serializer);
   m_messaging->registerMessageHandler([&](const ustring& msg) {
@@ -46,18 +46,18 @@ void ClientServicePlain::setSerializer(ISerializer* serializer)
   });
 }
 
-void ClientServicePlain::setMessaging(IMessaging* messaging)
+void BaseService::setMessaging(IMessaging* messaging)
 {
   m_messaging = messaging;
 }
 
-void ClientServicePlain::update(const rapidjson::Value& cfg)
+void BaseService::update(const rapidjson::Value& cfg)
 {
   TRC_ENTER("");
   TRC_LEAVE("");
 }
 
-void ClientServicePlain::start()
+void BaseService::start()
 {
   TRC_ENTER("");
 
@@ -71,17 +71,17 @@ void ClientServicePlain::start()
   TRC_LEAVE("");
 }
 
-void ClientServicePlain::stop()
+void BaseService::stop()
 {
   TRC_ENTER("");
 
   m_daemon->getScheduler()->unregisterMessageHandler(m_name);
 
-  TRC_INF("ClientServicePlain :" << PAR(m_name) << " stopped");
+  TRC_INF("BaseService :" << PAR(m_name) << " stopped");
   TRC_LEAVE("");
 }
 
-void ClientServicePlain::handleMsgFromMessaging(const ustring& msg)
+void BaseService::handleMsgFromMessaging(const ustring& msg)
 {
   TRC_DBG("==================================" << std::endl <<
     "Received from MESSAGING: " << std::endl << FORM_HEX(msg.data(), msg.size()));

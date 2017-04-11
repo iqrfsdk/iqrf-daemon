@@ -1,16 +1,16 @@
 {
   "Tasks": [
-    "00 * * * * * * ClientServicePlain2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
-    "05 * * * * * * ClientServicePlain2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
-    "10 * * * * * * ClientServicePlain2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
-    "15 * * * * * * ClientServicePlain2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
-    "20 * * * * * * ClientServicePlain2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
-    "25 * * * * * * ClientServicePlain2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
-    "30 * * * * * * ClientServicePlain2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
-    "35 * * * * * * ClientServicePlain2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
-    "40 * * * * * * ClientServicePlain2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
-    "45 * * * * * * ClientServicePlain2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
-    "50 * * * * * * ClientServicePlain2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
-    "55 * * * * * * ClientServicePlain2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}"
+    "00 * * * * * * BaseService2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "05 * * * * * * BaseService2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "10 * * * * * * BaseService2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "15 * * * * * * BaseService2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "20 * * * * * * BaseService2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "25 * * * * * * BaseService2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "30 * * * * * * BaseService2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "35 * * * * * * BaseService2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "40 * * * * * * BaseService2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "45 * * * * * * BaseService2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "50 * * * * * * BaseService2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}",
+    "55 * * * * * * BaseService2 {\"Type\": \"Raw\", \"Request\": \"00 00 06 03 ff ff\", \"Timeout\": 1000}"
   ]
 }
