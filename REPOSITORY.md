@@ -2,8 +2,10 @@
 
 [http://repos.iqrfsdk.org/](http://repos.iqrfsdk.org/)
 
--   iqrf-daemon_0.1.2_amd64.deb
+-   iqrf-daemon_0.1.2-1_amd64.deb
+-   iqrf-daemon_0.1.2-3_armhf.deb
 -   libpaho.mqtt.c_1.1.0_amd64.deb
+-   libpaho.mqtt.c_1.1.0-1_armhf.deb
 
 ## Download public key to verify the packages from the repository
 
@@ -26,6 +28,15 @@ sudo apt-get update
 ```Bash
 sudo apt-get install software-properties-common
 sudo add-apt-repository "deb http://repos.iqrfsdk.org/ubuntu xenial testing"
+sudo apt-get update
+```
+
+-	For Raspbian (armhf)
+
+Edit source.list and add: deb http://repos.iqrfsdk.org/raspbian jessie testing
+
+```Bash
+sudo nano /etc/apt/sources.list
 sudo apt-get update
 ```
 
