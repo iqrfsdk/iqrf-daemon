@@ -2,19 +2,30 @@
 
 [http://repos.iqrfsdk.org/](http://repos.iqrfsdk.org/)
 
--   iqrf-daemon_0.0.1_amd64.deb
+-   iqrf-daemon_0.1.2_amd64.deb
 -   libpaho.mqtt.c_1.1.0_amd64.deb
 
 ## Download public key to verify the packages from the repository
 
 ```Bash
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 07BABA62
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 66CB9A85
 ```
 
 ## Add repository to the source list
 
+###For Debian (amd64)
+
 ```Bash
-sudo add-apt-repository "deb http://repos.iqrfsdk.org xenial testing"
+sudo apt-get install software-properties-common
+sudo add-apt-repository "deb http://repos.iqrfsdk.org/debian jessie testing"
+sudo apt-get update
+```
+
+###For Ubuntu (amd64)
+
+```Bash
+sudo apt-get install software-properties-common
+sudo add-apt-repository "deb http://repos.iqrfsdk.org/ubuntu xenial testing"
 sudo apt-get update
 ```
 
@@ -43,7 +54,7 @@ Configure components JSON file and restart the service.
 sudo systemctl restart iqrf-daemon.service
 ```
 
-## Content of iqrf-daemon (v0.0.1) package
+## Content of iqrf-daemon (v0.1.2) package
 
 ```Bash
 dpkg -L iqrf-daemon
@@ -51,6 +62,7 @@ dpkg -L iqrf-daemon
 /.
 /usr
 /usr/bin
+/usr/bin/iqrfapp
 /usr/bin/iqrf_startup
 /usr/share
 /usr/share/doc
@@ -63,6 +75,7 @@ dpkg -L iqrf-daemon
 /lib/systemd/system/iqrf-daemon.service
 /etc
 /etc/iqrf-daemon
+/etc/iqrf-daemon/UdpMessaging.json
 /etc/iqrf-daemon/config.json
 /etc/iqrf-daemon/MqMessaging.json
 /etc/iqrf-daemon/TracerFile.json
@@ -71,6 +84,7 @@ dpkg -L iqrf-daemon
 /etc/iqrf-daemon/SimpleSerializer.json
 /etc/iqrf-daemon/MqttMessaging.json
 /etc/iqrf-daemon/Scheduler.json
+/etc/iqrf-daemon/iqrfapp.json
 /etc/iqrf-daemon/ClientServicePlain.json
 ```
 
