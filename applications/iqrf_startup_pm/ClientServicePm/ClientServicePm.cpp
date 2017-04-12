@@ -139,8 +139,9 @@ void ClientServicePm::handleMsgFromMessaging(const ustring& msg)
 
 void ClientServicePm::setFrc(bool val)
 {
-  if (val == m_frcActive)
+  if (val == m_frcActive) {
     return;
+  }
 
   if (val && !m_frcActive) {
     TRC_DBG("Start FRC");
@@ -190,10 +191,11 @@ void ClientServicePm::processFrcFromScheduler(const std::string& task)
     bool stopFrc = true;
     for (auto& pm : m_watchedPm) {
       bool isSync = pm.isSync();
-      if (!isSync && frc.getFrcData_bit2(pm.getDpa().getAddress()))
+      if (!isSync && frc.getFrcData_bit2(pm.getDpa().getAddress())) {
         m_taskQueue->pushToQueue(&pm);
-      else if (!isSync)
+      } else if (!isSync) {
         stopFrc = false; //not all synced
+      }
     }
     setFrc(!stopFrc);;
   }

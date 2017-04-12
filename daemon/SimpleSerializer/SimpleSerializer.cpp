@@ -38,8 +38,7 @@ std::vector<std::string> parseTokens(DpaTask& dpaTask, std::istream& istr)
       found = timeoutStr.find_first_of('=');
       if (std::string::npos != found && found < timeoutStr.size()-1) {
         dpaTask.setTimeout(std::stoi(timeoutStr.substr(++found, timeoutStr.size() - 1)));
-      }
-      else {
+      } else {
         THROW_EX(std::logic_error, "Parse error: " << NAME_PAR(token, timeoutStr));
       }
     }
@@ -49,13 +48,12 @@ std::vector<std::string> parseTokens(DpaTask& dpaTask, std::istream& istr)
       found = clientIdStr.find_first_of('=');
       if (std::string::npos != found && found < clientIdStr.size() - 1) {
         dpaTask.setClid(clientIdStr.substr(++found, clientIdStr.size() - 1));
-      }
-      else {
+      } else {
         THROW_EX(std::logic_error, "Parse error: " << NAME_PAR(token, clientIdStr));
       }
-    }
-    else
+    } else {
       it++;
+    }
   }
 
   return vstrings;
@@ -70,8 +68,7 @@ void parseRequestSimple(DpaTask & dpaTask, std::vector<std::string>& tokens)
     command = tokens[1];
     dpaTask.setAddress(address);
     dpaTask.parseCommand(command);
-  }
-  else {
+  } else {
     THROW_EX(std::logic_error, "Parse error: " << NAME_PAR(tokensNum, tokens.size()));
   }
 }
@@ -175,8 +172,9 @@ const std::string& SimpleSerializer::parseCategory(const std::string& request)
   if (category == CAT_CONF_STR) {
     return CAT_CONF_STR;
   }
-  else
+  else {
     return CAT_DPA_STR;
+  }
 }
 
 std::unique_ptr<DpaTask> SimpleSerializer::parseRequest(const std::string& request)
@@ -203,8 +201,7 @@ std::string SimpleSerializer::parseConfig(const std::string& request)
   if (category == CAT_CONF_STR) {
     m_lastError = "OK";
     return command;
-  }
-  else {
+  } else {
     std::ostringstream ostr;
     ostr << "Unexpected: " << PAR(category);
     m_lastError = ostr.str();

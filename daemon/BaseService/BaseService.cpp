@@ -104,8 +104,7 @@ void BaseService::handleMsgFromMessaging(const ustring& msg)
       if (dpaTask) {
         break;
       }
-    }
-    else if (cat == CAT_CONF_STR) {
+    } else if (cat == CAT_CONF_STR) {
       command = ser->parseConfig(msgs);
       if (!command.empty()) {
         break;
@@ -119,11 +118,9 @@ void BaseService::handleMsgFromMessaging(const ustring& msg)
     m_daemon->executeDpaTransaction(trans);
     int result = trans.waitFinish();
     os << dpaTask->encodeResponse(trans.getErrorStr());
-  }
-  else if (!command.empty()) {
+  } else if (!command.empty()) {
     os << m_daemon->doCommand(command);
-  }
-  else {
+  } else {
     //os << m_serializer->getLastError();
     os << "PARSE ERROR";
   }

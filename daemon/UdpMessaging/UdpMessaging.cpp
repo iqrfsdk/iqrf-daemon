@@ -46,8 +46,7 @@ std::unique_ptr<DpaTransaction> UdpMessaging::getDpaTransactionForward(DpaTransa
     std::unique_ptr<DpaTransaction> trn(ant_new UdpMessagingTransaction(this, forwarded));
     sendDpaMessageToUdp(forwarded->getMessage()); //forward request
     return trn;
-  }
-  else { //returns itself to avoid forwarding in this case
+  } else { //returns itself to avoid forwarding in this case
     std::unique_ptr<DpaTransaction> udpTrn(ant_new UdpMessagingTransaction(*m_operationalTransaction));
     return udpTrn;
   }
@@ -124,8 +123,7 @@ int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
 
     if (m_exclusiveChannel != nullptr) { // exclusiveAccess
       m_exclusiveChannel->sendTo(message);
-    }
-    else {
+    } else {
       m_operationalTransaction->setMessage(message);
       m_daemon->executeDpaTransaction(*m_operationalTransaction);
     }
@@ -153,8 +151,9 @@ void UdpMessaging::encodeMessageUdp(ustring& udpMessage, const ustring& message)
   udpMessage[dlen_H] = (unsigned char)((dlen >> 8) & 0xFF);
   udpMessage[dlen_L] = (unsigned char)(dlen & 0xFF);
 
-  if (0 < dlen)
+  if (0 < dlen) {
     udpMessage.insert(IQRF_UDP_HEADER_SIZE, message);
+  }
 
   uint16_t crc = Crc::get().GetCRC_CCITT((unsigned char*)udpMessage.data(), dlen + IQRF_UDP_HEADER_SIZE);
   udpMessage[dlen + IQRF_UDP_HEADER_SIZE] = (unsigned char)((crc >> 8) & 0xFF);
@@ -166,24 +165,28 @@ void UdpMessaging::decodeMessageUdp(const ustring& udpMessage, ustring& message)
   unsigned short dlen = 0;
 
   // Min. packet length check
-  if (udpMessage.size() < IQRF_UDP_HEADER_SIZE + IQRF_UDP_CRC_SIZE)
+  if (udpMessage.size() < IQRF_UDP_HEADER_SIZE + IQRF_UDP_CRC_SIZE) {
     THROW_EX(UdpChannelException, "Message is too short: " << FORM_HEX(udpMessage.data(), udpMessage.size()));
+  }
 
   // GW_ADR check
-  if (udpMessage[gwAddr] != IQRF_UDP_GW_ADR)
+  if (udpMessage[gwAddr] != IQRF_UDP_GW_ADR) {
     THROW_EX(UdpChannelException, "Message is has wrong GW_ADDR: " << PAR_HEX(udpMessage[gwAddr]));
+  }
 
   //iqrf data length
   dlen = (udpMessage[dlen_H] << 8) + udpMessage[dlen_L];
 
   // Max. packet length check
-  if ((dlen + IQRF_UDP_HEADER_SIZE + IQRF_UDP_CRC_SIZE) > IQRF_UDP_BUFFER_SIZE)
+  if ((dlen + IQRF_UDP_HEADER_SIZE + IQRF_UDP_CRC_SIZE) > IQRF_UDP_BUFFER_SIZE) {
     THROW_EX(UdpChannelException, "Message is too long: " << PAR(dlen));
+  }
 
   // CRC check
   unsigned short crc = (udpMessage[IQRF_UDP_HEADER_SIZE + dlen] << 8) + udpMessage[IQRF_UDP_HEADER_SIZE + dlen + 1];
-  if (crc != Crc::get().GetCRC_CCITT((unsigned char*)udpMessage.data(), dlen + IQRF_UDP_HEADER_SIZE))
+  if (crc != Crc::get().GetCRC_CCITT((unsigned char*)udpMessage.data(), dlen + IQRF_UDP_HEADER_SIZE)) {
     THROW_EX(UdpChannelException, "Message has wrong CRC");
+  }
 
   message = udpMessage.substr(IQRF_UDP_HEADER_SIZE, dlen);
 }

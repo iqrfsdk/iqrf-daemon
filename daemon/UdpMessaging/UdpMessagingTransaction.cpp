@@ -17,8 +17,7 @@ const DpaMessage& UdpMessagingTransaction::getMessage() const
     const DpaMessage& msg = m_forwarded->getMessage();
    // m_udpMessaging->sendDpaMessageToUdp(msg);
     return msg;
-  }
-  else {
+  } else {
     return m_message;
   }
 }
@@ -27,8 +26,7 @@ int UdpMessagingTransaction::getTimeout() const
 {
   if (m_forwarded) {
     return m_forwarded->getTimeout();
-  }
-  else {
+  } else {
     return -1;
   }
 }

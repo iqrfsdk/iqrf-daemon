@@ -113,8 +113,7 @@ int Startup::run(int argc, char** argv)
     std::cerr << "Example" << std::endl;
     std::cerr << "  iqrf_startup config.json" << std::endl;
     return (-1);
-  }
-  else {
+  } else {
     configFile = argv[1];
   }
 
