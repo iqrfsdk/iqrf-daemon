@@ -18,25 +18,21 @@ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 66CB9A85
 -	For Debian (amd64)
 
 ```Bash
-sudo apt-get install software-properties-common
-sudo add-apt-repository "deb http://repos.iqrfsdk.org/debian jessie testing"
+echo "deb http://repos.iqrfsdk.org/debian jessie testing" | sudo tee -a /etc/apt/sources.list
 sudo apt-get update
 ```
 
 -	For Ubuntu (amd64)
 
 ```Bash
-sudo apt-get install software-properties-common
-sudo add-apt-repository "deb http://repos.iqrfsdk.org/ubuntu xenial testing"
+echo "deb http://repos.iqrfsdk.org/ubuntu xenial testing" | sudo tee -a /etc/apt/sources.list
 sudo apt-get update
 ```
 
 -	For Raspbian (armhf)
 
-Edit source.list and add: deb http://repos.iqrfsdk.org/raspbian jessie testing
-
 ```Bash
-sudo nano /etc/apt/sources.list
+echo "deb http://repos.iqrfsdk.org/raspbian jessie testing" | sudo tee -a /etc/apt/sources.list
 sudo apt-get update
 ```
 
