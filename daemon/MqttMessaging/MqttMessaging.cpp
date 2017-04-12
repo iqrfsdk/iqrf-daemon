@@ -42,6 +42,24 @@ private:
   std::string m_mqttPassword;
   bool m_mqttEnabledSSL = false;
 
+  //The file in PEM format containing the public digital certificates trusted by the client.
+  std::string m_trustStore;
+  //The file in PEM format containing the public certificate chain of the client. It may also include
+  //the client's private key.
+  std::string m_keyStore;
+  //If not included in the sslKeyStore, this setting points to the file in PEM format containing
+  //the client's private key.
+  std::string m_privateKey;
+  //The password to load the client's privateKey if encrypted.
+  std::string m_privateKeyPassword;
+  //The list of cipher suites that the client will present to the server during the SSL handshake.For a
+  //full explanation of the cipher list format, please see the OpenSSL on - line documentation :
+  //http ://www.openssl.org/docs/apps/ciphers.html#CIPHER_LIST_FORMAT
+  std::string m_enabledCipherSuites;
+  //True/False option to enable verification of the server certificate
+  bool m_enableServerCertAuth = true;
+
+  
   std::string m_name;
 
   TaskQueue<ustring>* m_toMqttMessageQueue;
@@ -98,6 +116,13 @@ public:
     m_mqttUser = jutils::getMemberAs<std::string>("User", cfg);
     m_mqttPassword = jutils::getMemberAs<std::string>("Password", cfg);
     m_mqttEnabledSSL = jutils::getMemberAs<bool>("EnabledSSL", cfg);
+    
+    m_trustStore = jutils::getPossibleMemberAs<std::string>("TrustStore", cfg, m_trustStore);
+    m_keyStore = jutils::getPossibleMemberAs<std::string>("KeyStore", cfg, m_keyStore);
+    m_privateKey = jutils::getPossibleMemberAs<std::string>("PrivateKey", cfg, m_privateKey);
+    m_privateKeyPassword = jutils::getPossibleMemberAs<std::string>("PrivateKeyPassword", cfg, m_privateKeyPassword);
+    m_enabledCipherSuites = jutils::getPossibleMemberAs<std::string>("EnabledCipherSuites", cfg, m_enabledCipherSuites);
+    m_enableServerCertAuth = jutils::getPossibleMemberAs<bool>("EnableServerCertAuth", cfg, m_enableServerCertAuth);
 
     TRC_LEAVE("");
   }
@@ -118,6 +143,14 @@ public:
     });
 
     m_ssl_opts.enableServerCertAuth = true;
+    
+    if (!m_trustStore.empty()) m_ssl_opts.trustStore = m_trustStore.c_str();
+    if (!m_keyStore.empty()) m_ssl_opts.keyStore = m_keyStore.c_str();
+    if (!m_privateKey.empty()) m_ssl_opts.privateKey = m_privateKey.c_str();
+    if (!m_privateKeyPassword.empty()) m_ssl_opts.privateKeyPassword = m_privateKeyPassword.c_str();
+    if (!m_enabledCipherSuites.empty()) m_ssl_opts.enabledCipherSuites = m_enabledCipherSuites.c_str();
+    m_ssl_opts.enableServerCertAuth = m_enableServerCertAuth;
+
     int retval;
 
     if ((retval = MQTTAsync_create(&m_client, m_mqttBrokerAddr.c_str(),
