@@ -20,7 +20,7 @@
 #include "IDaemon.h"
 #include "IqrfLogging.h"
 
-INIT_COMPONENT(IClient, BaseService)
+INIT_COMPONENT(IService, BaseService)
 
 BaseService::BaseService(const std::string & name)
   :m_name(name)

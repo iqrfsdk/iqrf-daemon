@@ -18,7 +18,7 @@
 
 #include "ISerializer.h"
 #include "IMessaging.h"
-#include "IClient.h"
+#include "IService.h"
 #include "TaskQueue.h"
 #include "IDaemon.h"
 #include "JsonUtils.h"
@@ -110,7 +110,7 @@ private:
   TaskQueue<DpaTransaction*> *m_dpaTransactionQueue;
 
   std::map<std::string, std::unique_ptr<ISerializer>> m_serializers;
-  std::map<std::string, std::unique_ptr<IClient>> m_clients;
+  std::map<std::string, std::unique_ptr<IService>> m_clients;
   std::map<std::string, std::unique_ptr<IMessaging>> m_messagings;
 
   IDpaMessageForwarding* m_dpaMessageForwarding = nullptr;

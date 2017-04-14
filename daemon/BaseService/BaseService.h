@@ -17,7 +17,7 @@
 #pragma once
 
 #include "JsonUtils.h"
-#include "IClient.h"
+#include "IService.h"
 #include "ISerializer.h"
 #include "IMessaging.h"
 #include "IScheduler.h"
@@ -28,7 +28,7 @@ class IDaemon;
 
 typedef std::basic_string<unsigned char> ustring;
 
-class BaseService : public IClient
+class BaseService : public IService
 {
 public:
   BaseService() = delete;

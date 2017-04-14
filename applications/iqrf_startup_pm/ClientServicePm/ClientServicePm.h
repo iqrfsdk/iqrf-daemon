@@ -18,7 +18,7 @@
 
 #include "JsonUtils.h"
 #include "PrfPulseMeter.h"
-#include "IClient.h"
+#include "IService.h"
 #include "ISerializer.h"
 #include "IMessaging.h"
 #include "IScheduler.h"
@@ -89,7 +89,7 @@ private:
 
 typedef ScheduleDpaTask<PrfPulseMeterJson> PrfPulseMeterSchd;
 
-class ClientServicePm : public IClient
+class ClientServicePm : public IService
 {
 public:
   ClientServicePm() = delete;

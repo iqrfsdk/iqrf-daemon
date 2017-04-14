@@ -22,7 +22,7 @@
 #include "IDaemon.h"
 #include "IqrfLogging.h"
 
-INIT_COMPONENT(IClient, ClientServicePm)
+INIT_COMPONENT(IService, ClientServicePm)
 
 const std::string SCHEDULED_SEND_FRC_TASK("SND_FRC");
 const std::string SCHEDULED_SEND_PMT_TASK("SND_PMT");

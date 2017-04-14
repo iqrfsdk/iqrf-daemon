@@ -18,7 +18,7 @@
 
 #include "DpaTransaction.h"
 #include "IMessaging.h"
-#include "IClient.h"
+#include "IService.h"
 #include <set>
 #include <string>
 #include <functional>

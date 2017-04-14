@@ -24,7 +24,7 @@ class IDaemon;
 class ISerializer;
 class IMessaging;
 
-class IClient
+class IService
 {
 public:
   // component
@@ -39,5 +39,5 @@ public:
   virtual void setMessaging(IMessaging* messaging) = 0;
 
   // interface
-  inline virtual ~IClient() {};
+  inline virtual ~IService() {};
 };

@@ -23,8 +23,6 @@
 #include "DpaHandler.h"
 #include "JsonUtils.h"
 
-#include "IClient.h"
-
 #include "IMessaging.h"
 #include "UdpMessaging.h"
 #include "Scheduler.h"
@@ -450,7 +448,7 @@ void DaemonController::loadClientComponent(const ComponentDescriptor& componentD
   if (componentDescriptor.m_interfaceName != "IClient")
     return;
 
-  typedef std::unique_ptr<IClient>(*CreateClientService)(const std::string&);
+  typedef std::unique_ptr<IService>(*CreateClientService)(const std::string&);
 
   const auto instancesMember = jutils::getMember("Instances", componentDescriptor.m_doc);
   const rapidjson::Value& instances = instancesMember->value;
@@ -472,7 +470,7 @@ void DaemonController::loadClientComponent(const ComponentDescriptor& componentD
 
     //create instance
     CreateClientService createService = (CreateClientService)getCreateFunction(componentDescriptor.m_componentName, true);
-    std::unique_ptr<IClient> client = createService(instanceName);
+    std::unique_ptr<IService> client = createService(instanceName);
     client->setDaemon(this);
 
     //get messaging
