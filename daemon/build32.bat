@@ -1,7 +1,7 @@
 set project=clibudp
 
 rem //expected build dir structure
-set buildexp=build\\Visual_Studio_12_2013\\x86
+set buildexp=build\\Visual_Studio_14_2015\\x86
 
 set currentdir=%cd%
 set builddir=.\\%buildexp%
@@ -35,7 +35,7 @@ popd
 
 rem //launch cmake to generate build environment
 pushd %builddir%
-cmake -G "Visual Studio 12 2013" -Dclibdpa_DIR:PATH=%clibdpa% -Dcutils_DIR:PATH=%cutils% -Dclibcdc_DIR:PATH=%clibcdc% -Dclibspi_DIR:PATH=%clibspi% %currentdir%
+cmake -G "Visual Studio 14 2015" -Dclibdpa_DIR:PATH=%clibdpa% -Dcutils_DIR:PATH=%cutils% -Dclibcdc_DIR:PATH=%clibcdc% -Dclibspi_DIR:PATH=%clibspi% %currentdir%
 popd
 
 rem //build from generated build environment
