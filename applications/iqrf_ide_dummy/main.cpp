@@ -94,8 +94,9 @@ int main()
       ustring message = { 0x01, 0x00, 0x06, 0x03, 0xFF, 0xFF };
       encodeMessageUdp(3, 0, message, udpMessage);
 
-      for (int i = 1; i > 0; i--)
+      for (int i = 1; i > 0; i--) {
         m_udpChannel->sendTo(udpMessage);
+      }
       break;
     }
     case 3:

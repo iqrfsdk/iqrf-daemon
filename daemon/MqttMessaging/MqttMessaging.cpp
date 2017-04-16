@@ -199,8 +199,9 @@ public:
       ///stop possibly running connect thread
     m_stopAutoConnect = true;
     onConnectFailure(nullptr);
-    if (m_connectThread.joinable())
+    if (m_connectThread.joinable()) {
       m_connectThread.join();
+    }
 
     int retval;
     m_disc_opts.onSuccess = s_onDisconnect;
@@ -274,8 +275,7 @@ public:
         TRC_WAR("Failed to start sendMessage: " << PAR(retval));
       }
 
-    }
-    else {
+    } else {
       TRC_WAR("Cannot send to MQTT: connection lost");
     }
   }
@@ -291,8 +291,7 @@ public:
     while (true) {
       TRC_DBG("Connecting: " << PAR(m_mqttBrokerAddr) << PAR(m_mqttClientId));
       if ((retval = MQTTAsync_connect(m_client, &m_conn_opts)) == MQTTASYNC_SUCCESS) {
-      }
-      else {
+      } else {
         TRC_WAR("MQTTAsync_connect() failed: " << PAR(retval));
       }
 
@@ -301,7 +300,7 @@ public:
       {
         std::unique_lock<std::mutex> lck(m_connectionMutex);
         if (m_connectionVariable.wait_for(lck, std::chrono::seconds(seconds),
-          [this] {return m_connected == true || m_stopAutoConnect == true; }))
+          [this] {return m_connected == true || m_stopAutoConnect == true; })) 
           break;
       }
       seconds = seconds < seconds_max ? seconds * 2 : seconds_max;
@@ -318,8 +317,9 @@ public:
     m_connected = false;
     m_subscribed = false;
 
-    if (m_connectThread.joinable())
+    if (m_connectThread.joinable()) {
       m_connectThread.join();
+    }
 
     m_connectThread = std::thread([this]() { this->connectThread(); });
     TRC_LEAVE("");
@@ -398,19 +398,21 @@ public:
   int msgarrvd(char *topicName, int topicLen, MQTTAsync_message *message) {
     ustring msg((unsigned char*)message->payload, message->payloadlen);
     std::string topic;
-    if (topicLen > 0)
+    if (topicLen > 0) {
       topic = std::string(topicName, topicLen);
-    else
+    } else {
       topic = std::string(topicName);
+    }
     //TODO wildcards in comparison - only # supported now
     TRC_DBG(PAR(topic));
     size_t sz = m_mqttTopicRequest.size();
     if (m_mqttTopicRequest[--sz] == '#') {
-      if (0 == m_mqttTopicRequest.compare(0, sz, topic, 0, sz))
+      if (0 == m_mqttTopicRequest.compare(0, sz, topic, 0, sz)) {
         handleMessageFromMqtt(msg);
-    }
-    else if (0 == m_mqttTopicRequest.compare(topic))
+      }
+    } else if (0 == m_mqttTopicRequest.compare(topic)) {
       handleMessageFromMqtt(msg);
+    }
     MQTTAsync_freeMessage(&message);
     MQTTAsync_free(topicName);
     return 1;

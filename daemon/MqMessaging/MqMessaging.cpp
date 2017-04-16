@@ -93,8 +93,9 @@ int MqMessaging::handleMessageFromMq(const ustring& mqMessage)
   TRC_DBG("==================================" << std::endl <<
     "Received from MQ: " << std::endl << FORM_HEX(mqMessage.data(), mqMessage.size()));
 
-  if (m_messageHandlerFunc)
+  if (m_messageHandlerFunc) {
     m_messageHandlerFunc(mqMessage);
+  }
 
   return 0;
 }

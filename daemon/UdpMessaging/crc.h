@@ -34,8 +34,7 @@ public:
     //crc_tabccitt_init = false;
     crc_ccitt = 0;
 
-    for (i = 0; i < len; i++)
-    {
+    for (i = 0; i < len; i++) {
       crc_ccitt = UpdateCRC_CCITT(crc_ccitt, buf[i]);
     }
 
@@ -86,15 +85,16 @@ private:
     int i, j;
     uint16_t crc, c;
 
-    for (i = 0; i < 256; i++)
-    {
+    for (i = 0; i < 256; i++) {
       crc = 0;
       c = ((uint16_t)i) << 8;
 
-      for (j = 0; j < 8; j++)
-      {
-        if ((crc ^ c) & 0x8000) crc = (crc << 1) ^ P_CCITT;
-        else                     crc = crc << 1;
+      for (j = 0; j < 8; j++) {
+        if ((crc ^ c) & 0x8000) {
+          crc = (crc << 1) ^ P_CCITT;
+        } else {
+          crc = crc << 1;
+        }
 
         c = c << 1;
       }

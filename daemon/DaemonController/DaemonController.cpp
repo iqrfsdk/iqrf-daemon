@@ -80,8 +80,7 @@ void DaemonController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
         CATCH_EX("Error in ExecuteDpaTransaction: ", std::exception, e);
         dpaTransaction->processFinish(DpaRequest::kCreated);
       }
-    }
-    else {
+    } else {
       TRC_ERR("Dpa interface is not working");
       dpaTransaction->processFinish(DpaRequest::kCreated);
     }
@@ -99,8 +98,7 @@ void DaemonController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
         CATCH_EX("Error in ExecuteDpaTransaction: ", std::exception, e);
         dpaTransaction->processFinish(DpaRequest::kCreated);
       }
-    }
-    else {
+    } else {
       TRC_ERR("Dpa interface is not working");
       dpaTransaction->processFinish(DpaRequest::kCreated);
     }
@@ -128,8 +126,7 @@ void DaemonController::registerAsyncDpaMessageHandler(std::function<void(const D
   m_dpaHandler->RegisterAsyncMessageHandler([&](const DpaMessage& dpaMessage) {
     if (m_asyncHandler) {
       m_asyncHandler(dpaMessage);
-    }
-    else {
+    } else {
       TRC_WAR("Unregistered asyncHandler()");
     }
   });
@@ -203,8 +200,9 @@ void DaemonController::run(const std::string& cfgFileName)
   }
 
   std::unique_lock<std::mutex> lock(m_stopConditionMutex);
-  while (m_running && ((std::chrono::system_clock::now() - m_lastRefreshTime)) < m_timeout)
+  while (m_running && ((std::chrono::system_clock::now() - m_lastRefreshTime)) < m_timeout) {
     m_stopConditionVariable.wait_for(lock, m_timeout);
+  }
 
   try {
     stop();
@@ -277,8 +275,9 @@ void DaemonController::startTrace()
 
       m_traceFileName = jutils::getPossibleMemberAs<std::string>("TraceFileName", fnd->second.m_doc, "");
       m_traceFileSize = jutils::getPossibleMemberAs<int>("TraceFileSize", fnd->second.m_doc, 0);
-      if (m_traceFileSize <= 0)
+      if (m_traceFileSize <= 0) {
         m_traceFileSize = TRC_DEFAULT_FILE_MAXSIZE;
+      }
 
       TRC_START(m_traceFileName, m_traceFileSize);
       TRC_INF("Loaded configuration file: " << PAR(m_cfgFileName));
@@ -293,8 +292,8 @@ void DaemonController::startTrace()
 
 void DaemonController::startIqrfIf()
 {
-
   auto fnd = m_componentMap.find("IqrfInterface");
+  
   if (fnd != m_componentMap.end() && fnd->second.m_enabled) {
     try {
       jutils::assertIsObject("", fnd->second.m_doc);
@@ -302,11 +301,12 @@ void DaemonController::startIqrfIf()
       TRC_INF(PAR(m_iqrfInterfaceName));
 
       size_t found = m_iqrfInterfaceName.find("spi");
-      if (found != std::string::npos)
+      
+      if (found != std::string::npos) {
         m_iqrfInterface = ant_new IqrfSpiChannel(m_iqrfInterfaceName);
-      else
+      } else {
         m_iqrfInterface = ant_new IqrfCdcChannel(m_iqrfInterfaceName);
-
+      }
     }
     catch (std::exception &e) {
       CATCH_EX("Cannot create IqrfInterface: ", std::exception, e);
@@ -359,8 +359,9 @@ void DaemonController::startScheduler()
 
 void DaemonController::loadSerializerComponent(const ComponentDescriptor& componentDescriptor)
 {
-  if (componentDescriptor.m_interfaceName != "ISerializer")
+  if (componentDescriptor.m_interfaceName != "ISerializer") {
     return;
+  }
 
   typedef std::unique_ptr<ISerializer>(*CreateSerializer)(const std::string&);
 
@@ -373,8 +374,9 @@ void DaemonController::loadSerializerComponent(const ComponentDescriptor& compon
     jutils::assertIsObject("Instances[]{}", *itr);
     std::string instanceName = jutils::getMemberAs<std::string>("Name", *itr);
     bool enabled = jutils::getPossibleMemberAs<bool>("Enabled", *itr, true);
-    if (!enabled)
+    if (!enabled) {
       continue;
+    }
 
     const auto propertiesMember = jutils::getMember("Properties", *itr);
     const rapidjson::Value& properties = propertiesMember->value;
@@ -397,8 +399,9 @@ void DaemonController::loadSerializerComponent(const ComponentDescriptor& compon
 
 void DaemonController::loadMessagingComponent(const ComponentDescriptor& componentDescriptor)
 {
-  if (componentDescriptor.m_interfaceName != "IMessaging")
+  if (componentDescriptor.m_interfaceName != "IMessaging") {
     return;
+  }
 
   typedef std::unique_ptr<IMessaging>(*CreateMessaging)(const std::string&);
 
@@ -411,8 +414,9 @@ void DaemonController::loadMessagingComponent(const ComponentDescriptor& compone
     jutils::assertIsObject("Instances[]{}", *itr);
     std::string instanceName = jutils::getMemberAs<std::string>("Name", *itr);
     bool enabled = jutils::getPossibleMemberAs<bool>("Enabled", *itr, true);
-    if (!enabled)
+    if (!enabled) {
       continue;
+    }
 
     const auto propertiesMember = jutils::getMember("Properties", *itr);
     const rapidjson::Value& properties = propertiesMember->value;
@@ -445,8 +449,9 @@ void DaemonController::loadMessagingComponent(const ComponentDescriptor& compone
 
 void DaemonController::loadClientComponent(const ComponentDescriptor& componentDescriptor)
 {
-  if (componentDescriptor.m_interfaceName != "IClient")
+  if (componentDescriptor.m_interfaceName != "IClient") {
     return;
+  }
 
   typedef std::unique_ptr<IService>(*CreateClientService)(const std::string&);
 
@@ -459,8 +464,9 @@ void DaemonController::loadClientComponent(const ComponentDescriptor& componentD
     jutils::assertIsObject("Instances[]{}", *itr);
     std::string instanceName = jutils::getMemberAs<std::string>("Name", *itr);
     bool enabled = jutils::getPossibleMemberAs<bool>("Enabled", *itr, true);
-    if (!enabled)
+    if (!enabled) {
       continue;
+    }
 
     std::string messagingName = jutils::getMemberAs<std::string>("Messaging", *itr);
     std::vector<std::string> serializersVector = jutils::getMemberAsVector<std::string>("Serializers", *itr);
@@ -478,18 +484,19 @@ void DaemonController::loadClientComponent(const ComponentDescriptor& componentD
       auto found = m_messagings.find(messagingName);
       if (found != m_messagings.end()) {
         client->setMessaging(found->second.get());
-      }
-      else
+      } else {
         THROW_EX(std::logic_error, "Cannot find: " << PAR(messagingName));
+      }
     }
 
     //get serializers
     for (auto & serializerName : serializersVector) {
       auto ss = m_serializers.find(serializerName);
-      if (ss != m_serializers.end())
+      if (ss != m_serializers.end()) {
         client->setSerializer(ss->second.get());
-      else
+      } else {
         THROW_EX(std::logic_error, "Cannot find: " << PAR(serializerName));
+      }
     }
 
     //get properties
@@ -694,8 +701,7 @@ void * DaemonController::getFunction(const std::string& methodName, bool mandato
   if (!func) {
     if (mandatory) {
       THROW_EX(std::logic_error, PAR(methodName) << ": cannot be found. The binary isn't probably correctly linked");
-    }
-    else {
+    } else {
       TRC_WAR(PAR(methodName) << ": cannot be found. The binary isn't probably correctly linked");
     }
   }

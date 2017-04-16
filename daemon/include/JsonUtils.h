@@ -71,26 +71,30 @@ namespace jutils
   //////////////////////////////////////
   template<typename T>
   inline void assertIs(const std::string& name, const rapidjson::Value& v) {
-    if (!v.Is<T>())
+    if (!v.Is<T>()) {
       THROW_EX(std::logic_error, "Expected: " << typeid(T).name() << ", detected: " << PAR(name) << NAME_PAR(type, v.GetType()));
+    }
   }
 
   template<>
   inline void assertIs<std::string>(const std::string& name, const rapidjson::Value& v) {
-    if (!v.IsString())
+    if (!v.IsString()) {
       THROW_EX(std::logic_error, "Expected: " << typeid(std::string).name() << ", detected: " << PAR(name) << NAME_PAR(type, v.GetType()));
+    }
   }
 
   inline void assertIsObject(const std::string& name, const rapidjson::Value& v)
   {
-    if (!v.IsObject())
+    if (!v.IsObject()) {
       THROW_EX(std::logic_error, "Expected: Json Object, detected: " << PAR(name) << NAME_PAR(type, v.GetType()));
+    }
   }
 
   inline void assertIsArray(const std::string& name, const rapidjson::Value& v)
   {
-    if (!v.IsArray())
+    if (!v.IsArray()) {
       THROW_EX(std::logic_error, "Expected: Json Array, detected: " << PAR(name) << NAME_PAR(type, v.GetType()));
+    }
   }
 
   //////////////////////////////////////
@@ -181,8 +185,9 @@ namespace jutils
   inline std::vector<T> getPossibleMemberAsVector(const std::string& name, const rapidjson::Value& v, std::vector<T> defaultVal = std::vector<T>())
   {
     const auto m = v.FindMember(name.c_str());
-    if (m == v.MemberEnd())
+    if (m == v.MemberEnd()) {
       return defaultVal;
+    }
 
     const rapidjson::Value& vct = m->value;
     assertIsArray(name, vct);

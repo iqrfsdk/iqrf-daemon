@@ -36,8 +36,7 @@ int main(int argc, char** argv)
 
   if (argc == 1) {
     cmdl = true;
-  }
-  else if (argc < 4 ) {
+  } else if (argc < 4 ) {
     std::cerr << "Usage" << std::endl;
     std::cerr << "  iqrfapp [<perif> <num> <command>]" << std::endl << std::endl;
     std::cerr << "Example" << std::endl;
@@ -46,11 +45,11 @@ int main(int argc, char** argv)
     std::cerr << "  iqrfapp LedG 0 PULSE" << std::endl;
     std::cerr << "  iqrfapp LedR 1 PULSE" << std::endl;
     exit (-1);
-  }
-  else {
+  } else {
     std::ostringstream os;
-    for (int i = 1; i < argc; i++)
+    for (int i = 1; i < argc; i++) {
       os << argv[i] << " ";
+    }
     command = os.str();
   }
 
@@ -99,8 +98,9 @@ int main(int argc, char** argv)
 
     //TODO wait timeout
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    if (!cmdl)
+    if (!cmdl) {
       break;
+    }
   }
 
   delete mqChannel;

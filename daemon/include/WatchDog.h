@@ -45,7 +45,9 @@ public:
       m_callback = callback;
       m_timeout = std::chrono::milliseconds(millis);
       m_lastRefreshTime = std::chrono::system_clock::now();
-      if (m_thread.joinable()) m_thread.join();
+      if (m_thread.joinable()) {
+        m_thread.join();
+      }
       m_running = true;
       m_thread = std::thread(&WatchDog::watch, this);
     }
@@ -59,8 +61,9 @@ public:
         m_stopConditionVariable.notify_all();
       }
     }
-    if (m_thread.joinable())
+    if (m_thread.joinable()) {
       m_thread.join();
+    }
   }
 
   void pet() {

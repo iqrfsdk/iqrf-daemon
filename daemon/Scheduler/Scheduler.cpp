@@ -80,8 +80,9 @@ void Scheduler::stop()
     m_conditionVariable.notify_one();
   }
 
-  if (m_timerThread.joinable())
+  if (m_timerThread.joinable()) {
     m_timerThread.join();
+  }
 
   delete m_dpaTaskQueue;
   m_dpaTaskQueue = nullptr;
@@ -114,8 +115,7 @@ int Scheduler::handleScheduledRecord(const ScheduleRecord& record)
     if (found != m_messageHandlers.end()) {
       TRC_DBG(NAME_PAR(Task, record.getTask()) << " has been passed to: " << NAME_PAR(ClinetId, record.getClientId()));
       found->second(record.getTask());
-    }
-    else {
+    } else {
       TRC_DBG("Unregistered client: " << PAR(record.getClientId()));
     }
   }
@@ -137,10 +137,11 @@ Scheduler::TaskHandle Scheduler::addScheduleRecordUnlocked(std::shared_ptr<Sched
   //add according handle
   while (true) {//get unique handle
     auto result = m_scheduledTasksByHandle.insert(std::make_pair(record->getTaskHandle(), record));
-    if (result.second)
+    if (result.second) {
       break;
-    else
+    } else {
       shuffleDuplicitHandle(*record);
+    }
   }
 
   return record->getTaskHandle();
@@ -178,10 +179,11 @@ void Scheduler::removeScheduleRecordUnlocked(std::shared_ptr<ScheduleRecord>& re
 {
   Scheduler::TaskHandle handle = record->getTaskHandle();
   for (auto it = m_scheduledTasksByTime.begin(); it != m_scheduledTasksByTime.end(); ) {
-    if (it->second->getTaskHandle() == handle)
+    if (it->second->getTaskHandle() == handle) {
       it = m_scheduledTasksByTime.erase(it);
-    else
+    } else {
       it++;
+    }
   }
   m_scheduledTasksByHandle.erase(handle);
 }
@@ -241,8 +243,7 @@ void Scheduler::timer()
         system_clock::time_point nextTimePoint = record->getNext(timePoint, timeStr);
         if (nextTimePoint >= timePoint) {
           m_scheduledTasksByTime.insert(std::make_pair(nextTimePoint, record));
-        }
-        else {
+        } else {
           //TODO remove from m_scheduledTasksByHandle
         }
 
@@ -252,8 +253,7 @@ void Scheduler::timer()
         TRC_INF("Task fired at: " << ScheduleRecord::asString(timePoint) << PAR(record->getTask()));
         m_dpaTaskQueue->pushToQueue(*record); //copy record
 
-      }
-      else {
+      } else {
         nextWakeupAndUnlock(timePoint);
         break;
       }
@@ -266,8 +266,7 @@ void Scheduler::nextWakeupAndUnlock(system_clock::time_point& timePoint)
   // get next wakeup time
   if (!m_scheduledTasksByTime.empty()) {
     timePoint = m_scheduledTasksByTime.begin()->first;
-  }
-  else {
+  } else {
     timePoint += seconds(10);
   }
   //TRC_DBG("UNLOCKING MUTEX");
@@ -306,8 +305,9 @@ std::string Scheduler::getMyTask(const std::string& clientId, const TaskHandle& 
   // lock and copy
   std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
   auto found = m_scheduledTasksByHandle.find(hndl);
-  if (found != m_scheduledTasksByHandle.end() && clientId == found->second->getClientId())
+  if (found != m_scheduledTasksByHandle.end() && clientId == found->second->getClientId()) {
     retval = found->second->getTask();
+  }
   return retval;
 }
 
@@ -319,9 +319,9 @@ void Scheduler::removeAllMyTasks(const std::string& clientId)
     if (it->second->getClientId() == clientId) {
       m_scheduledTasksByHandle.erase(it->second->getTaskHandle());
       it = m_scheduledTasksByTime.erase(it);
-    }
-    else
+    } else {
       it++;
+    }
   }
 }
 
@@ -329,8 +329,9 @@ void Scheduler::removeTask(const std::string& clientId, TaskHandle hndl)
 {
   std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
   auto found = m_scheduledTasksByHandle.find(hndl);
-  if (found != m_scheduledTasksByHandle.end() && clientId == found->second->getClientId())
+  if (found != m_scheduledTasksByHandle.end() && clientId == found->second->getClientId()) {
     removeScheduleRecordUnlocked(found->second);
+  }
 }
 
 void Scheduler::removeTasks(const std::string& clientId, std::vector<TaskHandle> hndls)
@@ -338,8 +339,9 @@ void Scheduler::removeTasks(const std::string& clientId, std::vector<TaskHandle>
   std::lock_guard<std::mutex> lck(m_scheduledTasksMutex);
   for (auto& it : hndls) {
     auto found = m_scheduledTasksByHandle.find(it);
-    if (found != m_scheduledTasksByHandle.end() && clientId == found->second->getClientId())
+    if (found != m_scheduledTasksByHandle.end() && clientId == found->second->getClientId()) {
       removeScheduleRecordUnlocked(found->second);
+    }
   }
 }
 
@@ -496,12 +498,14 @@ int ScheduleRecord::parseItem(const std::string& item, int mnm, int mxm, std::ve
     std::string substr = item;
     while (true) {
       val = std::stoi(substr, &position);
-      if (val < mnm || val > mxm)
+      if (val < mnm || val > mxm) {
         THROW_EX(std::logic_error, "Invalid value: " << PAR(val));
+      }
       vec.push_back(val);
 
-      if (++position > substr.size() - 1)
+      if (++position > substr.size() - 1) {
         break;
+      }
       substr = substr.substr(position);
     }
     val = mnm;
@@ -528,24 +532,30 @@ system_clock::time_point ScheduleRecord::getNext(const std::chrono::system_clock
     std::tm c_tm = actualTime;
 
     while (true) {
-      if (!compareTimeValVect(c_tm.tm_sec, m_vsec, lower))
+      if (!compareTimeValVect(c_tm.tm_sec, m_vsec, lower)) {
         break;
-      if (!compareTimeValVect(c_tm.tm_min, m_vmin, lower))
+      }
+      if (!compareTimeValVect(c_tm.tm_min, m_vmin, lower)) {
         break;
-      if (!compareTimeValVect(c_tm.tm_hour, m_vhour, lower))
+      }
+      if (!compareTimeValVect(c_tm.tm_hour, m_vhour, lower)) {
         break;
+      }
 
       if (m_vwday[0] > 0) { //optional, but if present then break as day of week has prio in evaluation
         compareTimeValVect(c_tm.tm_wday, m_vwday, lower);
         break;
       }
 
-      if (!compareTimeValVect(c_tm.tm_mday, m_vmday, lower))
+      if (!compareTimeValVect(c_tm.tm_mday, m_vmday, lower)) {
         break;
-      if (!compareTimeValVect(c_tm.tm_mon, m_vmon, lower))
+      }
+      if (!compareTimeValVect(c_tm.tm_mon, m_vmon, lower)) {
         break;
-      if (!compareTimeValVect(c_tm.tm_year, m_vyear, lower))
+      }
+      if (!compareTimeValVect(c_tm.tm_year, m_vyear, lower)) {
         break;
+      }
 
       break;
     }
@@ -555,11 +565,10 @@ system_clock::time_point ScheduleRecord::getNext(const std::chrono::system_clock
       THROW_EX(std::logic_error, "Invalid time conversion");
     }
     tp = system_clock::from_time_t(tt);
-  }
-  else {
-    if (m_started)
+  } else {
+    if (m_started) {
       tp = actualTimePoint + m_period;
-    else {
+    } else {
       tp = m_startTime;
       m_started = true;
     }
@@ -591,14 +600,14 @@ bool ScheduleRecord::compareTimeValVect(int& cval, const std::vector<int>& tvalV
     else if (cval > tvaln) {
       cval = tval0; //next time
       lw = false;
-    }
-    else {
+    } else {
       cval = tval0; //just in the same greates time - remain lw
     }
     return true;
-  }
-  else { //don't care just next time
-    if (!lw) cval++;
+  } else { //don't care just next time
+    if (!lw) {
+      cval++;
+    }
     return false;
   }
 }

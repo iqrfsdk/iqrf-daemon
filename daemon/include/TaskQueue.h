@@ -46,8 +46,9 @@ public:
     }
     m_conditionVariable.notify_all();
 
-    if (m_workerThread.joinable())
+    if (m_workerThread.joinable()) {
       m_workerThread.join();
+    }
   }
 
   int pushToQueue(const T& task)
@@ -83,8 +84,7 @@ private:
           m_taskQueue.pop();
           lck.unlock();
           m_processTaskFunc(task);
-        }
-        else {
+        } else {
           lck.unlock();
           break;
         }

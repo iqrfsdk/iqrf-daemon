@@ -91,9 +91,9 @@ PrfRawJson::PrfRawJson(rapidjson::Value& val)
     if (istr >> std::hex >> ival) {
       m_request.DpaPacket().Buffer[i] = (uint8_t)ival;
       i++;
-    }
-    else
+    } else {
       break;
+    }
   }
   m_request.SetLength(i);
 
@@ -192,8 +192,7 @@ PrfFrcJson::PrfFrcJson(rapidjson::Value& val)
   if (!frcCmd.empty()) {
     setFrcCommand(parseFrcCmd(frcCmd));
     m_predefinedFrcCommand = true;
-  }
-  else {
+  } else {
     std::string frcType = jutils::getMemberAs<std::string>("FrcType", val);
     uint8_t frcUser = (uint8_t)jutils::getMemberAs<int>("FrcUser", val);
     setFrcCommand(parseFrcType(frcType), frcUser);
@@ -213,8 +212,7 @@ std::string PrfFrcJson::encodeResponse(const std::string& errStr) const
   if (m_predefinedFrcCommand) {
     v.SetString(PrfFrc::encodeFrcCmd((FrcCmd)getFrcCommand()).c_str(), alloc);
     doc.AddMember("FrcCmd", v, doc.GetAllocator());
-  }
-  else {
+  } else {
     v.SetString(PrfFrc::encodeFrcType((FrcType)getFrcType()).c_str(), alloc);
     doc.AddMember("FrcType", v, doc.GetAllocator());
 

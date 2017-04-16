@@ -141,13 +141,15 @@ void PrfPulseMeter::parseResponse(const DpaMessage& response)
 
     uint8_t cntsum = 0xff;
     const uint8_t* pp = &p[9];
-    for (int i = 0; i < m_cntlen-1; i++)
+    for (int i = 0; i < m_cntlen-1; i++) {
       cntsum -= pp[i] - 1;
+    }
 
     uint8_t datasum = 0xff;
     pp = &p[0];
-    for (int i = 0; i < 19; i++)
+    for (int i = 0; i < 19; i++) {
       datasum -= pp[i] - 1;
+    }
 
     m_cntsum ^= cntsum;
     m_datasum ^= datasum;
@@ -187,14 +189,15 @@ int PrfPulseMeter::getCounter(CntNum cntNum) const
 
 void PrfPulseMeter::parseCommand(const std::string& command)
 {
-  if (STR_CMD_PULSE_READ == command)
+  if (STR_CMD_PULSE_READ == command) {
     setCmd(Cmd::READ_COUNTERS);
-  else if (STR_CMD_STORE_COUNTER == command)
+  } else if (STR_CMD_STORE_COUNTER == command) {
     setCmd(Cmd::STORE_COUNTER);
-  else if (STR_CMD_DISABLE_AUTO_SLEEP == command)
+  } else if (STR_CMD_DISABLE_AUTO_SLEEP == command) {
     setCmd(Cmd::DISABLE_AUTO_SLEEP);
-  else
+  } else {
     THROW_EX(std::logic_error, "Invalid command: " << PAR(command));
+  }
 }
 
 const std::string& PrfPulseMeter::encodeCommand() const
