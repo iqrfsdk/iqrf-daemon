@@ -37,7 +37,7 @@ public:
   void start() override;
   void stop() override;
 
-  void updateConfiguration(rapidjson::Value& cfg);
+  void updateConfiguration(const rapidjson::Value& cfg);
 
   void registerMessageHandler(const std::string& clientId, TaskHandlerFunc fun) override;
   void unregisterMessageHandler(const std::string& clientId) override;
@@ -88,9 +88,6 @@ private:
 
 };
 
-//TODO remove after testing
-#define ENH_SCHED
-
 class ScheduleRecord {
 public:
   ScheduleRecord() = delete;
@@ -98,6 +95,7 @@ public:
   ScheduleRecord(const std::string& clientId, const std::string& task, const std::chrono::seconds& sec,
     const std::chrono::system_clock::time_point& tp);
   ScheduleRecord(const std::string& rec);
+  ScheduleRecord(const rapidjson::Value& rec);
 
   Scheduler::TaskHandle getTaskHandle() const { return m_taskHandle; }
   std::chrono::system_clock::time_point getNext(const std::chrono::system_clock::time_point& actualTimePoint, const std::tm& actualTime);
@@ -106,26 +104,16 @@ public:
 
   static std::string asString(const std::chrono::system_clock::time_point& tp);
   static void getTime(std::chrono::system_clock::time_point& timePoint, std::tm& timeStr);
-  static std::vector<std::string> preparseMultiRecord(const std::string& rec);
 
 private:
   //Change handle it if duplicit detected by Scheduler
   void shuffleHandle(); //change handle it if duplicit exists
   //The only method can do it
   friend void shuffleDuplicitHandle(ScheduleRecord& rec);
-
   void init();
-
-  void parse(const std::string& rec);
   int parseItem(const std::string& item, int mnm, int mxm, std::vector<int>& vec);
-#ifdef ENH_SCHED
   //return true - continue false - finish
   bool compareTimeValVect(int& cval, const std::vector<int>& tvalV, bool& lw) const;
-#else
-  //return true - continue false - finish
-  bool compareTimeVal(int& cval, int tval, bool& lw) const;
-  std::tm m_tm = { -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-#endif
   std::string m_task;
   std::string m_clientId;
 

@@ -1,4 +1,30 @@
 {
   "Tasks": [
+  ],
+
+  "TasksJson": [
+    {
+      "time": "*/5 * * * * * *",
+      "service": "BaseServiceForMQ",
+      "message": {
+        "Type": "Thermometer",
+        "Addr": 0,
+        "Comd": "READ"
+      }
+    },
+    {
+      "time": "0,10,20,30,40,50 * * * * * *",
+      "service": "BaseServiceForMQTT1",
+      "message": {
+        "Type": "Thermometer",
+        "Addr": 0,
+        "Comd": "READ"
+      }
+    },
+    {
+      "time": "0,10,20,30,40,50 * * * * * *",
+      "service": "BaseServiceForMQ",
+      "message": "Raw 00 00 06 03 ff ff"
+    }
   ]
 }

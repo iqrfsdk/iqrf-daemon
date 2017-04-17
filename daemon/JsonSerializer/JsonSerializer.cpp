@@ -335,7 +335,7 @@ std::string PrfIoJson::encodeResponse(const std::string& errStr) const
     doc.AddMember("Bit", v, doc.GetAllocator());
 
     v = m_val;
-    doc.AddMember("Out", v, doc.GetAllocator());
+    doc.AddMember("Inp", v, doc.GetAllocator());
   }
   break;
 

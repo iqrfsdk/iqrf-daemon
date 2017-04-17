@@ -30,18 +30,36 @@ Scheduler::~Scheduler()
 {
 }
 
-void Scheduler::updateConfiguration(rapidjson::Value& cfg)
+void Scheduler::updateConfiguration(const rapidjson::Value& cfg)
 {
   TRC_ENTER("");
   jutils::assertIsObject("", cfg);
 
-  std::vector<std::string> records = jutils::getMemberAsVector<std::string>("Tasks", cfg);
-
   std::vector<std::shared_ptr<ScheduleRecord>> tempRecords;
-  int i = 0;
-  for (auto & it : records) {
+
+  const auto m = cfg.FindMember("TasksJson");
+
+  if (m == cfg.MemberEnd()) { //old textual form
+    std::vector<std::string> records = jutils::getMemberAsVector<std::string>("Tasks", cfg);
+    for (auto & it : records) {
+      try {
+        tempRecords.push_back(std::shared_ptr<ScheduleRecord>(ant_new ScheduleRecord(it)));
+      }
+      catch (std::exception &e) {
+        CATCH_EX("Cought when parsing scheduler table: ", std::exception, e);
+      }
+    }
+  }
+  else { //enhanced Json form
+
     try {
-      tempRecords.push_back(std::shared_ptr<ScheduleRecord>(ant_new ScheduleRecord(it)));
+      const auto v = jutils::getMember("TasksJson", cfg);
+      if (!v->value.IsArray())
+        THROW_EX(std::logic_error, "Expected: Json Array, detected: " << NAME_PAR(name, v->value.GetString()) << NAME_PAR(type, v->value.GetType()));
+
+      for (auto it = v->value.Begin(); it != v->value.End(); ++it) {
+        tempRecords.push_back(std::shared_ptr<ScheduleRecord>(ant_new ScheduleRecord(*it)));
+      }
     }
     catch (std::exception &e) {
       CATCH_EX("Cought when parsing scheduler table: ", std::exception, e);
@@ -406,43 +424,12 @@ ScheduleRecord::ScheduleRecord(const std::string& clientId, const std::string& t
   m_period = sec;
   m_startTime = tp;
   m_task = task;
-
-  // split into days, hours, minutes, seconds
-  //typedef duration<int, std::ratio<60 * 60 * 24>> days;
-  //days    dd = duration_cast<days> (sec);
-  //hours   hh = duration_cast<hours>(sec % days(1));
-  //minutes mm = duration_cast<minutes>(sec % chrono::hours(1));
-  //seconds ss = sec % chrono::minutes(1);
 }
 
 ScheduleRecord::ScheduleRecord(const std::string& rec)
 {
   init();
-  parse(rec);
-}
-
-std::vector<std::string> ScheduleRecord::preparseMultiRecord(const std::string& rec)
-{
-  std::istringstream is(rec);
-
-  std::string sec("*");
-  std::string mnt("*");
-  std::string hrs("*");
-  std::string day("*");
-  std::string mon("*");
-  std::string yer("*");
-  std::string dow("*");
-
-  is >> sec >> mnt >> hrs >> day >> mon >> yer >> dow;
-  //TODO
-  // list
-
-  std::vector<std::string> retval;
-  return retval;
-}
-
-void ScheduleRecord::parse(const std::string& rec)
-{
+  //parse(rec);
   std::istringstream is(rec);
 
   std::string sec("*");
@@ -463,6 +450,57 @@ void ScheduleRecord::parse(const std::string& rec)
   parseItem(mon, 1, 12, m_vmon) - 1;
   parseItem(yer, 0, 9000, m_vyear); //TODO maximum?
   parseItem(dow, 0, 6, m_vwday);
+}
+
+ScheduleRecord::ScheduleRecord(const rapidjson::Value& rec)
+{
+  using namespace rapidjson;
+
+  init();
+
+  std::string tmr = jutils::getMemberAs<std::string>("time", rec);
+  std::istringstream is(tmr);
+
+  std::string sec("*");
+  std::string mnt("*");
+  std::string hrs("*");
+  std::string day("*");
+  std::string mon("*");
+  std::string yer("*");
+  std::string dow("*");
+
+  is >> sec >> mnt >> hrs >> day >> mon >> yer >> dow;
+
+  parseItem(sec, 0, 59, m_vsec);
+  parseItem(mnt, 0, 59, m_vmin);
+  parseItem(hrs, 0, 23, m_vhour);
+  parseItem(day, 1, 31, m_vmday);
+  parseItem(mon, 1, 12, m_vmon) - 1;
+  parseItem(yer, 0, 9000, m_vyear); //TODO maximum?
+  parseItem(dow, 0, 6, m_vwday);
+
+  m_clientId = jutils::getMemberAs<std::string>("service", rec);
+  
+  const auto msg = rec.FindMember("message");
+  if (msg != rec.MemberEnd()) {
+    if (msg->value.IsString()) {
+      m_task = msg->value.GetString();
+    }
+    else {
+      if (!msg->value.IsObject()) {
+        THROW_EX(std::logic_error, "Expected: Json Object, detected: " << NAME_PAR(name, msg->name.GetString()) << NAME_PAR(type, msg->value.GetType()));
+      }
+
+      //back to string :-( TODO optimize to hold parsed structure to save time
+      StringBuffer buffer;
+      PrettyWriter<StringBuffer> writer(buffer);
+      msg->value.Accept(writer);
+      m_task = buffer.GetString();
+
+    }
+  }
+
+  m_clientId = jutils::getMemberAs<std::string>("service", rec);
 }
 
 int ScheduleRecord::parseItem(const std::string& item, int mnm, int mxm, std::vector<int>& vec)
