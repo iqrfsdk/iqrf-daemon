@@ -46,7 +46,7 @@ message(STATUS "CMAKE_C_FLAGS:           ${CMAKE_C_FLAGS}")
 message(STATUS "CMAKE_C_FLAGS_RELEASE:   ${CMAKE_C_FLAGS_RELEASE}")
 message(STATUS "CMAKE_C_FLAGS_DEBUG:     ${CMAKE_C_FLAGS_DEBUG}")
 
-#include_directories(${CMAKE_SOURCE_DIR}/../include)
+include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 include_directories(${clibcdc_INCLUDE_DIRS})
@@ -74,3 +74,6 @@ add_subdirectory(BaseService)
 # The find_package requires properly set ${PROJECT_NAME}_DIR variable to a location where the
 # configured config file persists. This variable is usually specified from the outside of CMake.
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/iqrfdConfig.cmake.in ${PROJECT_BINARY_DIR}/iqrfdConfig.cmake @ONLY)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/VersionInfo.h.in ${CMAKE_BINARY_DIR}/VersionInfo.h @ONLY)
+

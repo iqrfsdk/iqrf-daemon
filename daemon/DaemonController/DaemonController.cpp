@@ -28,6 +28,7 @@
 #include "Scheduler.h"
 
 #include "PlatformDep.h"
+#include "VersionInfo.h"
 
 TRC_INIT()
 
@@ -281,6 +282,11 @@ void DaemonController::startTrace()
         m_traceFileSize = TRC_DEFAULT_FILE_MAXSIZE;
 
       TRC_START(m_traceFileName, m_traceFileSize);
+      TRC_INF(std::endl <<
+        "============================================================================" << std::endl <<
+        PAR(DAEMON_VERSION) << PAR(BUILD_TIMESTAMP) << std::endl <<
+        "============================================================================" << std::endl
+      )
       TRC_INF("Loaded configuration file: " << PAR(m_cfgFileName));
       TRC_INF("Opened trace file: " << PAR(m_traceFileName) << PAR(m_traceFileSize));
 
