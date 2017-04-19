@@ -281,7 +281,7 @@ void DaemonController::startTrace()
       if (m_traceFileSize <= 0)
         m_traceFileSize = TRC_DEFAULT_FILE_MAXSIZE;
 
-      TRC_START(m_traceFileName, m_traceFileSize);
+      TRC_START(m_traceFileName, iqrf::Level::war, m_traceFileSize);
       TRC_INF(std::endl <<
         "============================================================================" << std::endl <<
         PAR(DAEMON_VERSION) << PAR(BUILD_TIMESTAMP) << std::endl <<
