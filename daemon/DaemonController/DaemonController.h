@@ -22,6 +22,7 @@
 #include "TaskQueue.h"
 #include "IDaemon.h"
 #include "JsonUtils.h"
+#include "IqrfLogging.h"
 #include <map>
 #include <string>
 #include <atomic>
@@ -135,6 +136,7 @@ private:
   const std::string m_cfgVersion = "v0.0";
   std::string m_traceFileName;
   int m_traceFileSize = 0;
+  iqrf::Level m_level;
   std::string m_iqrfInterfaceName;
 
   std::string m_configurationDir;

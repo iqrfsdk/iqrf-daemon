@@ -278,10 +278,17 @@ void DaemonController::startTrace()
 
       m_traceFileName = jutils::getPossibleMemberAs<std::string>("TraceFileName", fnd->second.m_doc, "");
       m_traceFileSize = jutils::getPossibleMemberAs<int>("TraceFileSize", fnd->second.m_doc, 0);
+      std::string vl = jutils::getPossibleMemberAs<std::string>("VerbosityLevel", fnd->second.m_doc, "dbg");
+
+      if (vl == "err") m_level = iqrf::Level::err;
+      else if (vl == "war") m_level = iqrf::Level::war;
+      else if (vl == "inf") m_level = iqrf::Level::inf;
+      else m_level = iqrf::Level::dbg;
+
       if (m_traceFileSize <= 0)
         m_traceFileSize = TRC_DEFAULT_FILE_MAXSIZE;
 
-      TRC_START(m_traceFileName, iqrf::Level::dbg, m_traceFileSize);
+      TRC_START(m_traceFileName, m_level, m_traceFileSize);
       TRC_INF(std::endl <<
         "============================================================================" << std::endl <<
         PAR(DAEMON_VERSION) << PAR(BUILD_TIMESTAMP) << std::endl <<
