@@ -31,12 +31,6 @@ public:
   virtual ~IDaemon() {};
   virtual void executeDpaTransaction(DpaTransaction& dpaTransaction) = 0;
   virtual void registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> message_handler) = 0;
-
-  //virtual std::set<IMessaging*>& getSetOfMessaging() = 0;
-  //virtual void registerMessaging(IMessaging& messaging) = 0;
-  //virtual void unregisterMessaging(IMessaging& messaging) = 0;
-  //virtual void registerClientService(IClient& cs) = 0;
-  //virtual void unregisterClientService(IClient& cs) = 0;
   virtual IScheduler* getScheduler() = 0;
   virtual std::string doCommand(const std::string& cmd) = 0;
 };
