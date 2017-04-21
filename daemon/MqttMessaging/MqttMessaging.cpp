@@ -37,10 +37,13 @@ private:
   std::string m_mqttTopicRequest;
   std::string m_mqttTopicResponse;
   int m_mqttQos = 0;
-  unsigned long m_mqttTimeout = 10000;
   std::string m_mqttUser;
   std::string m_mqttPassword;
   bool m_mqttEnabledSSL = false;
+  int m_mqttKeepAliveInterval = 20; //special msg sent to keep connection alive
+  int m_mqttConnectTimeout = 5; //waits for accept from broker side
+  int m_mqttMinReconnect = 1; //waits to reconnect when connection broken
+  int m_mqttMaxReconnect = 64; //waits time *= 2 with every unsuccessful attempt up to this value 
 
   //The file in PEM format containing the public digital certificates trusted by the client.
   std::string m_trustStore;
@@ -107,10 +110,8 @@ public:
 
     m_mqttBrokerAddr = jutils::getMemberAs<std::string>("BrokerAddr", cfg);
     m_mqttClientId = jutils::getMemberAs<std::string>("ClientId", cfg);
-    //m_enabled = jutils::getMemberAs<bool>("Enabled", cfg);
     m_mqttPersistence = jutils::getMemberAs<int>("Persistence", cfg);
     m_mqttQos = jutils::getMemberAs<int>("Qos", cfg);
-    m_mqttTimeout = (unsigned long)jutils::getMemberAs<int>("Timeout:", cfg);
     m_mqttTopicRequest = jutils::getMemberAs<std::string>("TopicRequest", cfg);
     m_mqttTopicResponse = jutils::getMemberAs<std::string>("TopicResponse", cfg);
     m_mqttUser = jutils::getMemberAs<std::string>("User", cfg);
@@ -124,6 +125,11 @@ public:
     m_enabledCipherSuites = jutils::getPossibleMemberAs<std::string>("EnabledCipherSuites", cfg, m_enabledCipherSuites);
     m_enableServerCertAuth = jutils::getPossibleMemberAs<bool>("EnableServerCertAuth", cfg, m_enableServerCertAuth);
 
+    m_mqttKeepAliveInterval = jutils::getPossibleMemberAs<int>("KeepAliveInterval", cfg, m_mqttKeepAliveInterval);
+    m_mqttConnectTimeout = jutils::getPossibleMemberAs<int>("ConnectTimeout", cfg, m_mqttConnectTimeout);
+    m_mqttMinReconnect = jutils::getPossibleMemberAs<int>("MinReconnect", cfg, m_mqttMinReconnect);
+    m_mqttMaxReconnect = jutils::getPossibleMemberAs<int>("MaxReconnect", cfg, m_mqttMaxReconnect);
+
     TRC_LEAVE("");
   }
 
@@ -131,12 +137,6 @@ public:
   void start()
   {
     TRC_ENTER("");
-
-    //if (!m_enabled) {
-    //  TRC_WAR("MqttMessaging DISABLED:" << PAR(m_mqttClientId));
-    //  TRC_LEAVE("");
-    //  return;
-    //}
 
     m_toMqttMessageQueue = ant_new TaskQueue<ustring>([&](const ustring& msg) {
       sendTo(msg);
@@ -158,9 +158,9 @@ public:
       THROW_EX(MqttChannelException, "MQTTClient_create() failed: " << PAR(retval));
     }
 
-    m_conn_opts.keepAliveInterval = 20;
+    m_conn_opts.keepAliveInterval = m_mqttKeepAliveInterval;
     m_conn_opts.cleansession = 1;
-    m_conn_opts.connectTimeout = 5;
+    m_conn_opts.connectTimeout = m_mqttConnectTimeout;
     m_conn_opts.username = m_mqttUser.c_str();
     m_conn_opts.password = m_mqttPassword.c_str();
     m_conn_opts.onSuccess = s_onConnect;
@@ -283,10 +283,11 @@ public:
   //------------------------
   void connectThread()
   {
-    //TODO verify paho autoconnect and reuse is appliable
+    //TODO verify paho autoconnect and reuse if applicable
     int retval;
-    int seconds = 1;
-    int seconds_max = 16;
+    int seconds = m_mqttMinReconnect;
+    int seconds_max = m_mqttMaxReconnect;
+
 
     while (true) {
       TRC_DBG("Connecting: " << PAR(m_mqttBrokerAddr) << PAR(m_mqttClientId));

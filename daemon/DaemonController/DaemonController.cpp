@@ -34,24 +34,6 @@ TRC_INIT()
 
 using namespace rapidjson;
 
-/*
-const std::string Operational_STR("Operational");
-const std::string Service_STR("Service");
-const std::string Forwarding_STR("Forwarding");
-
-Mode MessagingController::parseMode(const std::string& mode)
-{
-  if (Operational_STR == mode)
-    return Mode::Operational;
-  else if (Service_STR == mode)
-    return Mode::Service;
-  else if (Forwarding_STR == mode)
-    return Mode::Forwarding;
-  else
-    THROW_EX(std::logic_error, "Invalid mode: " << PAR(mode));
-}
-*/
-
 DaemonController& DaemonController::getController()
 {
   static DaemonController mc;
@@ -456,7 +438,7 @@ void DaemonController::loadMessagingComponent(const ComponentDescriptor& compone
   }
 }
 
-void DaemonController::loadClientComponent(const ComponentDescriptor& componentDescriptor)
+void DaemonController::loadServiceComponent(const ComponentDescriptor& componentDescriptor)
 {
   if (componentDescriptor.m_interfaceName != "IService")
     return;
@@ -468,52 +450,57 @@ void DaemonController::loadClientComponent(const ComponentDescriptor& componentD
   jutils::assertIsArray("Instances[]", instances);
 
   for (auto itr = instances.Begin(); itr != instances.End(); ++itr) {
-    //parse instance descriptor
-    jutils::assertIsObject("Instances[]{}", *itr);
-    std::string instanceName = jutils::getMemberAs<std::string>("Name", *itr);
-    bool enabled = jutils::getPossibleMemberAs<bool>("Enabled", *itr, true);
-    if (!enabled)
-      continue;
+    try {
+      //parse instance descriptor
+      jutils::assertIsObject("Instances[]{}", *itr);
+      std::string instanceName = jutils::getMemberAs<std::string>("Name", *itr);
+      bool enabled = jutils::getPossibleMemberAs<bool>("Enabled", *itr, true);
+      if (!enabled)
+        continue;
 
-    std::string messagingName = jutils::getMemberAs<std::string>("Messaging", *itr);
-    std::vector<std::string> serializersVector = jutils::getMemberAsVector<std::string>("Serializers", *itr);
-    const auto propertiesMember = jutils::getMember("Properties", *itr);
-    const rapidjson::Value& properties = propertiesMember->value;
-    jutils::assertIsObject("Properties{}", properties);
+      TRC_INF("Creating: " << PAR(instanceName));
+      std::string messagingName = jutils::getMemberAs<std::string>("Messaging", *itr);
+      std::vector<std::string> serializersVector = jutils::getMemberAsVector<std::string>("Serializers", *itr);
+      const auto propertiesMember = jutils::getMember("Properties", *itr);
+      const rapidjson::Value& properties = propertiesMember->value;
+      jutils::assertIsObject("Properties{}", properties);
 
-    //create instance
-    CreateClientService createService = (CreateClientService)getCreateFunction(componentDescriptor.m_componentName, true);
-    std::unique_ptr<IService> client = createService(instanceName);
-    client->setDaemon(this);
+      //create instance
+      CreateClientService createService = (CreateClientService)getCreateFunction(componentDescriptor.m_componentName, true);
+      std::unique_ptr<IService> client = createService(instanceName);
+      client->setDaemon(this);
 
-    //get messaging
-    {
-      auto found = m_messagings.find(messagingName);
-      if (found != m_messagings.end()) {
-        client->setMessaging(found->second.get());
+      //get messaging
+      {
+        auto found = m_messagings.find(messagingName);
+        if (found != m_messagings.end()) {
+          client->setMessaging(found->second.get());
+        }
+        else
+          THROW_EX(std::logic_error, "Cannot find: " << PAR(messagingName));
       }
-      else
-        THROW_EX(std::logic_error, "Cannot find: " << PAR(messagingName));
+
+      //get serializers
+      for (auto & serializerName : serializersVector) {
+        auto ss = m_serializers.find(serializerName);
+        if (ss != m_serializers.end())
+          client->setSerializer(ss->second.get());
+        else
+          THROW_EX(std::logic_error, "Cannot find: " << PAR(serializerName));
+      }
+
+      //get properties
+      client->update(properties);
+
+      //register instance
+      auto ret = m_clients.insert(std::make_pair(client->getClientName(), std::move(client)));
+      if (!ret.second) {
+        THROW_EX(std::logic_error, "Duplicit ClientService configuration: " << NAME_PAR(name, ret.first->first));
+      }
     }
-
-    //get serializers
-    for (auto & serializerName : serializersVector) {
-      auto ss = m_serializers.find(serializerName);
-      if (ss != m_serializers.end())
-        client->setSerializer(ss->second.get());
-      else
-        THROW_EX(std::logic_error, "Cannot find: " << PAR(serializerName));
+    catch (std::logic_error &e) {
+      CATCH_EX("Cannot create component instance: ", std::exception, e);
     }
-
-    //get properties
-    client->update(properties);
-
-    //register instance
-    auto ret = m_clients.insert(std::make_pair(client->getClientName(), std::move(client)));
-    if (!ret.second) {
-      THROW_EX(std::logic_error, "Duplicit ClientService configuration: " << NAME_PAR(name, ret.first->first));
-    }
-
   }
 }
 
@@ -549,7 +536,7 @@ void DaemonController::startClients()
   for (const auto & mc : m_componentMap) {
     if (mc.second.m_enabled) {
       try {
-        loadClientComponent(mc.second);
+        loadServiceComponent(mc.second);
       }
       catch (std::exception &e) {
         CATCH_EX("Cannot create component" << NAME_PAR(componentName, mc.first), std::exception, e);

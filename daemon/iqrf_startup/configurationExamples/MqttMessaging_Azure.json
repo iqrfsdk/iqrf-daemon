@@ -9,5 +9,9 @@
   "TopicResponse": "devices/12345/messages/events/",
   "User": "iqrf-test.azure-devices.net/12345",
   "Password": "SharedAccessSignature sr=iqrf-test.azure-devices.net%2Fdevices%2F12345&sig=Xo6zrdRMcXT84zB941fTUT3WBvgn7LW3C355wOPmGNM%3D&se=1510560471",
-  "EnabledSSL": true
+  "EnabledSSL": true,
+  "KeepAliveInterval": 20,
+  "ConnectTimeout": 5,
+  "MinReconnect": 1,
+  "MaxReconnect": 64
 }

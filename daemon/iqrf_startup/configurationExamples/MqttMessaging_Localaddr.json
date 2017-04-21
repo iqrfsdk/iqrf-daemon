@@ -4,10 +4,13 @@
   "Enabled": true,
   "Persistence": 1,
   "Qos": 1,
-  "Timeout:": 10000,
   "TopicRequest": "Iqrf/DpaRequest",
   "TopicResponse": "Iqrf/DpaResponse",
   "User": "",
   "Password": "",
-  "EnabledSSL": false
+  "EnabledSSL": false,
+  "KeepAliveInterval": 20,
+  "ConnectTimeout": 5,
+  "MinReconnect": 1,
+  "MaxReconnect": 64
 }

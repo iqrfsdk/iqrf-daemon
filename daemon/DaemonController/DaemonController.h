@@ -145,6 +145,6 @@ private:
 
   void loadSerializerComponent(const ComponentDescriptor& componentDescriptor);
   void loadMessagingComponent(const ComponentDescriptor& componentDescriptor);
-  void loadClientComponent(const ComponentDescriptor& componentDescriptor);
+  void loadServiceComponent(const ComponentDescriptor& componentDescriptor);
 
 };
