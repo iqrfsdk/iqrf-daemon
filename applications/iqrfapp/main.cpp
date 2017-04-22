@@ -18,6 +18,7 @@
 #include "PlatformDep.h"
 #include "IqrfLogging.h"
 #include "JsonUtils.h"
+#include <fstream>
 
 TRC_INIT()
 
@@ -31,6 +32,7 @@ int handleMessageFromMq(const ustring& message)
 
 int main(int argc, char** argv)
 {
+  TRC_START("", iqrf::Level::err, 0);
   std::string command;
   bool cmdl = false;
 
@@ -40,11 +42,16 @@ int main(int argc, char** argv)
   else if (argc < 4 ) {
     std::cerr << "Usage" << std::endl;
     std::cerr << "  iqrfapp [<perif> <num> <command>]" << std::endl << std::endl;
+    std::cerr << "  iqrfapp raw <buffer>" << std::endl << std::endl;
+    std::cerr << "  iqrfapp conf [Operational|Forwarding|Service]" << std::endl << std::endl;
     std::cerr << "Example" << std::endl;
     std::cerr << "  iqrfapp" << std::endl;
     std::cerr << "  iqrfapp Thermometer 1 READ" << std::endl;
     std::cerr << "  iqrfapp LedG 0 PULSE" << std::endl;
     std::cerr << "  iqrfapp LedR 1 PULSE" << std::endl;
+    std::cerr << "  iqrfapp Raw 01 00 06 03 ff ff" << std::endl;
+    std::cerr << "  iqrfapp Raw 01.00.06.03.ff.ff" << std::endl;
+    std::cerr << "  iqrfapp conf Operational" << std::endl;
     exit (-1);
   }
   else {
@@ -57,18 +64,34 @@ int main(int argc, char** argv)
   std::string cfgFileName("iqrfapp.json");
   std::string localMqName("iqrf-daemon-100");
   std::string remoteMqName("iqrf-daemon-110");
+  std::ifstream f;
 
-  rapidjson::Document cfg;
-
-  try {
-    jutils::parseJsonFile(cfgFileName, cfg);
-    jutils::assertIsObject("", cfg);
-
-    localMqName = jutils::getPossibleMemberAs<std::string>("LocalMqName", cfg, localMqName);
-    remoteMqName = jutils::getPossibleMemberAs<std::string>("RemoteMqName", cfg, remoteMqName);
+  f.open(cfgFileName);
+  
+  if (!f.is_open()) {
+    std::string pth = "/etc/iqrf-daemon/";
+    cfgFileName = pth + cfgFileName;
+    f.open(cfgFileName);
   }
-  catch (std::logic_error &e) {
-    CATCH_EX("Cannot read configuration file: " << PAR(cfgFileName), std::logic_error, e);
+  
+  if (f.is_open()) {
+    TRC_DBG("Reading cfg from: " << PAR(cfgFileName));
+
+    rapidjson::Document cfg;
+    try {
+      jutils::parseJsonFile(cfgFileName, cfg);
+      jutils::assertIsObject("", cfg);
+
+      localMqName = jutils::getPossibleMemberAs<std::string>("LocalMqName", cfg, localMqName);
+      remoteMqName = jutils::getPossibleMemberAs<std::string>("RemoteMqName", cfg, remoteMqName);
+    }
+    catch (std::logic_error &e) {
+      CATCH_EX("Cannot read configuration file: " << PAR(cfgFileName), std::logic_error, e);
+      TRC_DBG("Using default params");
+    }
+  }
+  else {
+    TRC_DBG("Using default params");
   }
 
   TRC_DBG(PAR(remoteMqName) << PAR(localMqName));
