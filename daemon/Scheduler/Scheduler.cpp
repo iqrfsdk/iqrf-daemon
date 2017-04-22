@@ -105,8 +105,8 @@ Scheduler::TaskHandle Scheduler::scheduleTaskPeriodic(const std::string& clientI
 
 int Scheduler::handleScheduledRecord(const ScheduleRecord& record)
 {
-  TRC_DBG("==================================" << std::endl <<
-    "Scheduled msg: " << std::endl << FORM_HEX(record.getTask().data(), record.getTask().size()));
+  //TRC_DBG("==================================" << std::endl <<
+  //  "Scheduled msg: " << std::endl << FORM_HEX(record.getTask().data(), record.getTask().size()));
 
   {
     std::lock_guard<std::mutex> lck(m_messageHandlersMutex);
