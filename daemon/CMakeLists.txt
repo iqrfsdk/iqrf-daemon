@@ -1,5 +1,8 @@
 project (daemon)
 
+set(DEFAULT_DAEMON_VERSION v0.3.0)
+string(TIMESTAMP DEFAULT_BUILD_TIMESTAMP)
+
 enable_language(CXX)
 enable_language(C)
 
@@ -74,6 +77,20 @@ add_subdirectory(BaseService)
 # The find_package requires properly set ${PROJECT_NAME}_DIR variable to a location where the
 # configured config file persists. This variable is usually specified from the outside of CMake.
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/iqrfdConfig.cmake.in ${PROJECT_BINARY_DIR}/iqrfdConfig.cmake @ONLY)
+
+if(DEFINED DAEMON_VERSION)
+  message(STATUS "DAEMON_VERSION = " ${DAEMON_VERSION})
+else()
+  message(STATUS "Set to default DAEMON_VERSION = " ${DEFAULT_DAEMON_VERSION})
+  set(DAEMON_VERSION ${DEFAULT_DAEMON_VERSION})
+endif()
+
+if(DEFINED BUILD_TIMESTAMP)
+  message(STATUS "BUILD_TIMESTAMP = " ${BUILD_TIMESTAMP})
+else()
+  message(STATUS "Set to default BUILD_TIMESTAMP = " ${DEFAULT_BUILD_TIMESTAMP})
+  set(BUILD_TIMESTAMP ${DEFAULT_BUILD_TIMESTAMP})
+endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/VersionInfo.h.in ${CMAKE_BINARY_DIR}/VersionInfo.h @ONLY)
 
