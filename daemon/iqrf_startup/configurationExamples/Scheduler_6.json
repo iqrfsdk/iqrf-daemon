@@ -1,0 +1,6 @@
+{
+  "Tasks": [
+    "*/5 * * * * * * BaseServiceForMQ {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}",
+    "0,10,20,25,40,53 * * * * * * BaseServiceForMQTT1 {\"Type\":\"Thermometer\",\"Addr\":0,\"Comd\":\"READ\"}"
+  ]
+}
