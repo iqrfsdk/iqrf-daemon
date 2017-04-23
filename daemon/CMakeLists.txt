@@ -1,12 +1,12 @@
 project (daemon)
 
+cmake_minimum_required(VERSION 2.8.10)
+
 set(DEFAULT_DAEMON_VERSION v0.3.0)
 string(TIMESTAMP DEFAULT_BUILD_TIMESTAMP)
 
 enable_language(CXX)
 enable_language(C)
-
-cmake_minimum_required(VERSION 2.8.10)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
