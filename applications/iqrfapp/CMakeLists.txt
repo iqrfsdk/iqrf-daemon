@@ -2,6 +2,25 @@ project(iqrfapp)
 
 cmake_minimum_required(VERSION 3.0)
 
+set(DEFAULT_IQRFAPP_VERSION v0.3.0)
+string(TIMESTAMP DEFAULT_BUILD_TIMESTAMP)
+
+if(DEFINED IQRFAPP_VERSION)
+  message(STATUS "IQRFAPP_VERSION = " ${IQRFAPP_VERSION})
+else()
+  message(STATUS "Set to default IQRFAPP_VERSION = " ${DEFAULT_IQRFAPP_VERSION})
+  set(IQRFAPP_VERSION ${DEFAULT_IQRFAPP_VERSION})
+endif()
+
+if(DEFINED BUILD_TIMESTAMP)
+  message(STATUS "BUILD_TIMESTAMP = " ${BUILD_TIMESTAMP})
+else()
+  message(STATUS "Set to default BUILD_TIMESTAMP = " ${DEFAULT_BUILD_TIMESTAMP})
+  set(BUILD_TIMESTAMP ${DEFAULT_BUILD_TIMESTAMP})
+endif()
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/VersionInfo.h.in ${CMAKE_BINARY_DIR}/VersionInfo.h @ONLY)
+
 FIND_PACKAGE(iqrfd REQUIRED)
 FIND_PACKAGE(cutils REQUIRED)
 
@@ -10,6 +29,7 @@ set(iqrfapp_SRC_FILES
 )
 
 set(iqrfapp_INC_FILES
+	${CMAKE_BINARY_DIR}/VersionInfo.h
 )
 
 if(NOT CMAKE_BUILD_TOOL MATCHES "(msdev|devenv|nmake|MSBuild)")
@@ -29,6 +49,7 @@ endif()
 #include_directories(${iqrfd_INCLUDE_DIRS})
 include_directories(${daemon_INCLUDE_DIRS})
 include_directories(${cutils_INCLUDE_DIRS})
+include_directories(${CMAKE_BINARY_DIR})
 
 add_executable(${PROJECT_NAME} ${iqrfapp_SRC_FILES} ${iqrfapp_INC_FILES})
 

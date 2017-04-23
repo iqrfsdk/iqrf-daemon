@@ -18,6 +18,7 @@
 #include "PlatformDep.h"
 #include "IqrfLogging.h"
 #include "JsonUtils.h"
+#include "VersionInfo.h"
 #include <fstream>
 
 TRC_INIT()
@@ -103,6 +104,8 @@ int main(int argc, char** argv)
     return handleMessageFromMq(msg); });
 
   bool run = true;
+  std::cout << std::endl << "iqrfapp " << PAR(IQRFAPP_VERSION) << PAR(BUILD_TIMESTAMP) << std::endl;
+
   while (run)
   {
     if (cmdl) {
