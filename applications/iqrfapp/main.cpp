@@ -33,7 +33,7 @@ int handleMessageFromMq(const ustring& message)
 
 int main(int argc, char** argv)
 {
-  TRC_START("", iqrf::Level::err, 0);
+  TRC_START("", iqrf::Level::inf, 0);
   std::string command;
   bool cmdl = false;
 
@@ -104,7 +104,10 @@ int main(int argc, char** argv)
     return handleMessageFromMq(msg); });
 
   bool run = true;
-  std::cout << std::endl << "iqrfapp " << PAR(IQRFAPP_VERSION) << PAR(BUILD_TIMESTAMP) << std::endl;
+  
+  if (cmdl) {
+    std::cout << std::endl << "iqrfapp " << PAR(IQRFAPP_VERSION) << PAR(BUILD_TIMESTAMP) << std::endl;
+  }
 
   while (run)
   {
@@ -125,8 +128,9 @@ int main(int argc, char** argv)
 
     //TODO wait timeout
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    if (!cmdl)
+    if (!cmdl) {
       break;
+    }
   }
 
   delete mqChannel;
