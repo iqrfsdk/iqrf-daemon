@@ -23,6 +23,23 @@
 
 TRC_INIT()
 
+void helpAndExit()
+{
+  std::cerr << "Usage" << std::endl;
+  std::cerr << "  iqrfapp [<perif> <num> <command>]" << std::endl << std::endl;
+  std::cerr << "  iqrfapp raw <buffer>" << std::endl << std::endl;
+  std::cerr << "  iqrfapp conf [Operational|Forwarding|Service]" << std::endl << std::endl;
+  std::cerr << "Example" << std::endl;
+  std::cerr << "  iqrfapp" << std::endl;
+  std::cerr << "  iqrfapp Thermometer 1 READ" << std::endl;
+  std::cerr << "  iqrfapp LedG 0 PULSE" << std::endl;
+  std::cerr << "  iqrfapp LedR 1 PULSE" << std::endl;
+  std::cerr << "  iqrfapp Raw 01 00 06 03 ff ff" << std::endl;
+  std::cerr << "  iqrfapp Raw 01.00.06.03.ff.ff" << std::endl;
+  std::cerr << "  iqrfapp conf Operational" << std::endl;
+  exit(-1);
+}
+
 int handleMessageFromMq(const ustring& message)
 {
   TRC_DBG("Received from MQ: " << std::endl << FORM_HEX(message.data(), message.size()));
@@ -40,27 +57,22 @@ int main(int argc, char** argv)
   if (argc == 1) {
     cmdl = true;
   }
-  else if (argc < 4 ) {
-    std::cerr << "Usage" << std::endl;
-    std::cerr << "  iqrfapp [<perif> <num> <command>]" << std::endl << std::endl;
-    std::cerr << "  iqrfapp raw <buffer>" << std::endl << std::endl;
-    std::cerr << "  iqrfapp conf [Operational|Forwarding|Service]" << std::endl << std::endl;
-    std::cerr << "Example" << std::endl;
-    std::cerr << "  iqrfapp" << std::endl;
-    std::cerr << "  iqrfapp Thermometer 1 READ" << std::endl;
-    std::cerr << "  iqrfapp LedG 0 PULSE" << std::endl;
-    std::cerr << "  iqrfapp LedR 1 PULSE" << std::endl;
-    std::cerr << "  iqrfapp Raw 01 00 06 03 ff ff" << std::endl;
-    std::cerr << "  iqrfapp Raw 01.00.06.03.ff.ff" << std::endl;
-    std::cerr << "  iqrfapp conf Operational" << std::endl;
-    exit (-1);
+  //just workaround - TODO cmdl params are not properly tested
+  else if (argc == 3) {
+    std::string arg1 = argv[1];
+    std::string arg2 = argv[2];
+    if (arg1 != "conf" || !(arg2 == "Operational" || arg2 == "Forwarding" || arg2 == "Service")) {
+      helpAndExit();
+    }
   }
-  else {
-    std::ostringstream os;
-    for (int i = 1; i < argc; i++)
-      os << argv[i] << " ";
-    command = os.str();
+  else if (argc < 4) {
+    helpAndExit();
   }
+
+  std::ostringstream os;
+  for (int i = 1; i < argc; i++)
+    os << argv[i] << " ";
+  command = os.str();
 
   std::string cfgFileName("iqrfapp.json");
   std::string localMqName("iqrf-daemon-100");
@@ -133,7 +145,10 @@ int main(int argc, char** argv)
     }
   }
 
-  delete mqChannel;
+//TODO solve blocking dtor on WIN
+#ifndef WIN
+  delete mqChannel; 
+#endif
 
   return 0;
 }

@@ -208,7 +208,7 @@ void DaemonController::watchDogPet()
 void DaemonController::setMode(Mode mode)
 {
   TRC_ENTER(NAME_PAR(mode, (int)mode));
-  
+
   std::lock_guard<std::mutex> lck(m_modeMtx);
 
   switch (mode) {
@@ -240,7 +240,7 @@ void DaemonController::setMode(Mode mode)
     m_mode = mode;
     stopDpa();
     m_dpaExclusiveAccess->setExclusive(m_iqrfInterface);
-    TRC_INF("Set Forwarding mode");
+    TRC_INF("Set Service mode");
     m_mode = mode;
   }
   break;
@@ -276,7 +276,7 @@ void DaemonController::startTrace()
         PAR(DAEMON_VERSION) << PAR(BUILD_TIMESTAMP) << std::endl <<
         "============================================================================" << std::endl
       )
-      TRC_INF("Loaded configuration file: " << PAR(m_cfgFileName));
+        TRC_INF("Loaded configuration file: " << PAR(m_cfgFileName));
       TRC_INF("Opened trace file: " << PAR(m_traceFileName) << PAR(m_traceFileSize));
 
     }
@@ -348,7 +348,7 @@ void DaemonController::startScheduler()
     watchDogPet();
   });
   m_scheduler->scheduleTaskPeriodic("WatchDogPet", "WatchDogPet",
-    std::chrono::duration_cast<std::chrono::seconds>(std::chrono::milliseconds(m_watchDogTimeoutMilis/2)));
+    std::chrono::duration_cast<std::chrono::seconds>(std::chrono::milliseconds(m_watchDogTimeoutMilis / 2)));
 
 }
 
@@ -658,23 +658,28 @@ void DaemonController::exit()
 std::string DaemonController::doCommand(const std::string& cmd)
 {
   std::ostringstream ostr;
-  if (cmd == "Operational") {
-    setMode(Mode::Operational);
-    ostr << PAR(cmd) << " done";
-    return ostr.str();
+  if (m_iqrfInterface != nullptr) {
+    if (cmd == "Operational") {
+      setMode(Mode::Operational);
+      ostr << PAR(cmd) << " done";
+      return ostr.str();
+    }
+    if (cmd == "Service") {
+      setMode(Mode::Service);
+      ostr << PAR(cmd) << " done";
+      return ostr.str();
+    }
+    if (cmd == "Forwarding") {
+      setMode(Mode::Forwarding);
+      ostr << PAR(cmd) << " done";
+      return ostr.str();
+    }
+    ostr << PAR(cmd) << " unknown";
+    TRC_LEAVE("");
   }
-  if (cmd == "Service") {
-    setMode(Mode::Service);
-    ostr << PAR(cmd) << " done";
-    return ostr.str();
+  else {
+    ostr << "iqrf interface is out of order";
   }
-  if (cmd == "Forwarding") {
-    setMode(Mode::Forwarding);
-    ostr << PAR(cmd) << " done";
-    return ostr.str();
-  }
-  ostr << PAR(cmd) << " unknown";
-  TRC_LEAVE("");
   return ostr.str();
 }
 
