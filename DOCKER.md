@@ -4,39 +4,42 @@
 
 ## Install Docker CE
 
-### Add Docker's official GPG key
-
-```Bash
-sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-```
-
-### Add repository to the source list
+### Add Docker's official GPG key, add repository to the source list and install it
 
 -	For Debian (amd64)
 
 ```Bash
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+
 echo "deb https://download.docker.com/linux/debian jessie stable" | sudo tee -a /etc/apt/sources.list
+
 sudo apt-get update
+
+sudo apt-get install docker-ce
 ```
 
 -	For Ubuntu (amd64)
 
 ```Bash
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+
 echo "deb https://download.docker.com/linux/ubuntu xenial stable" | sudo tee -a /etc/apt/sources.list
+
 sudo apt-get update
+
+sudo apt-get install docker-ce
 ```
 
 -	For Raspbian (armhf)
 
 ```Bash
+sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+
 echo "deb https://apt.dockerproject.org/repo raspbian-jessie main" | sudo tee -a /etc/apt/sources.list
+
 sudo apt-get update
-```
 
-### Install the Docker
-
-```Bash
-sudo apt-get install docker-ce (docker-engine for Raspbian)
+sudo apt-get install docker-engine
 ```
 
 ### Confirm that Docker service is up and running
@@ -51,21 +54,10 @@ sudo systemctl status docker.service
    CGroup: /system.slice/docker.service
            ââ23484 /usr/bin/dockerd -H fd://
            ââ23491 docker-containerd -l unix:///var/run/docker/libcontainerd/docker-containerd.sock --metrics-interval=0 --start-timeout 2m --state-dir /var/run/dock...
-
-Apr 25 22:21:28 ubilinux dockerd[23484]: time="2017-04-25T22:21:28.422059424+02:00" level=warning msg="Your kernel does not support cgroup rt runtime"
-Apr 25 22:21:28 ubilinux dockerd[23484]: time="2017-04-25T22:21:28.423115042+02:00" level=info msg="Loading containers: start."
-Apr 25 22:21:28 ubilinux dockerd[23484]: time="2017-04-25T22:21:28.464248327+02:00" level=info msg="Firewalld running: false"
-Apr 25 22:21:28 ubilinux dockerd[23484]: time="2017-04-25T22:21:28.648868560+02:00" level=info msg="Default bridge (docker0) is assigned with an IP address...P address"
-Apr 25 22:21:28 ubilinux dockerd[23484]: time="2017-04-25T22:21:28.750178656+02:00" level=info msg="Loading containers: done."
-Apr 25 22:21:28 ubilinux dockerd[23484]: time="2017-04-25T22:21:28.790408003+02:00" level=info msg="Daemon has completed initialization"
-Apr 25 22:21:28 ubilinux dockerd[23484]: time="2017-04-25T22:21:28.790509937+02:00" level=info msg="Docker daemon" commit=c6d412e graphdriver=overlay2 vers...17.03.1-ce
-Apr 25 22:21:28 ubilinux dockerd[23484]: time="2017-04-25T22:21:28.818738176+02:00" level=info msg="API listen on /var/run/docker.sock"
-Apr 25 22:21:28 ubilinux systemd[1]: Started Docker Application Container Engine.
-Apr 25 22:21:28 ubilinux systemd[1]: [/lib/systemd/system/docker.service:24] Unknown lvalue 'Delegate' in section 'Service'
-Hint: Some lines were ellipsized, use -l to show in full.
+...
 ```
 
-### Add user ubilinux to docker group (allow user to connect to docker engine)
+### Add user $(whoami) to the Docker group
 
 ```Bash
 sudo usermod $(whoami) -aG docker
