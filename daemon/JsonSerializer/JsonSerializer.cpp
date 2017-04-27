@@ -28,48 +28,206 @@
 #include <utility>
 #include <stdexcept>
 
-//TODO using istream is slower according http://rapidjson.org/md_doc_stream.html
+ //TODO using istream is slower according http://rapidjson.org/md_doc_stream.html
 
 using namespace rapidjson;
 
 INIT_COMPONENT(ISerializer, JsonSerializer)
 
 //////////////////////////////////////////
-PrfCommonJson::PrfCommonJson(DpaTask& dpaTask)
-  :m_dpaTask(dpaTask)
+PrfCommonJson::PrfCommonJson()
 {
 }
 
 void PrfCommonJson::parseRequestJson(rapidjson::Value& val)
 {
   jutils::assertIsObject("", val);
-  m_dpaTask.setAddress(jutils::getMemberAs<int>("Addr", val));
-  m_dpaTask.parseCommand(jutils::getMemberAs<std::string>("Comd", val));
-  int tout = jutils::getPossibleMemberAs<int>("Timeout", val, -1);
-  if (tout >= 0) {
-    m_explicitTimeout = true;
-    m_dpaTask.setTimeout(tout);
-  }
+
+  m_has_type = jutils::getMemberIfExistsAs<std::string>("type", val, m_type);
+  m_has_nadr = jutils::getMemberIfExistsAs<int>("nadr", val, m_nadr);
+  m_has_hwpid = jutils::getMemberIfExistsAs<std::string>("hwpid", val, m_hwpid);
+  m_has_timeout = jutils::getMemberIfExistsAs<int>("timeout", val, m_timeout);
+  m_has_msgid = jutils::getMemberIfExistsAs<std::string>("msgid", val, m_msgid);
+  m_has_request = jutils::getMemberIfExistsAs<std::string>("request", val, m_request);
+  m_has_request_ts = jutils::getMemberIfExistsAs<std::string>("request-ts", val, m_request_ts);
+  m_has_response = jutils::getMemberIfExistsAs<std::string>("response", val, m_response);
+  m_has_response_ts = jutils::getMemberIfExistsAs<std::string>("response-ts", val, m_response_ts);
+  m_has_confirmation = jutils::getMemberIfExistsAs<std::string>("confirmation", val, m_confirmation);
+  m_has_confirmation_ts = jutils::getMemberIfExistsAs<std::string>("confirmation-ts", val, m_confirmation_ts);
+  m_has_cmd = jutils::getMemberIfExistsAs<std::string>("cmd", val, m_cmd);
+
 }
 
 void PrfCommonJson::encodeResponseJson(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const
 {
+  //rapidjson::Value v;
+  //v.SetString(m_dpaTask.getPrfName().c_str(), alloc);
+  //val.AddMember("type", v, alloc);
+
+  //v = m_dpaTask.getAddress();
+  //val.AddMember("nadr", v, alloc);
+
+  //v.SetString(m_dpaTask.encodeCommand().c_str(), alloc);
+  //val.AddMember("cmd", v, alloc);
+
+  //if (m_explicitTimeout > 0) {
+  //  v.SetInt(m_dpaTask.getTimeout());
+  //  val.AddMember("timeout", v, alloc);
+  //}
+
   rapidjson::Value v;
-  v.SetString(m_dpaTask.getPrfName().c_str(),alloc);
-  val.AddMember("Type", v, alloc);
-
-  v = m_dpaTask.getAddress();
-  val.AddMember("Addr", v, alloc);
-
-  v.SetString(m_dpaTask.encodeCommand().c_str(), alloc);
-  val.AddMember("Comd", v, alloc);
-
-  if (m_explicitTimeout > 0) {
-    v.SetInt(m_dpaTask.getTimeout());
-    val.AddMember("Timeout", v, alloc);
+  if (m_has_type) {
+    v.SetString(m_type.c_str(), alloc);
+    val.AddMember("type", v, alloc);
+  }
+  if (m_has_nadr) {
+    v = m_nadr;
+    val.AddMember("nadr", v, alloc);
+  }
+  if (m_has_hwpid) {
+    v.SetString(m_hwpid.c_str(), alloc);
+    val.AddMember("hwpid", v, alloc);
+  }
+  if (m_has_timeout) {
+    v = m_timeout;
+    val.AddMember("timeout", v, alloc);
+  }
+  if (m_has_msgid) {
+    v.SetString(m_msgid.c_str(), alloc);
+    val.AddMember("msgid", v, alloc);
+  }
+  if (m_has_request) {
+    v.SetString(m_request.c_str(), alloc);
+    val.AddMember("request", v, alloc);
+  }
+  if (m_has_request_ts) {
+    v.SetString(m_request_ts.c_str(), alloc);
+    val.AddMember("request_ts", v, alloc);
+  }
+  if (m_has_response) {
+    v.SetString(m_response.c_str(), alloc);
+    val.AddMember("response", v, alloc);
+  }
+  if (m_has_response_ts) {
+    v.SetString(m_response_ts.c_str(), alloc);
+    val.AddMember("response_ts", v, alloc);
+  }
+  if (m_has_confirmation) {
+    v.SetString(m_confirmation.c_str(), alloc);
+    val.AddMember("confirmation", v, alloc);
+  }
+  if (m_has_confirmation_ts) {
+    v.SetString(m_confirmation_ts.c_str(), alloc);
+    val.AddMember("confirmation_ts", v, alloc);
+  }
+  if (m_has_cmd) {
+    v.SetString(m_cmd.c_str(), alloc);
+    val.AddMember("cmd", v, alloc);
   }
 }
 
+/*
+void PrfCommonJson::encode_nadr(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const
+{
+  if (m_has_nadr) {
+    rapidjson::Value v;
+    v = m_nadr;
+    val.AddMember("nadr", v, alloc);
+  }
+}
+
+void PrfCommonJson::encode_hwpid(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const
+{
+  if (m_has_hwpid) {
+    rapidjson::Value v;
+    v.SetString(m_hwpid.c_str(), alloc);
+    val.AddMember("hwpid", v, alloc);
+  }
+}
+
+void PrfCommonJson::encode_timeout(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const
+{
+  if (m_has_timeout) {
+    rapidjson::Value v;
+    v = m_timeout;
+    val.AddMember("timeout", v, alloc);
+  }
+}
+
+void PrfCommonJson::encode_msgid(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const
+{
+  if (m_has_msgid) {
+    rapidjson::Value v;
+    v.SetString(m_msgid.c_str(), alloc);
+    val.AddMember("msgid", v, alloc);
+  }
+}
+
+void PrfCommonJson::encode_request(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const
+{
+  if (m_has_request) {
+    rapidjson::Value v;
+    v.SetString(m_request.c_str(), alloc);
+    val.AddMember("request", v, alloc);
+  }
+}
+
+void PrfCommonJson::encode_request_ts(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const
+{
+  if (m_has_request_ts) {
+    rapidjson::Value v;
+    v.SetString(m_request_ts.c_str(), alloc);
+    val.AddMember("request_ts", v, alloc);
+  }
+}
+
+void PrfCommonJson::encode_response(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const
+{
+  if (m_has_response) {
+    rapidjson::Value v;
+    v.SetString(m_response.c_str(), alloc);
+    val.AddMember("response", v, alloc);
+  }
+}
+
+void PrfCommonJson::encode_response_ts(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const
+{
+  if (m_has_response_ts) {
+    rapidjson::Value v;
+    v.SetString(m_response_ts.c_str(), alloc);
+    val.AddMember("response_ts", v, alloc);
+  }
+}
+
+void PrfCommonJson::encode_confirmation(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const
+{
+  if (m_has_confirmation) {
+    rapidjson::Value v;
+    v.SetString(m_confirmation.c_str(), alloc);
+    val.AddMember("confirmation", v, alloc);
+  }
+}
+
+void PrfCommonJson::encode_confirmation_ts(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const
+{
+  if (m_has_confirmation_ts) {
+    rapidjson::Value v;
+    v.SetString(m_confirmation_ts.c_str(), alloc);
+    val.AddMember("confirmation_ts", v, alloc);
+  }
+}
+
+void PrfCommonJson::encode_cmd(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const
+{
+  if (m_has_cmd) {
+    rapidjson::Value v;
+    v.SetString(m_cmd.c_str(), alloc);
+    val.AddMember("cmd", v, alloc);
+  }
+}
+*/
+
+/////////////////////////////////////////
 //-------------------------------
 PrfRawJson::PrfRawJson(rapidjson::Value& val)
 {
@@ -161,6 +319,11 @@ std::string PrfRawJson::encodeResponse(const std::string& errStr) const
 PrfThermometerJson::PrfThermometerJson(rapidjson::Value& val)
 {
   m_common.parseRequestJson(val);
+  setAddress((uint16_t)m_common.m_nadr);
+  parseCommand(m_common.m_cmd);
+  if (m_timeout >= 0) {
+    setTimeout(m_common.m_timeout);
+  }
 }
 
 std::string PrfThermometerJson::encodeResponse(const std::string& errStr) const
@@ -172,10 +335,10 @@ std::string PrfThermometerJson::encodeResponse(const std::string& errStr) const
 
   rapidjson::Value v;
   v = getFloatTemperature();
-  doc.AddMember("Temperature", v, doc.GetAllocator());
+  doc.AddMember("temperature", v, doc.GetAllocator());
 
   v.SetString(errStr.c_str(), doc.GetAllocator());
-  doc.AddMember("Status", v, doc.GetAllocator());
+  doc.AddMember("status", v, doc.GetAllocator());
 
   StringBuffer buffer;
   PrettyWriter<StringBuffer> writer(buffer);
@@ -187,6 +350,12 @@ std::string PrfThermometerJson::encodeResponse(const std::string& errStr) const
 PrfFrcJson::PrfFrcJson(rapidjson::Value& val)
 {
   m_common.parseRequestJson(val);
+  m_common.parseRequestJson(val);
+  setAddress((uint16_t)m_common.m_nadr);
+  parseCommand(m_common.m_cmd);
+  if (m_timeout >= 0) {
+    setTimeout(m_common.m_timeout);
+  }
 
   std::string frcCmd = jutils::getPossibleMemberAs<std::string>("FrcCmd", val, "");
   if (!frcCmd.empty()) {
@@ -274,6 +443,13 @@ std::string PrfFrcJson::encodeResponse(const std::string& errStr) const
 PrfIoJson::PrfIoJson(rapidjson::Value& val)
 {
   m_common.parseRequestJson(val);
+  m_common.parseRequestJson(val);
+  setAddress((uint16_t)m_common.m_nadr);
+  parseCommand(m_common.m_cmd);
+  if (m_timeout >= 0) {
+    setTimeout(m_common.m_timeout);
+  }
+
   switch (getCmd()) {
 
   case PrfIo::Cmd::DIRECTION:
@@ -388,6 +564,13 @@ std::string PrfIoJson::encodeResponse(const std::string& errStr) const
 PrfOsJson::PrfOsJson(rapidjson::Value& val)
 {
   m_common.parseRequestJson(val);
+  m_common.parseRequestJson(val);
+  setAddress((uint16_t)m_common.m_nadr);
+  parseCommand(m_common.m_cmd);
+  if (m_timeout >= 0) {
+    setTimeout(m_common.m_timeout);
+  }
+
   switch (getCmd()) {
 
   case Cmd::READ:
@@ -436,7 +619,7 @@ JsonSerializer::JsonSerializer()
 }
 
 JsonSerializer::JsonSerializer(const std::string& name)
-  :m_name(name)
+  : m_name(name)
 {
   init();
 }
@@ -466,7 +649,7 @@ std::unique_ptr<DpaTask> JsonSerializer::parseRequest(const std::string& request
     jutils::parseString(request, doc);
 
     jutils::assertIsObject("", doc);
-    std::string perif = jutils::getMemberAs<std::string>("Type", doc);
+    std::string perif = jutils::getMemberAs<std::string>("type", doc);
 
     obj = createObject(perif, doc);
   }

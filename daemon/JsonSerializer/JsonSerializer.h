@@ -36,13 +36,64 @@
 class PrfCommonJson
 {
 public:
-  PrfCommonJson() = delete;
-  PrfCommonJson(DpaTask& dpaTask);
+  PrfCommonJson();
+  //PrfCommonJson(DpaTask& dpaTask);
   void parseRequestJson(rapidjson::Value& val);
   void encodeResponseJson(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const;
-private:
-  DpaTask& m_dpaTask;
-  bool m_explicitTimeout = false;
+  /*
+  void encode_nadr(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const;
+  void encode_hwpid(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const;
+  void encode_timeout(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const;
+  void encode_msgid(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const;
+  void encode_request(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const;
+  void encode_request_ts(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const;
+  void encode_response(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const;
+  void encode_response_ts(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const;
+  void encode_confirmation(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const;
+  void encode_confirmation_ts(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const;
+  void encode_cmd(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const;
+  */
+
+public:
+  bool has_nadr() { return m_has_nadr; }
+  bool has_hwpid() { return m_has_hwpid; }
+  bool has_timeout() { return m_has_timeout; }
+  bool has_msgid() { return m_has_msgid; }
+  bool has_request() { return m_has_request; }
+  bool has_request_ts() { return m_has_request_ts; }
+  bool has_response() { return m_has_response; }
+  bool has_response_ts() { return m_has_response_ts; }
+  bool has_confirmation() { return m_has_confirmation; }
+  bool has_confirmation_ts() { return m_has_confirmation_ts; }
+  bool has_cmd() { return m_has_cmd; }
+
+  bool m_has_type = false;
+  bool m_has_nadr = false;
+  bool m_has_hwpid = false;
+  bool m_has_timeout = false;
+  bool m_has_msgid = false;
+  bool m_has_request = false;
+  bool m_has_request_ts = false;
+  bool m_has_response = false;
+  bool m_has_response_ts = false;
+  bool m_has_confirmation = false;
+  bool m_has_confirmation_ts = false;
+  bool m_has_cmd = false;
+
+  std::string m_type;
+  int m_nadr = -1;
+  std::string m_hwpid = "0xffff";
+  int m_timeout = 0;
+  std::string m_msgid;
+  std::string m_request;
+  std::string m_request_ts;
+  std::string m_response;
+  std::string m_response_ts;
+  std::string m_confirmation;
+  std::string m_confirmation_ts;
+  std::string m_cmd;
+
+  //DpaTask& m_dpaTask;
 };
 
 class PrfRawJson : public PrfRaw
@@ -52,7 +103,7 @@ public:
   virtual ~PrfRawJson() {}
   std::string encodeResponse(const std::string& errStr) const  override;
 private:
-  PrfCommonJson m_common = *this;
+  PrfCommonJson m_common;
   bool m_dotNotation = false;
 };
 
@@ -63,7 +114,7 @@ public:
   virtual ~PrfThermometerJson() {}
   std::string encodeResponse(const std::string& errStr) const  override;
 private:
-  PrfCommonJson m_common = *this;
+  PrfCommonJson m_common;
 };
 
 class PrfFrcJson : public PrfFrc
@@ -73,7 +124,7 @@ public:
   virtual ~PrfFrcJson() {}
   std::string encodeResponse(const std::string& errStr) const  override;
 private:
-  PrfCommonJson m_common = *this;
+  PrfCommonJson m_common;
   bool m_predefinedFrcCommand = false;
 };
 
@@ -84,7 +135,7 @@ public:
   virtual ~PrfIoJson() {}
   std::string encodeResponse(const std::string& errStr) const  override;
 private:
-  PrfCommonJson m_common = *this;
+  PrfCommonJson m_common;
   Port m_port;
   uint8_t m_bit;
   bool m_val;
@@ -97,7 +148,7 @@ public:
   virtual ~PrfOsJson() {}
   std::string encodeResponse(const std::string& errStr) const  override;
 private:
-  PrfCommonJson m_common = *this;
+  PrfCommonJson m_common;
 };
 
 template <typename L>
@@ -131,7 +182,7 @@ public:
   }
 
 private:
-  PrfCommonJson m_common = *this;
+  PrfCommonJson m_common;
 };
 
 typedef PrfLedJson<PrfLedG> PrfLedGJson;
