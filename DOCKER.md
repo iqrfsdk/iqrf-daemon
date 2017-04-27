@@ -9,6 +9,8 @@
 -	For Debian (amd64)
 
 ```Bash
+sudo apt-get install curl apt-transport-https   
+
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
 
 echo "deb https://download.docker.com/linux/debian jessie stable" | sudo tee -a /etc/apt/sources.list
@@ -21,6 +23,8 @@ sudo apt-get install docker-ce
 -	For Ubuntu (amd64)
 
 ```Bash
+sudo apt-get install curl apt-transport-https
+
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
 
 echo "deb https://download.docker.com/linux/ubuntu xenial stable" | sudo tee -a /etc/apt/sources.list
@@ -33,6 +37,8 @@ sudo apt-get install docker-ce
 -	For Raspbian (armhf)
 
 ```Bash
+sudo apt-get install curl apt-transport-https
+
 sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
 
 echo "deb https://apt.dockerproject.org/repo raspbian-jessie main" | sudo tee -a /etc/apt/sources.list
@@ -68,7 +74,8 @@ Terminal logout & login is necessary to update settings.
 ### Run quick test
 
 ```Bash
-docker run hello-world
+docker run hello-world (amd64) or
+docker run hypriot/armhf-hello-world (armhf)
 
 Unable to find image 'hello-world:latest' locally
 latest: Pulling from library/hello-world
