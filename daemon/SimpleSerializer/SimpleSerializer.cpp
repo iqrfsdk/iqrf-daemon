@@ -115,7 +115,7 @@ PrfRawSimple::PrfRawSimple(std::istream& istr)
   m_request.SetLength(i);
 }
 
-std::string PrfRawSimple::encodeResponse(const std::string& errStr) const
+std::string PrfRawSimple::encodeResponse(const std::string& errStr)
 {
   std::ostringstream ostr;
   int len = m_response.Length();
@@ -135,7 +135,7 @@ PrfThermometerSimple::PrfThermometerSimple(std::istream& istr)
   parseRequestSimple(*this, v);
 }
 
-std::string PrfThermometerSimple::encodeResponse(const std::string& errStr) const
+std::string PrfThermometerSimple::encodeResponse(const std::string& errStr)
 {
   std::ostringstream ostr;
   encodeResponseSimple(*this, ostr);

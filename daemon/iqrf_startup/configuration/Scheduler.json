@@ -7,13 +7,28 @@
       "time": "*/5 * * * * * *",
       "service": "BaseServiceForMQTT1",
       "message": {
-        "type": "std-per-ledr",
-        "nadr": 0,
+        "type": "std-per-ledg",
+        "nadr": 1,
         "cmd": "PULSE",
         "hwpid": "0xffff",
         "timeout": 200,
         "msgid": "",
-        "request": "",
+        "request": ".",
+        "request-ts": "",
+        "response": ".",
+        "response-ts": "",
+        "confirmation": ".",
+        "confirmation-ts": ""
+      }
+    },
+    {
+      "time": "*/5 1 * * * * *",
+      "service": "BaseServiceForMQTT1",
+      "message": {
+        "type": "raw",
+        "request": "01 00 06 03 ff ff",
+        "timeout": 200,
+        "msgid": "asdfg",
         "request-ts": "",
         "response": "",
         "response-ts": "",
