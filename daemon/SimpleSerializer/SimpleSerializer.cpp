@@ -118,10 +118,10 @@ PrfRawSimple::PrfRawSimple(std::istream& istr)
 std::string PrfRawSimple::encodeResponse(const std::string& errStr)
 {
   std::ostringstream ostr;
-  int len = m_response.Length();
+  int len = getResponse().Length();
   TRC_DBG(PAR(len));
   ostr << getPrfName() << " " <<
-    iqrf::TracerHexString((unsigned char*)m_response.DpaPacket().Buffer, m_response.Length(), true);
+    iqrf::TracerHexString((unsigned char*)getResponse().DpaPacket().Buffer, len, true);
 
   encodeTokens(*this, errStr, ostr);
 

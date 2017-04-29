@@ -56,7 +56,46 @@ PrfCommonJson::PrfCommonJson()
 
 }
 
-void PrfCommonJson::encodeBinary(std::string& to, unsigned char* from, int len)
+int PrfCommonJson::parseBinary(uint8_t* to, const std::string& from, int maxlen, bool& dot)
+{
+  int retval = 0;
+  if (!from.empty()) {
+    std::string buf = from;
+    if (std::string::npos != buf.find_first_of('.')) {
+      std::replace(buf.begin(), buf.end(), '.', ' ');
+      dot = true;
+    }
+    std::istringstream istr(buf);
+
+    int val;
+    while (retval < maxlen) {
+      if (!(istr >> std::hex >> val)) {
+        if (istr.eof()) break;
+        THROW_EX(std::logic_error, "Unexpected format: " << PAR(from));
+      }
+      to[retval++] = (uint8_t)val;
+    }
+  }
+  return retval;
+}
+
+void PrfCommonJson::encodeHexaNum(std::string& to, uint8_t from)
+{
+  std::ostringstream os;
+  os.fill('0'); os.width(2);
+  os << std::hex << (int)from;
+  to = os.str();
+}
+
+void PrfCommonJson::encodeHexaNum(std::string& to, uint16_t from)
+{
+  std::ostringstream os;
+  os.fill('0'); os.width(4);
+  os << std::hex << (int)from;
+  to = os.str();
+}
+
+void PrfCommonJson::encodeBinary(std::string& to, const uint8_t* from, int len)
 {
   if (len > 0) {
     std::ostringstream ostr;
@@ -74,7 +113,6 @@ void PrfCommonJson::encodeBinary(std::string& to, unsigned char* from, int len)
         to.pop_back();
     }
   }
-
 }
 
 void PrfCommonJson::encodeTimestamp(std::string& to, std::chrono::time_point<std::chrono::system_clock> from)
@@ -93,8 +131,7 @@ void PrfCommonJson::encodeTimestamp(std::string& to, std::chrono::time_point<std
   to = os.str();
 }
 
-
-void PrfCommonJson::parseRequestJson(rapidjson::Value& val)
+void PrfCommonJson::parseRequestJson(rapidjson::Value& val, DpaTask& dpaTask)
 {
   jutils::assertIsObject("", val);
 
@@ -111,6 +148,21 @@ void PrfCommonJson::parseRequestJson(rapidjson::Value& val)
   m_has_confirmation = jutils::getMemberIfExistsAs<std::string>(CONFIRMATION_STR, val, m_confirmationJ);
   m_has_confirmation_ts = jutils::getMemberIfExistsAs<std::string>(CONFIRMATION_TS_STR, val, m_confirmation_ts);
   m_has_cmd = jutils::getMemberIfExistsAs<std::string>(CMD_STR, val, m_cmdJ);
+
+  if (m_has_nadr) {
+    dpaTask.setAddress((uint16_t)m_nadr);
+  }
+  if (m_has_hwpid) {
+    uint16_t hwpid;
+    parseHexaNum(hwpid, m_hwpid);
+    dpaTask.setHwpid((uint16_t)hwpid);
+  }
+  if (m_has_cmd) {
+    dpaTask.parseCommand(m_cmdJ);
+  }
+  if (m_has_timeout && m_timeoutJ >= 0) {
+    dpaTask.setTimeout(m_timeoutJ);
+  }
 }
 
 
@@ -143,7 +195,7 @@ std::string PrfCommonJson::encodeResponseJson(const DpaTask& dpaTask)
     m_doc.AddMember(MSGID_STR, v, alloc);
   }
   if (m_has_request) {
-    encodeBinary(m_requestJ, (unsigned char*)dpaTask.getRequest().DpaPacket().Buffer, dpaTask.getRequest().Length());
+    encodeBinary(m_requestJ, dpaTask.getRequest().DpaPacket().Buffer, dpaTask.getRequest().Length());
     v.SetString(m_requestJ.c_str(), alloc);
     m_doc.AddMember(REQUEST_STR, v, alloc);
   }
@@ -153,7 +205,7 @@ std::string PrfCommonJson::encodeResponseJson(const DpaTask& dpaTask)
     m_doc.AddMember(REQUEST_TS_STR, v, alloc);
   }
   if (m_has_confirmation) {
-    encodeBinary(m_confirmationJ, (unsigned char*)dpaTask.getConfirmation().DpaPacket().Buffer, dpaTask.getConfirmation().Length());
+    encodeBinary(m_confirmationJ, dpaTask.getConfirmation().DpaPacket().Buffer, dpaTask.getConfirmation().Length());
     v.SetString(m_confirmationJ.c_str(), alloc);
     m_doc.AddMember(CONFIRMATION_STR, v, alloc);
   }
@@ -163,7 +215,7 @@ std::string PrfCommonJson::encodeResponseJson(const DpaTask& dpaTask)
     m_doc.AddMember(CONFIRMATION_TS_STR, v, alloc);
   }
   if (m_has_response) {
-    encodeBinary(m_responseJ, (unsigned char*)dpaTask.getResponse().DpaPacket().Buffer, dpaTask.getResponse().Length());
+    encodeBinary(m_responseJ, dpaTask.getResponse().DpaPacket().Buffer, dpaTask.getResponse().Length());
     v.SetString(m_responseJ.c_str(), alloc);
     m_doc.AddMember(RESPONSE_STR, v, alloc);
   }
@@ -189,91 +241,95 @@ std::string PrfCommonJson::encodeResponseJson(const DpaTask& dpaTask)
 //-------------------------------
 PrfRawJson::PrfRawJson(rapidjson::Value& val)
 {
-  parseRequestJson(val);
-  parseCommand(m_cmdJ);
-  if (m_timeoutJ >= 0) {
-    setTimeout(m_timeoutJ);
-  }
+  parseRequestJson(val, *this);
 
   if (!m_has_request) {
     THROW_EX(std::logic_error, "Missing member: " << REQUEST_STR);
   }
 
-  std::string buf = m_requestJ;
-  if (std::string::npos != buf.find_first_of('.')) {
-    buf.replace(buf.begin(), buf.end(), '.', ' ');
-    m_dotNotation = true;
-  }
-  std::istringstream istr(buf);
-
-  uint8_t bbyte;
-  int ival;
-  int i = 0;
-
-  while (i < MAX_DPA_BUFFER) {
-    if (istr >> std::hex >> ival) {
-      m_request.DpaPacket().Buffer[i] = (uint8_t)ival;
-      i++;
-    }
-    else
-      break;
-  }
-  m_request.SetLength(i);
-
+  int len = parseBinary(m_request.DpaPacket().Buffer, m_requestJ, MAX_DPA_BUFFER, m_dotNotation);
+  m_request.SetLength(len);
 }
 
 std::string PrfRawJson::encodeResponse(const std::string& errStr)
 {
+  if (m_dotNotation) {
+    m_responseJ = ".";
+  }
+  m_has_response = true; //mandatory here
+  m_statusJ = errStr;
+  return encodeResponseJson(*this);
+}
+
+//-------------------------------
+const std::string PrfRawHdpJson::PRF_NAME("raw-hdp");
+
+#define PNUM_STR "pnum"
+#define PCMD_STR "pcmd"
+#define REQD_STR "req-data"
+#define RCODE_STR "rcode"
+#define DPAVAL_STR "dpaval"
+#define RESD_STR "res-data"
+
+PrfRawHdpJson::PrfRawHdpJson(rapidjson::Value& val)
+{
+  parseRequestJson(val, *this);
+
+  m_pnum = jutils::getMemberAs<std::string>(PNUM_STR, val);
+  m_pcmd = jutils::getMemberAs<std::string>(PCMD_STR, val);
+  m_data = jutils::getPossibleMemberAs<std::string>(REQD_STR, val, m_data);
+
   {
-    std::ostringstream ostr;
-    int len = m_request.Length();
-    ostr << iqrf::TracerHexString((unsigned char*)m_request.DpaPacket().Buffer, m_request.Length(), true);
-
-    std::string buf(ostr.str());
-
-    if (m_dotNotation) {
-      buf.replace(buf.begin(), buf.end(), ' ', '.');
-      if (buf[buf.size() - 1] == '.')
-        buf.pop_back();
-    }
-
-    m_requestJ = buf;
+    uint8_t pnum;
+    parseHexaNum(pnum, m_pnum);
+    m_request.DpaPacket().DpaRequestPacket_t.PNUM = pnum;
   }
 
   {
-    std::ostringstream ostr;
-    int len = m_response.Length();
-    ostr << iqrf::TracerHexString((unsigned char*)m_response.DpaPacket().Buffer, m_response.Length(), true);
-
-    std::string buf(ostr.str());
-
-    if (m_dotNotation) {
-      buf.replace(buf.begin(), buf.end(), ' ', '.');
-      if (buf[buf.size() - 1] == '.')
-        buf.pop_back();
-    }
-
-    m_responseJ = buf;
-    m_has_response = true;
+    uint8_t pcmd;
+    parseHexaNum(pcmd, m_pcmd);
+    m_request.DpaPacket().DpaRequestPacket_t.PCMD = pcmd;
   }
 
-  if (m_has_confirmation)
-  {
-    std::ostringstream ostr;
-    int len = m_confirmation.Length();
-    ostr << iqrf::TracerHexString((unsigned char*)m_confirmation.DpaPacket().Buffer, m_confirmation.Length(), true);
+  int len = parseBinary(m_request.DpaPacket().DpaRequestPacket_t.DpaMessage.Request.PData, m_data, DPA_MAX_DATA_LENGTH, m_dotNotation);
+  m_request.SetLength(sizeof(TDpaIFaceHeader) + len);
 
-    std::string buf(ostr.str());
+}
 
-    if (m_dotNotation) {
-      buf.replace(buf.begin(), buf.end(), ' ', '.');
-      if (buf[buf.size() - 1] == '.')
-        buf.pop_back();
-    }
+std::string PrfRawHdpJson::encodeResponse(const std::string& errStr)
+{
+  Document::AllocatorType& alloc = m_doc.GetAllocator();
+  rapidjson::Value v;
 
-    m_confirmationJ = buf;
+  v.SetString(m_pnum.c_str(), alloc);
+  m_doc.AddMember(PNUM_STR, v, alloc);
+  
+  v.SetString(m_pcmd.c_str(), alloc);
+  m_doc.AddMember(PCMD_STR, v, alloc);
+
+  const DpaMessage& response = getResponse();
+  
+  std::string rcode;
+  encodeHexaNum(rcode, response.DpaPacket().DpaResponsePacket_t.ResponseCode);
+  v.SetString(rcode.c_str(), alloc);
+  m_doc.AddMember(RCODE_STR, v, alloc);
+
+  std::string dpaval;
+  encodeHexaNum(dpaval, response.DpaPacket().DpaResponsePacket_t.DpaValue);
+  v.SetString(dpaval.c_str(), alloc);
+  m_doc.AddMember(DPAVAL_STR, v, alloc);
+
+  if (m_dotNotation) {
+    m_responseJ = ".";
   }
-
+  m_has_response = true; //mandatory here
+  
+  //TODO data
+  int datalen = getResponse().Length() - sizeof(TDpaIFaceHeader) - 2; //DpaValue ResponseCode
+  encodeBinary(m_requestJ, getResponse().DpaPacket().DpaResponsePacket_t.DpaMessage.Response.PData, datalen );
+  v.SetString(m_requestJ.c_str(), alloc);
+  m_doc.AddMember(RESD_STR, v, alloc);
+  
   m_statusJ = errStr;
   return encodeResponseJson(*this);
 }
@@ -281,12 +337,7 @@ std::string PrfRawJson::encodeResponse(const std::string& errStr)
 //-------------------------------
 PrfThermometerJson::PrfThermometerJson(rapidjson::Value& val)
 {
-  parseRequestJson(val);
-  setAddress((uint16_t)m_nadr);
-  parseCommand(m_cmdJ);
-  if (m_timeoutJ >= 0) {
-    setTimeout(m_timeoutJ);
-  }
+  parseRequestJson(val, *this);
 }
 
 std::string PrfThermometerJson::encodeResponse(const std::string& errStr)
@@ -302,13 +353,7 @@ std::string PrfThermometerJson::encodeResponse(const std::string& errStr)
 //-------------------------------
 PrfFrcJson::PrfFrcJson(rapidjson::Value& val)
 {
-  parseRequestJson(val);
-  parseRequestJson(val);
-  setAddress((uint16_t)m_nadr);
-  parseCommand(m_cmdJ);
-  if (m_timeoutJ >= 0) {
-    setTimeout(m_timeoutJ);
-  }
+  parseRequestJson(val, *this);
 
   std::string frcCmd = jutils::getPossibleMemberAs<std::string>("FrcCmd", val, "");
   if (!frcCmd.empty()) {
@@ -384,13 +429,7 @@ std::string PrfFrcJson::encodeResponse(const std::string& errStr)
 //-------------------------------
 PrfIoJson::PrfIoJson(rapidjson::Value& val)
 {
-  parseRequestJson(val);
-  parseRequestJson(val);
-  setAddress((uint16_t)m_nadr);
-  parseCommand(m_cmdJ);
-  if (m_timeoutJ >= 0) {
-    setTimeout(m_timeoutJ);
-  }
+  parseRequestJson(val, *this);
 
   switch (getCmd()) {
 
@@ -492,13 +531,7 @@ std::string PrfIoJson::encodeResponse(const std::string& errStr)
 //-------------------------------
 PrfOsJson::PrfOsJson(rapidjson::Value& val)
 {
-  parseRequestJson(val);
-  parseRequestJson(val);
-  setAddress((uint16_t)m_nadr);
-  parseCommand(m_cmdJ);
-  if (m_timeoutJ >= 0) {
-    setTimeout(m_timeoutJ);
-  }
+  parseRequestJson(val, *this);
 
   switch (getCmd()) {
 
@@ -548,6 +581,7 @@ JsonSerializer::JsonSerializer(const std::string& name)
 void JsonSerializer::init()
 {
   registerClass<PrfRawJson>(PrfRaw::PRF_NAME);
+  registerClass<PrfRawHdpJson>(PrfRawHdpJson::PRF_NAME);
   registerClass<PrfThermometerJson>(PrfThermometer::PRF_NAME);
   registerClass<PrfLedGJson>(PrfLedG::PRF_NAME);
   registerClass<PrfLedRJson>(PrfLedR::PRF_NAME);

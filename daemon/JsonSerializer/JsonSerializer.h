@@ -38,11 +38,29 @@ class PrfCommonJson
 protected:
 
   PrfCommonJson();
-  void parseRequestJson(rapidjson::Value& val);
+  void parseRequestJson(rapidjson::Value& val, DpaTask& dpaTask);
   std::string encodeResponseJson(const DpaTask& dpaTask);
 
 public:
-  void encodeBinary(std::string& to, unsigned char* from, int len);
+  int parseBinary(uint8_t* to, const std::string& from, int maxlen, bool& dot);
+  
+  template<typename T>
+  void parseHexaNum(T& to, const std::string& from)
+  {
+    int val = 0;
+    std::istringstream istr(from);
+    if (istr >> std::hex >> val) {
+      to = (T)val;
+    }
+    else {
+      THROW_EX(std::logic_error, "Unexpected format: " << PAR(from));
+    }
+  }
+
+  void encodeHexaNum(std::string& to, uint8_t from);
+  void encodeHexaNum(std::string& to, uint16_t from);
+
+  void encodeBinary(std::string& to, const uint8_t* from, int len);
   void encodeTimestamp(std::string& to, std::chrono::time_point<std::chrono::system_clock> from);
 
   bool m_has_ctype = false;
@@ -88,6 +106,22 @@ private:
   bool m_dotNotation = false;
 };
 
+class PrfRawHdpJson : public PrfRaw, public PrfCommonJson
+{
+public:
+  static const std::string PRF_NAME;
+
+  explicit PrfRawHdpJson(rapidjson::Value& val);
+  virtual ~PrfRawHdpJson() {}
+  std::string encodeResponse(const std::string& errStr) override;
+private:
+  bool m_dotNotation = false;
+  std::string m_pnum;
+  std::string m_pcmd;
+  std::string m_data;
+
+};
+
 class PrfThermometerJson : public PrfThermometer, public PrfCommonJson
 {
 public:
@@ -131,12 +165,7 @@ class PrfLedJson : public L, public PrfCommonJson
 {
 public:
   explicit PrfLedJson(rapidjson::Value& val) {
-    parseRequestJson(val);
-    setAddress((uint16_t)m_nadr);
-    parseCommand(m_cmdJ);
-    if (m_timeoutJ >= 0) {
-      setTimeout(m_timeoutJ);
-    }
+    parseRequestJson(val, *this);
   }
 
   virtual ~PrfLedJson() {}
