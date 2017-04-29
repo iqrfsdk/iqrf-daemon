@@ -77,6 +77,23 @@ void PrfCommonJson::encodeBinary(std::string& to, unsigned char* from, int len)
 
 }
 
+void PrfCommonJson::encodeTimestamp(std::string& to, std::chrono::time_point<std::chrono::system_clock> from)
+{
+  using namespace std::chrono;
+
+  auto fromUs = std::chrono::duration_cast<std::chrono::microseconds>(from.time_since_epoch()).count() % 1000000;
+  auto time = std::chrono::system_clock::to_time_t(from);
+  auto tm = *std::gmtime(&time);
+  //auto tm = *std::localtime(&time);
+  
+  std::ostringstream os;
+  os.fill('0'); os.width(6);
+  os << std::put_time(&tm, "%F %T.") <<  fromUs; // << std::put_time(&tm, " %Z\n");
+
+  to = os.str();
+}
+
+
 void PrfCommonJson::parseRequestJson(rapidjson::Value& val)
 {
   jutils::assertIsObject("", val);
@@ -131,17 +148,9 @@ std::string PrfCommonJson::encodeResponseJson(const DpaTask& dpaTask)
     m_doc.AddMember(REQUEST_STR, v, alloc);
   }
   if (m_has_request_ts) {
+    encodeTimestamp(m_request_ts, dpaTask.getRequestTs());
     v.SetString(m_request_ts.c_str(), alloc);
     m_doc.AddMember(REQUEST_TS_STR, v, alloc);
-  }
-  if (m_has_response) {
-    encodeBinary(m_responseJ, (unsigned char*)dpaTask.getResponse().DpaPacket().Buffer, dpaTask.getResponse().Length());
-    v.SetString(m_responseJ.c_str(), alloc);
-    m_doc.AddMember(RESPONSE_STR, v, alloc);
-  }
-  if (m_has_response_ts) {
-    v.SetString(m_response_ts.c_str(), alloc);
-    m_doc.AddMember(RESPONSE_TS_STR, v, alloc);
   }
   if (m_has_confirmation) {
     encodeBinary(m_confirmationJ, (unsigned char*)dpaTask.getConfirmation().DpaPacket().Buffer, dpaTask.getConfirmation().Length());
@@ -149,8 +158,19 @@ std::string PrfCommonJson::encodeResponseJson(const DpaTask& dpaTask)
     m_doc.AddMember(CONFIRMATION_STR, v, alloc);
   }
   if (m_has_confirmation_ts) {
+    encodeTimestamp(m_confirmation_ts, dpaTask.getConfirmationTs());
     v.SetString(m_confirmation_ts.c_str(), alloc);
     m_doc.AddMember(CONFIRMATION_TS_STR, v, alloc);
+  }
+  if (m_has_response) {
+    encodeBinary(m_responseJ, (unsigned char*)dpaTask.getResponse().DpaPacket().Buffer, dpaTask.getResponse().Length());
+    v.SetString(m_responseJ.c_str(), alloc);
+    m_doc.AddMember(RESPONSE_STR, v, alloc);
+  }
+  if (m_has_response_ts) {
+    encodeTimestamp(m_response_ts, dpaTask.getResponseTs());
+    v.SetString(m_response_ts.c_str(), alloc);
+    m_doc.AddMember(RESPONSE_TS_STR, v, alloc);
   }
   if (m_has_cmd) {
     v.SetString(m_cmdJ.c_str(), alloc);

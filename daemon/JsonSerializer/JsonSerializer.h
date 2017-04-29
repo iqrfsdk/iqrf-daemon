@@ -43,6 +43,7 @@ protected:
 
 public:
   void encodeBinary(std::string& to, unsigned char* from, int len);
+  void encodeTimestamp(std::string& to, std::chrono::time_point<std::chrono::system_clock> from);
 
   bool m_has_ctype = false;
   bool m_has_type = false;
