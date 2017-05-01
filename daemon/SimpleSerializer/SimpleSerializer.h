@@ -36,7 +36,7 @@ class PrfRawSimple : public PrfRaw
 public:
   explicit PrfRawSimple(std::istream& istr);
   virtual ~PrfRawSimple() {};
-  std::string encodeResponse(const std::string& errStr) const  override;
+  std::string encodeResponse(const std::string& errStr) override;
 };
 
 class PrfThermometerSimple : public PrfThermometer
@@ -44,7 +44,7 @@ class PrfThermometerSimple : public PrfThermometer
 public:
   explicit PrfThermometerSimple(std::istream& istr);
   virtual ~PrfThermometerSimple() {};
-  std::string encodeResponse(const std::string& errStr) const  override;
+  std::string encodeResponse(const std::string& errStr) override;
 };
 
 template <typename L>
@@ -58,7 +58,7 @@ public:
 
   virtual ~PrfLedSimple() {}
 
-  std::string encodeResponse(const std::string& errStr) const override
+  std::string encodeResponse(const std::string& errStr) override
   {
     std::ostringstream ostr;
     encodeResponseSimple(*this, ostr);

@@ -196,4 +196,27 @@ namespace jutils
     return defaultVal;
   }
 
+  //////////////////////////////////////
+  template<typename T>
+  inline bool getMemberIfExistsAs(const std::string& name, const rapidjson::Value& v, T& member) {
+    const auto m = v.FindMember(name.c_str());
+    if (m == v.MemberEnd()) {
+      return false;
+    }
+    assertIs<T>(name, m->value);
+    member = m->value.Get<T>();
+    return true;
+  }
+
+  template<>
+  inline bool getMemberIfExistsAs<std::string>(const std::string& name, const rapidjson::Value& v, std::string& member) {
+    const auto m = v.FindMember(name.c_str());
+    if (m == v.MemberEnd()) {
+      return false;
+    }
+    assertIs<std::string>(name, m->value);
+    member = m->value.GetString();
+    return true;
+  }
+
 } //jutils

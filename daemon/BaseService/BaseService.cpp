@@ -41,14 +41,14 @@ void BaseService::setDaemon(IDaemon* daemon)
 void BaseService::setSerializer(ISerializer* serializer)
 {
   m_serializerVect.push_back(serializer);
-  m_messaging->registerMessageHandler([&](const ustring& msg) {
-    handleMsgFromMessaging(msg);
-  });
 }
 
 void BaseService::setMessaging(IMessaging* messaging)
 {
   m_messaging = messaging;
+  m_messaging->registerMessageHandler([&](const ustring& msg) {
+    handleMsgFromMessaging(msg);
+  });
 }
 
 void BaseService::update(const rapidjson::Value& cfg)

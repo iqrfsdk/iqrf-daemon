@@ -35,103 +35,152 @@
 
 class PrfCommonJson
 {
+protected:
+
+  PrfCommonJson();
+  void parseRequestJson(rapidjson::Value& val, DpaTask& dpaTask);
+  std::string encodeResponseJson(const DpaTask& dpaTask);
+
 public:
-  PrfCommonJson() = delete;
-  PrfCommonJson(DpaTask& dpaTask);
-  void parseRequestJson(rapidjson::Value& val);
-  void encodeResponseJson(rapidjson::Value& val, rapidjson::Document::AllocatorType& alloc) const;
-private:
-  DpaTask& m_dpaTask;
-  bool m_explicitTimeout = false;
+  int parseBinary(uint8_t* to, const std::string& from, int maxlen, bool& dot);
+  
+  template<typename T>
+  void parseHexaNum(T& to, const std::string& from)
+  {
+    int val = 0;
+    std::istringstream istr(from);
+    if (istr >> std::hex >> val) {
+      to = (T)val;
+    }
+    else {
+      THROW_EX(std::logic_error, "Unexpected format: " << PAR(from));
+    }
+  }
+
+  void encodeHexaNum(std::string& to, uint8_t from);
+  void encodeHexaNum(std::string& to, uint16_t from);
+
+  void encodeBinary(std::string& to, const uint8_t* from, int len);
+  void encodeTimestamp(std::string& to, std::chrono::time_point<std::chrono::system_clock> from);
+
+  bool m_has_ctype = false;
+  bool m_has_type = false;
+  bool m_has_nadr = false;
+  bool m_has_hwpid = false;
+  bool m_has_timeout = false;
+  bool m_has_msgid = false;
+  bool m_has_request = false;
+  bool m_has_request_ts = false;
+  bool m_has_response = false;
+  bool m_has_response_ts = false;
+  bool m_has_confirmation = false;
+  bool m_has_confirmation_ts = false;
+  bool m_has_cmd = false;
+
+  std::string m_ctype;
+  std::string m_type;
+  int m_nadr = -1;
+  std::string m_hwpid = "0xffff";
+  int m_timeoutJ = 0;
+  std::string m_msgid;
+  std::string m_requestJ;
+  std::string m_request_ts;
+  std::string m_responseJ;
+  std::string m_response_ts;
+  std::string m_confirmationJ;
+  std::string m_confirmation_ts;
+  std::string m_cmdJ;
+  std::string m_statusJ;
+
+  mutable rapidjson::Document m_doc;
+
 };
 
-class PrfRawJson : public PrfRaw
+class PrfRawJson : public PrfRaw, public PrfCommonJson
 {
 public:
   explicit PrfRawJson(rapidjson::Value& val);
   virtual ~PrfRawJson() {}
-  std::string encodeResponse(const std::string& errStr) const  override;
+  std::string encodeResponse(const std::string& errStr) override;
 private:
-  PrfCommonJson m_common = *this;
   bool m_dotNotation = false;
 };
 
-class PrfThermometerJson : public PrfThermometer
+class PrfRawHdpJson : public PrfRaw, public PrfCommonJson
+{
+public:
+  static const std::string PRF_NAME;
+
+  explicit PrfRawHdpJson(rapidjson::Value& val);
+  virtual ~PrfRawHdpJson() {}
+  std::string encodeResponse(const std::string& errStr) override;
+private:
+  bool m_dotNotation = false;
+  std::string m_pnum;
+  std::string m_pcmd;
+  std::string m_data;
+
+};
+
+class PrfThermometerJson : public PrfThermometer, public PrfCommonJson
 {
 public:
   explicit PrfThermometerJson(rapidjson::Value& val);
   virtual ~PrfThermometerJson() {}
-  std::string encodeResponse(const std::string& errStr) const  override;
-private:
-  PrfCommonJson m_common = *this;
+  std::string encodeResponse(const std::string& errStr) override;
 };
 
-class PrfFrcJson : public PrfFrc
+class PrfFrcJson : public PrfFrc, public PrfCommonJson
 {
 public:
   explicit PrfFrcJson(rapidjson::Value& val);
   virtual ~PrfFrcJson() {}
-  std::string encodeResponse(const std::string& errStr) const  override;
+  std::string encodeResponse(const std::string& errStr) override;
 private:
-  PrfCommonJson m_common = *this;
   bool m_predefinedFrcCommand = false;
 };
 
-class PrfIoJson : public PrfIo
+class PrfIoJson : public PrfIo, public PrfCommonJson
 {
 public:
   explicit PrfIoJson(rapidjson::Value& val);
   virtual ~PrfIoJson() {}
-  std::string encodeResponse(const std::string& errStr) const  override;
+  std::string encodeResponse(const std::string& errStr) override;
 private:
-  PrfCommonJson m_common = *this;
   Port m_port;
   uint8_t m_bit;
   bool m_val;
 };
 
-class PrfOsJson : public PrfOs
+class PrfOsJson : public PrfOs, public PrfCommonJson
 {
 public:
   explicit PrfOsJson(rapidjson::Value& val);
   virtual ~PrfOsJson() {}
-  std::string encodeResponse(const std::string& errStr) const  override;
-private:
-  PrfCommonJson m_common = *this;
+  std::string encodeResponse(const std::string& errStr) override;
 };
 
 template <typename L>
-class PrfLedJson : public L
+class PrfLedJson : public L, public PrfCommonJson
 {
 public:
   explicit PrfLedJson(rapidjson::Value& val) {
-    m_common.parseRequestJson(val);
+    parseRequestJson(val, *this);
   }
 
   virtual ~PrfLedJson() {}
 
-  std::string encodeResponse(const std::string& errStr) const override
+  std::string encodeResponse(const std::string& errStr) override
   {
-    rapidjson::Document doc;
-    doc.SetObject();
-
-    m_common.encodeResponseJson(doc, doc.GetAllocator());
-
     rapidjson::Value v;
+
     v = L::getLedState();
-    doc.AddMember("LedState", v, doc.GetAllocator());
+    m_doc.AddMember("LedState", v, m_doc.GetAllocator());
 
-    v.SetString(errStr.c_str(), doc.GetAllocator());
-    doc.AddMember("Status", v, doc.GetAllocator());
-
-    rapidjson::StringBuffer buffer;
-    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-    doc.Accept(writer);
-    return buffer.GetString();
+    m_statusJ = errStr;
+    return encodeResponseJson(*this);
   }
 
-private:
-  PrfCommonJson m_common = *this;
 };
 
 typedef PrfLedJson<PrfLedG> PrfLedGJson;
