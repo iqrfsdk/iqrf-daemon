@@ -30,6 +30,7 @@
 #include "rapidjson/istreamwrapper.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/prettywriter.h"
+#include <algorithm>
 #include <memory>
 #include <string>
 
