@@ -235,7 +235,6 @@ PrfPulseMeterJson::PrfPulseMeterJson(uint16_t address)
 
 PrfPulseMeterJson::PrfPulseMeterJson(const PrfPulseMeterJson& o)
   : PrfPulseMeter(o)
-  , m_common(*this)
 {
 }
 
@@ -243,17 +242,13 @@ PrfPulseMeterJson::PrfPulseMeterJson(rapidjson::Value& val)
 {
 }
 
-std::string PrfPulseMeterJson::encodeResponse(const std::string& errStr) const
+std::string PrfPulseMeterJson::encodeResponse(const std::string& errStr)
 {
   using namespace rapidjson;
   using namespace std::chrono;
 
-  Document doc;
-  doc.SetObject();
-  auto& alloc = doc.GetAllocator();
+  Document::AllocatorType& alloc = m_doc.GetAllocator();
   rapidjson::Value v;
-
-  m_common.encodeResponseJson(doc, alloc);
 
   uint8_t cmd = (uint8_t)getCmd();
   switch (cmd) {
@@ -261,37 +256,37 @@ std::string PrfPulseMeterJson::encodeResponse(const std::string& errStr) const
   case (uint8_t)Cmd::READ_COUNTERS:
   {
     v = getThermometerType();
-    doc.AddMember("ThermometerType", v, doc.GetAllocator());
+    m_doc.AddMember("ThermometerType", v, alloc);
 
     v = getTemperature();
-    doc.AddMember("Temperature", v, doc.GetAllocator());
+    m_doc.AddMember("Temperature", v, alloc);
 
     v = getPowerVoltageType();
-    doc.AddMember("PowerVoltageType", v, doc.GetAllocator());
+    m_doc.AddMember("PowerVoltageType", v, alloc);
 
     v = getPowerVoltage();
-    doc.AddMember("PowerVoltage", v, doc.GetAllocator());
+    m_doc.AddMember("PowerVoltage", v, alloc);
 
     v = getIqrfSuplyVoltage();
-    doc.AddMember("SupplyVoltage", v, doc.GetAllocator());
+    m_doc.AddMember("SupplyVoltage", v, alloc);
 
     v = getRssi();
-    doc.AddMember("Rssi", v, doc.GetAllocator());
+    m_doc.AddMember("Rssi", v, alloc);
 
     v = getCnts();
-    doc.AddMember("CountersNum", v, doc.GetAllocator());
+    m_doc.AddMember("CountersNum", v, alloc);
 
     v = getCounter(PrfPulseMeterJson::CntNum::CNT_1);
-    doc.AddMember("Counter1", v, doc.GetAllocator());
+    m_doc.AddMember("Counter1", v, alloc);
 
     v = getCounter(PrfPulseMeterJson::CntNum::CNT_2);
-    doc.AddMember("Counter2", v, doc.GetAllocator());
+    m_doc.AddMember("Counter2", v, alloc);
 
     v = getCntSum();
-    doc.AddMember("CountersCheckSum", v, doc.GetAllocator());
+    m_doc.AddMember("CountersCheckSum", v, alloc);
 
     v = getDataSum();
-    doc.AddMember("DataCheckSum", v, doc.GetAllocator());
+    m_doc.AddMember("DataCheckSum", v, alloc);
 
   }
   break;
@@ -299,14 +294,14 @@ std::string PrfPulseMeterJson::encodeResponse(const std::string& errStr) const
   case (uint8_t)Cmd::STORE_COUNTER:
   {
     v = getStoreCounterResult();
-    doc.AddMember("StoreCounterResult", v, doc.GetAllocator());
+    m_doc.AddMember("StoreCounterResult", v, alloc);
   }
   break;
 
   case (uint8_t)Cmd::DISABLE_AUTO_SLEEP:
   {
     v = getDisableAutosleepResult();
-    doc.AddMember("DisableAutosleepResult", v, doc.GetAllocator());
+    m_doc.AddMember("DisableAutosleepResult", v, alloc);
   }
   break;
 
@@ -322,14 +317,12 @@ std::string PrfPulseMeterJson::encodeResponse(const std::string& errStr) const
   char buf[80];
   strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &timeStr);
 
-  v.SetString(buf, doc.GetAllocator());
-  doc.AddMember("Time", v, doc.GetAllocator());
+  v.SetString(buf, alloc);
+  m_doc.AddMember("Time", v, alloc);
 
-  v.SetString(errStr.c_str(), doc.GetAllocator());
-  doc.AddMember("Status", v, doc.GetAllocator());
+  //v.SetString(errStr.c_str(), doc.GetAllocator());
+  //doc.AddMember("Status", v, doc.GetAllocator());
 
-  StringBuffer buffer;
-  PrettyWriter<StringBuffer> writer(buffer);
-  doc.Accept(writer);
-  return buffer.GetString();
+  m_statusJ = errStr;
+  return encodeResponseJson(*this);
 }

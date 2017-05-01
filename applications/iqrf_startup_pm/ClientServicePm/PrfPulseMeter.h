@@ -95,7 +95,7 @@ private:
   bool m_disableAutosleepResult = false;
 };
 
-class PrfPulseMeterJson : public PrfPulseMeter
+class PrfPulseMeterJson : public PrfPulseMeter, public PrfCommonJson
 {
 public:
   PrfPulseMeterJson();
@@ -103,7 +103,5 @@ public:
   PrfPulseMeterJson(uint16_t address);
   explicit PrfPulseMeterJson(rapidjson::Value& val);
   virtual ~PrfPulseMeterJson() {}
-  std::string encodeResponse(const std::string& errStr) const  override;
-private:
-  PrfCommonJson m_common = *this;
+  std::string encodeResponse(const std::string& errStr) override;
 };
