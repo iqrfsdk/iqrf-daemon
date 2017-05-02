@@ -7,6 +7,7 @@ set -e
 
 LIB_DIRECTORY=${1:-../..}
 DAEMON_DIRECTORY=$PWD/../daemon
+IQRFAPP_DIRECTORY=$PWD/../applications/iqrfapp
 UTILS_DIRECTORY=cutils
 LIBDPA_DIRECTORY=clibdpa
 LIBCDC_DIRECTORY=clibcdc
@@ -56,3 +57,9 @@ done
 echo "Building daemon ..."
 cd ${DAEMON_DIRECTORY}
 bash buildMake.sh ${LIB_DIRECTORY}
+
+# building iqrfapp
+echo "Building iqrfapp ..."
+cd ${IQRFAPP_DIRECTORY}
+bash buildMake.sh ../${LIB_DIRECTORY}
+

@@ -2,7 +2,7 @@ project (daemon)
 
 cmake_minimum_required(VERSION 2.8.10)
 
-set(DEFAULT_DAEMON_VERSION v0.3.0)
+set(DEFAULT_DAEMON_VERSION v0.5.0)
 string(TIMESTAMP DEFAULT_BUILD_TIMESTAMP)
 
 enable_language(CXX)
@@ -93,4 +93,3 @@ else()
 endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/VersionInfo.h.in ${CMAKE_BINARY_DIR}/VersionInfo.h @ONLY)
-
