@@ -80,7 +80,7 @@ public:
 
   std::string m_ctype;
   std::string m_type;
-  int m_nadr = -1;
+  std::string m_nadr = "0";
   std::string m_hwpid = "0xffff";
   int m_timeoutJ = 0;
   std::string m_msgid;

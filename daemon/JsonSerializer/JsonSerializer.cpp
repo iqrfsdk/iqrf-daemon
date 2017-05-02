@@ -141,7 +141,7 @@ void PrfCommonJson::parseRequestJson(rapidjson::Value& val, DpaTask& dpaTask)
 
   m_has_ctype = jutils::getMemberIfExistsAs<std::string>(CTYPE_STR, val, m_ctype);
   m_has_type = jutils::getMemberIfExistsAs<std::string>(TYPE_STR, val, m_type);
-  m_has_nadr = jutils::getMemberIfExistsAs<int>(NADR_STR, val, m_nadr);
+  m_has_nadr = jutils::getMemberIfExistsAs<std::string>(NADR_STR, val, m_nadr);
   m_has_hwpid = jutils::getMemberIfExistsAs<std::string>(HWPID_STR, val, m_hwpid);
   m_has_timeout = jutils::getMemberIfExistsAs<int>(TIMEOUT_STR, val, m_timeoutJ);
   m_has_msgid = jutils::getMemberIfExistsAs<std::string>(MSGID_STR, val, m_msgid);
@@ -154,12 +154,14 @@ void PrfCommonJson::parseRequestJson(rapidjson::Value& val, DpaTask& dpaTask)
   m_has_cmd = jutils::getMemberIfExistsAs<std::string>(CMD_STR, val, m_cmdJ);
 
   if (m_has_nadr) {
-    dpaTask.setAddress((uint16_t)m_nadr);
+    uint16_t nadr;
+    parseHexaNum(nadr, m_nadr);
+    dpaTask.setAddress(nadr);
   }
   if (m_has_hwpid) {
     uint16_t hwpid;
     parseHexaNum(hwpid, m_hwpid);
-    dpaTask.setHwpid((uint16_t)hwpid);
+    dpaTask.setHwpid(hwpid);
   }
   if (m_has_cmd) {
     dpaTask.parseCommand(m_cmdJ);
@@ -183,7 +185,7 @@ std::string PrfCommonJson::encodeResponseJson(const DpaTask& dpaTask)
     m_doc.AddMember(TYPE_STR, v, alloc);
   }
   if (m_has_nadr) {
-    v = m_nadr;
+    v.SetString(m_nadr.c_str(), alloc);
     m_doc.AddMember(NADR_STR, v, alloc);
   }
   if (m_has_hwpid) {
