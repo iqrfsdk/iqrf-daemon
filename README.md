@@ -12,8 +12,8 @@ IQRF GW daemon with the multiple communication channels - UDP/MQ/MQTT.
 
 [http://repos.iqrfsdk.org/](http://repos.iqrfsdk.org/)
 
--   iqrf-daemon_0.1.2-1_amd64.deb
--   iqrf-daemon_0.1.2-3_armhf.deb
+-   iqrf-daemon_0.5.0-1_amd64.deb
+-   iqrf-daemon_0.5.0-1_armhf.deb
 -   libpaho.mqtt.c_1.1.0_amd64.deb
 -   libpaho.mqtt.c_1.1.0-1_armhf.deb
 
@@ -74,14 +74,14 @@ sudo systemctl status iqrf-daemon.service
 
 Follow the guidance [here](https://github.com/iqrfsdk/iqrf-daemon/wiki/Configuration)
 
-Configure mainly following components: 
+Configure/check mainly following components: 
 
-- config.json 			(enable/disable daemon components)
-- IqrfInterface.json    (configure your IQRF interface - SPI/CDC)
-- TracerFile.json 		(configure your logging)
-- MqttMessaging.json    (configure your MQTT brokers - you can enable second mqtt instance)
-- BaseService.json      (see names of running instances of basic service - needed for scheduler)
-- Scheduler.json        (configure your regural DPA tasks if any)  
+- config.json 			(tip: enable/disable daemon components)
+- IqrfInterface.json    (tip: configure your IQRF interface - SPI/CDC)
+- TracerFile.json 		(tip: check your logging)
+- MqttMessaging.json    (tip: configure your MQTT brokers - you can enable second mqtt instance)
+- BaseService.json      (tip: see names of running instances of basic service - needed for scheduler)
+- Scheduler.json        (tip: configure your regural DPA tasks if any)
 
 and restart the service:
 
@@ -89,7 +89,7 @@ and restart the service:
 sudo systemctl restart iqrf-daemon.service
 ```
 
-### Content of iqrf-daemon (v0.1.2) package
+### Content of iqrf-daemon (v0.5.0) package
 
 ```Bash
 dpkg -L iqrf-daemon
@@ -120,7 +120,7 @@ dpkg -L iqrf-daemon
 /etc/iqrf-daemon/MqttMessaging.json
 /etc/iqrf-daemon/Scheduler.json
 /etc/iqrf-daemon/iqrfapp.json
-/etc/iqrf-daemon/ClientServicePlain.json
+/etc/iqrf-daemon/BaseService.json
 ```
 
 ### Content of libpaho.mqtt.c (v1.1.0) package
