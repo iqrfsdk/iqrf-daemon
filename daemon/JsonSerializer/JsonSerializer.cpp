@@ -124,9 +124,13 @@ void PrfCommonJson::encodeTimestamp(std::string& to, std::chrono::time_point<std
   auto tm = *std::gmtime(&time);
   //auto tm = *std::localtime(&time);
   
+  char buf[80];
+  strftime(buf, sizeof(buf), "%Y-%m-%d %X", &tm);
+
   std::ostringstream os;
   os.fill('0'); os.width(6);
-  os << std::put_time(&tm, "%F %T.") <<  fromUs; // << std::put_time(&tm, " %Z\n");
+  //os << std::put_time(&tm, "%F %T.") <<  fromUs; // << std::put_time(&tm, " %Z\n");
+  os << buf << "." <<  fromUs;
 
   to = os.str();
 }
