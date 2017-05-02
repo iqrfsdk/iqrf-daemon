@@ -46,12 +46,12 @@ echo "deb http://repos.iqrfsdk.org/raspbian jessie testing" | sudo tee -a /etc/a
 sudo apt-get update
 ```
 
-### Install the daemon or update
+### Install or update the daemon
 
 ```Bash
 sudo apt-get install iqrf-daemon
 ```
-
+or
 ```Bash
 sudo apt-get update
 sudo apt-get upgrade iqrf-daemon
@@ -79,7 +79,8 @@ Configure mainly following components:
 - config.json 			(enable/disable daemon components)
 - IqrfInterface.json    (configure your IQRF interface - SPI/CDC)
 - TracerFile.json 		(configure your logging)
-- MqttMessaging.json    (configure your MQTT brokers)
+- MqttMessaging.json    (configure your MQTT brokers - you can enable second mqtt instance)
+- BaseService.json      (see names of running instances of basic service - needed for scheduler)
 - Scheduler.json        (configure your regural DPA tasks if any)  
 
 and restart the service:
