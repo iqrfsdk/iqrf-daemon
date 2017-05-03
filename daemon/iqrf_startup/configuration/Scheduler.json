@@ -8,7 +8,7 @@
       "service": "BaseServiceForMQTT1",
       "message": {
         "type": "std-per-ledg",
-        "nadr": 1,
+        "nadr": "1",
         "cmd": "PULSE",
         "hwpid": "ffff",
         "timeout": 200,
@@ -34,7 +34,7 @@
       "service": "BaseServiceForMQTT1",
       "message": {
         "type": "raw-hdp",
-        "nadr": 1,
+        "nadr": "1",
         "pnum": "06",
         "pcmd": "3"
       }

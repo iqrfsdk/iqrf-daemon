@@ -65,6 +65,9 @@ int main(int argc, char** argv)
       helpAndExit();
     }
   }
+  else if (argc == 2) {
+    std::string arg1 = argv[1];
+  }
   else if (argc < 4) {
     helpAndExit();
   }
