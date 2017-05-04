@@ -171,8 +171,7 @@ void PrfCommonJson::parseRequestJson(rapidjson::Value& val, DpaTask& dpaTask)
   }
 }
 
-
-std::string PrfCommonJson::encodeResponseJson(const DpaTask& dpaTask)
+void PrfCommonJson::addResponseJsonPrio1Params(const DpaTask& dpaTask)
 {
   Document::AllocatorType& alloc = m_doc.GetAllocator();
   rapidjson::Value v;
@@ -184,9 +183,23 @@ std::string PrfCommonJson::encodeResponseJson(const DpaTask& dpaTask)
     v.SetString(m_type.c_str(), alloc);
     m_doc.AddMember(TYPE_STR, v, alloc);
   }
+  if (m_has_msgid) {
+    v.SetString(m_msgid.c_str(), alloc);
+    m_doc.AddMember(MSGID_STR, v, alloc);
+  }
   if (m_has_nadr) {
     v.SetString(m_nadr.c_str(), alloc);
     m_doc.AddMember(NADR_STR, v, alloc);
+  }
+}
+
+void PrfCommonJson::addResponseJsonPrio2Params(const DpaTask& dpaTask)
+{
+  Document::AllocatorType& alloc = m_doc.GetAllocator();
+  rapidjson::Value v;
+  if (m_has_cmd) {
+    v.SetString(m_cmdJ.c_str(), alloc);
+    m_doc.AddMember(CMD_STR, v, alloc);
   }
   if (m_has_hwpid) {
     v.SetString(m_hwpid.c_str(), alloc);
@@ -195,10 +208,6 @@ std::string PrfCommonJson::encodeResponseJson(const DpaTask& dpaTask)
   if (m_has_timeout) {
     v = m_timeoutJ;
     m_doc.AddMember(TIMEOUT_STR, v, alloc);
-  }
-  if (m_has_msgid) {
-    v.SetString(m_msgid.c_str(), alloc);
-    m_doc.AddMember(MSGID_STR, v, alloc);
   }
   if (m_has_request) {
     encodeBinary(m_requestJ, dpaTask.getRequest().DpaPacket().Buffer, dpaTask.getRequest().Length());
@@ -230,10 +239,13 @@ std::string PrfCommonJson::encodeResponseJson(const DpaTask& dpaTask)
     v.SetString(m_response_ts.c_str(), alloc);
     m_doc.AddMember(RESPONSE_TS_STR, v, alloc);
   }
-  if (m_has_cmd) {
-    v.SetString(m_cmdJ.c_str(), alloc);
-    m_doc.AddMember(CMD_STR, v, alloc);
-  }
+}
+
+std::string PrfCommonJson::encodeResponseJsonFinal(const DpaTask& dpaTask)
+{
+  Document::AllocatorType& alloc = m_doc.GetAllocator();
+  rapidjson::Value v;
+
   v.SetString(m_statusJ.c_str(), alloc);
   m_doc.AddMember(STATUS_STR, v, alloc);
 
@@ -264,7 +276,10 @@ std::string PrfRawJson::encodeResponse(const std::string& errStr)
   }
   m_has_response = true; //mandatory here
   m_statusJ = errStr;
-  return encodeResponseJson(*this);
+  
+  addResponseJsonPrio1Params(*this);
+  addResponseJsonPrio2Params(*this);
+  return encodeResponseJsonFinal(*this);
 }
 
 //-------------------------------
@@ -307,6 +322,8 @@ std::string PrfRawHdpJson::encodeResponse(const std::string& errStr)
   Document::AllocatorType& alloc = m_doc.GetAllocator();
   rapidjson::Value v;
 
+  addResponseJsonPrio1Params(*this);
+
   v.SetString(m_pnum.c_str(), alloc);
   m_doc.AddMember(PNUM_STR, v, alloc);
   
@@ -337,7 +354,9 @@ std::string PrfRawHdpJson::encodeResponse(const std::string& errStr)
   m_doc.AddMember(RESD_STR, v, alloc);
   
   m_statusJ = errStr;
-  return encodeResponseJson(*this);
+  
+  addResponseJsonPrio2Params(*this);
+  return encodeResponseJsonFinal(*this);
 }
 
 //-------------------------------
@@ -349,11 +368,15 @@ PrfThermometerJson::PrfThermometerJson(rapidjson::Value& val)
 std::string PrfThermometerJson::encodeResponse(const std::string& errStr)
 {
   rapidjson::Value v;
+
+  addResponseJsonPrio1Params(*this);
+  addResponseJsonPrio2Params(*this);
+
   v = getFloatTemperature();
   m_doc.AddMember("temperature", v, m_doc.GetAllocator());
 
   m_statusJ = errStr;
-  return encodeResponseJson(*this);
+  return encodeResponseJsonFinal(*this);
 }
 
 //-------------------------------
@@ -377,6 +400,9 @@ std::string PrfFrcJson::encodeResponse(const std::string& errStr)
 {
   Document::AllocatorType& alloc = m_doc.GetAllocator();
   rapidjson::Value v;
+
+  addResponseJsonPrio1Params(*this);
+  addResponseJsonPrio2Params(*this);
 
   if (m_predefinedFrcCommand) {
     v.SetString(PrfFrc::encodeFrcCmd((FrcCmd)getFrcCommand()).c_str(), alloc);
@@ -429,7 +455,7 @@ std::string PrfFrcJson::encodeResponse(const std::string& errStr)
   m_doc.AddMember("Values", v, alloc);
 
   m_statusJ = errStr;
-  return encodeResponseJson(*this);
+  return encodeResponseJsonFinal(*this);
 }
 
 //-------------------------------
@@ -484,6 +510,9 @@ std::string PrfIoJson::encodeResponse(const std::string& errStr)
   Document::AllocatorType& alloc = m_doc.GetAllocator();
   rapidjson::Value v;
 
+  addResponseJsonPrio1Params(*this);
+  addResponseJsonPrio2Params(*this);
+
   switch (getCmd()) {
 
   case PrfIo::Cmd::DIRECTION:
@@ -530,7 +559,7 @@ std::string PrfIoJson::encodeResponse(const std::string& errStr)
   }
 
   m_statusJ = errStr;
-  return encodeResponseJson(*this);
+  return encodeResponseJsonFinal(*this);
 }
 
 //////////////////
@@ -556,6 +585,9 @@ std::string PrfOsJson::encodeResponse(const std::string& errStr)
   Document::AllocatorType& alloc = m_doc.GetAllocator();
   rapidjson::Value v;
 
+  addResponseJsonPrio1Params(*this);
+  addResponseJsonPrio2Params(*this);
+
   switch (getCmd()) {
 
   case Cmd::READ:
@@ -568,7 +600,7 @@ std::string PrfOsJson::encodeResponse(const std::string& errStr)
   }
 
   m_statusJ = errStr;
-  return encodeResponseJson(*this);
+  return encodeResponseJsonFinal(*this);
 }
 
 ///////////////////////////////////////////

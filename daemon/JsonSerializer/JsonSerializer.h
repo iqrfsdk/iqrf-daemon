@@ -40,7 +40,9 @@ protected:
 
   PrfCommonJson();
   void parseRequestJson(rapidjson::Value& val, DpaTask& dpaTask);
-  std::string encodeResponseJson(const DpaTask& dpaTask);
+  void addResponseJsonPrio1Params(const DpaTask& dpaTask);
+  void addResponseJsonPrio2Params(const DpaTask& dpaTask);
+  std::string encodeResponseJsonFinal(const DpaTask& dpaTask);
 
 public:
   int parseBinary(uint8_t* to, const std::string& from, int maxlen, bool& dot);
@@ -175,11 +177,14 @@ public:
   {
     rapidjson::Value v;
 
+    addResponseJsonPrio1Params(*this);
+    addResponseJsonPrio2Params(*this);
+
     v = L::getLedState();
     m_doc.AddMember("LedState", v, m_doc.GetAllocator());
 
     m_statusJ = errStr;
-    return encodeResponseJson(*this);
+    return encodeResponseJsonFinal(*this);
   }
 
 };
