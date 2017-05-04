@@ -45,7 +45,7 @@ protected:
   std::string encodeResponseJsonFinal(const DpaTask& dpaTask);
 
 public:
-  int parseBinary(uint8_t* to, const std::string& from, int maxlen, bool& dot);
+  int parseBinary(uint8_t* to, const std::string& from, int maxlen);
   
   template<typename T>
   void parseHexaNum(T& to, const std::string& from)
@@ -97,6 +97,7 @@ public:
 
   mutable rapidjson::Document m_doc;
 
+  bool m_dotNotation = false;
 };
 
 class PrfRawJson : public PrfRaw, public PrfCommonJson
@@ -106,7 +107,6 @@ public:
   virtual ~PrfRawJson() {}
   std::string encodeResponse(const std::string& errStr) override;
 private:
-  bool m_dotNotation = false;
 };
 
 class PrfRawHdpJson : public PrfRaw, public PrfCommonJson
@@ -118,7 +118,6 @@ public:
   virtual ~PrfRawHdpJson() {}
   std::string encodeResponse(const std::string& errStr) override;
 private:
-  bool m_dotNotation = false;
   std::string m_pnum;
   std::string m_pcmd;
   std::string m_data;
@@ -141,6 +140,7 @@ public:
   std::string encodeResponse(const std::string& errStr) override;
 private:
   bool m_predefinedFrcCommand = false;
+  std::string m_userData;
 };
 
 class PrfIoJson : public PrfIo, public PrfCommonJson

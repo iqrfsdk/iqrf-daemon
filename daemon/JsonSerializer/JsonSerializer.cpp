@@ -56,14 +56,14 @@ PrfCommonJson::PrfCommonJson()
 
 }
 
-int PrfCommonJson::parseBinary(uint8_t* to, const std::string& from, int maxlen, bool& dot)
+int PrfCommonJson::parseBinary(uint8_t* to, const std::string& from, int maxlen)
 {
   int retval = 0;
   if (!from.empty()) {
     std::string buf = from;
     if (std::string::npos != buf.find_first_of('.')) {
       std::replace(buf.begin(), buf.end(), '.', ' ');
-      dot = true;
+      m_dotNotation = true;
     }
     std::istringstream istr(buf);
 
@@ -101,7 +101,7 @@ void PrfCommonJson::encodeBinary(std::string& to, const uint8_t* from, int len)
     std::ostringstream ostr;
     ostr << iqrf::TracerHexString(from, len, true);
 
-    if (std::string::npos != to.find_first_of('.')) {
+    if (m_dotNotation || std::string::npos != to.find_first_of('.')) {
       to = ostr.str();
       std::replace(to.begin(), to.end(), ' ', '.');
       if (to[to.size() - 1] == '.')
@@ -265,7 +265,7 @@ PrfRawJson::PrfRawJson(rapidjson::Value& val)
     THROW_EX(std::logic_error, "Missing member: " << REQUEST_STR);
   }
 
-  int len = parseBinary(m_request.DpaPacket().Buffer, m_requestJ, MAX_DPA_BUFFER, m_dotNotation);
+  int len = parseBinary(m_request.DpaPacket().Buffer, m_requestJ, MAX_DPA_BUFFER);
   m_request.SetLength(len);
 }
 
@@ -312,7 +312,7 @@ PrfRawHdpJson::PrfRawHdpJson(rapidjson::Value& val)
     m_request.DpaPacket().DpaRequestPacket_t.PCMD = pcmd;
   }
 
-  int len = parseBinary(m_request.DpaPacket().DpaRequestPacket_t.DpaMessage.Request.PData, m_data, DPA_MAX_DATA_LENGTH, m_dotNotation);
+  int len = parseBinary(m_request.DpaPacket().DpaRequestPacket_t.DpaMessage.Request.PData, m_data, DPA_MAX_DATA_LENGTH);
   m_request.SetLength(sizeof(TDpaIFaceHeader) + len);
 
 }
@@ -380,20 +380,35 @@ std::string PrfThermometerJson::encodeResponse(const std::string& errStr)
 }
 
 //-------------------------------
+#define FRC_CMD_STR "frc-cmd"
+#define FRC_TYPE_STR "frc-type"
+#define FRC_USER_STR "frc-user"
+#define FRC_USER_DATA_STR "user-data"
+#define FRC_DATA_STR "frc-data"
+
 PrfFrcJson::PrfFrcJson(rapidjson::Value& val)
 {
   parseRequestJson(val, *this);
 
-  std::string frcCmd = jutils::getPossibleMemberAs<std::string>("FrcCmd", val, "");
+  std::string frcCmd = jutils::getPossibleMemberAs<std::string>(FRC_CMD_STR, val, "");
   if (!frcCmd.empty()) {
     setFrcCommand(parseFrcCmd(frcCmd));
     m_predefinedFrcCommand = true;
   }
   else {
-    std::string frcType = jutils::getMemberAs<std::string>("FrcType", val);
-    uint8_t frcUser = (uint8_t)jutils::getMemberAs<int>("FrcUser", val);
+    std::string frcType = jutils::getMemberAs<std::string>(FRC_TYPE_STR, val);
+    uint8_t frcUser = (uint8_t)jutils::getMemberAs<int>(FRC_USER_STR, val);
     setFrcCommand(parseFrcType(frcType), frcUser);
   }
+
+  m_userData = jutils::getPossibleMemberAs<std::string>(FRC_USER_DATA_STR, val, m_userData);
+  if (!m_userData.empty()) {
+    const int udatalen = 30;
+    uint8_t buf[udatalen];
+    int len = parseBinary(buf, m_userData, udatalen);
+    setUserData(PrfFrc::UserData(buf, len));
+  }
+
 }
 
 std::string PrfFrcJson::encodeResponse(const std::string& errStr)
@@ -406,25 +421,26 @@ std::string PrfFrcJson::encodeResponse(const std::string& errStr)
 
   if (m_predefinedFrcCommand) {
     v.SetString(PrfFrc::encodeFrcCmd((FrcCmd)getFrcCommand()).c_str(), alloc);
-    m_doc.AddMember("FrcCmd", v, alloc);
+    m_doc.AddMember(FRC_CMD_STR, v, alloc);
   }
   else {
     v.SetString(PrfFrc::encodeFrcType((FrcType)getFrcType()).c_str(), alloc);
-    m_doc.AddMember("FrcType", v, alloc);
+    m_doc.AddMember(FRC_TYPE_STR, v, alloc);
 
     v = (int)getFrcUser();
-    m_doc.AddMember("FrcUser", v, alloc);
+    m_doc.AddMember(FRC_USER_STR, v, alloc);
   }
 
   std::ostringstream os;
   os.setf(std::ios::hex, std::ios::basefield);
   os.fill('0');
+  char separator = m_dotNotation ? '.' : ' ';
 
   switch (getFrcType()) {
   case FrcType::GET_BIT2:
   {
     for (int i = 1; i <= PrfFrc::FRC_MAX_NODE_BIT2; i++) {
-      os << std::setw(2) << (int)getFrcData_bit2(i) << ' ';
+      os << std::setw(2) << (int)getFrcData_bit2(i) << separator;
     }
   }
   break;
@@ -432,7 +448,7 @@ std::string PrfFrcJson::encodeResponse(const std::string& errStr)
   case FrcType::GET_BYTE:
   {
     for (int i = 1; i <= PrfFrc::FRC_MAX_NODE_BYTE; i++) {
-      os << std::setw(2) << (int)getFrcData_Byte(i) << ' ';
+      os << std::setw(2) << (int)getFrcData_Byte(i) << separator;
     }
   }
   break;
@@ -440,7 +456,7 @@ std::string PrfFrcJson::encodeResponse(const std::string& errStr)
   case FrcType::GET_BYTE2:
   {
     for (int i = 1; i <= PrfFrc::FRC_MAX_NODE_BYTE2; i++) {
-      os << std::setw(4) << (int)getFrcData_Byte2(i) << ' ';
+      os << std::setw(4) << (int)getFrcData_Byte2(i) << separator;
     }
   }
   break;
@@ -452,13 +468,18 @@ std::string PrfFrcJson::encodeResponse(const std::string& errStr)
   values.pop_back();
 
   v.SetString(values.c_str(), alloc);
-  m_doc.AddMember("Values", v, alloc);
+  m_doc.AddMember("FRC_DATA_STR", v, alloc);
 
   m_statusJ = errStr;
   return encodeResponseJsonFinal(*this);
 }
 
 //-------------------------------
+#define PORT_STR "port"
+#define BIT_STR "bit"
+#define DIR_STR "inp"
+#define VAL_STR "val"
+
 PrfIoJson::PrfIoJson(rapidjson::Value& val)
 {
   parseRequestJson(val, *this);
@@ -467,9 +488,9 @@ PrfIoJson::PrfIoJson(rapidjson::Value& val)
 
   case PrfIo::Cmd::DIRECTION:
   {
-    Port port = parsePort(jutils::getMemberAs<std::string>("Port", val));
-    int bit = jutils::getMemberAs<int>("Bit", val);
-    bool inp = jutils::getMemberAs<bool>("Inp", val);
+    Port port = parsePort(jutils::getMemberAs<std::string>(PORT_STR, val));
+    int bit = jutils::getMemberAs<int>(BIT_STR, val);
+    bool inp = jutils::getMemberAs<bool>(DIR_STR, val);
     directionCommand(port, bit, inp);
     m_port = port;
     m_bit = bit;
@@ -479,9 +500,9 @@ PrfIoJson::PrfIoJson(rapidjson::Value& val)
 
   case PrfIo::Cmd::SET:
   {
-    Port port = parsePort(jutils::getMemberAs<std::string>("Port", val));
-    int bit = jutils::getMemberAs<int>("Bit", val);
-    bool value = jutils::getMemberAs<bool>("Val", val);
+    Port port = parsePort(jutils::getMemberAs<std::string>(PORT_STR, val));
+    int bit = jutils::getMemberAs<int>(BIT_STR, val);
+    bool value = jutils::getMemberAs<bool>(VAL_STR, val);
     setCommand(port, bit, value);
     m_port = port;
     m_bit = bit;
@@ -491,8 +512,8 @@ PrfIoJson::PrfIoJson(rapidjson::Value& val)
 
   case PrfIo::Cmd::GET:
   {
-    Port port = parsePort(jutils::getMemberAs<std::string>("Port", val));
-    int bit = jutils::getMemberAs<int>("Bit", val);
+    Port port = parsePort(jutils::getMemberAs<std::string>(PORT_STR, val));
+    int bit = jutils::getMemberAs<int>(BIT_STR, val);
     m_port = port;
     m_bit = bit;
     getCommand();
@@ -518,39 +539,39 @@ std::string PrfIoJson::encodeResponse(const std::string& errStr)
   case PrfIo::Cmd::DIRECTION:
   {
     v.SetString(encodePort(m_port).c_str(), alloc);
-    m_doc.AddMember("Port", v, alloc);
+    m_doc.AddMember(PORT_STR, v, alloc);
 
     v = m_bit;
-    m_doc.AddMember("Bit", v, alloc);
+    m_doc.AddMember(BIT_STR, v, alloc);
 
     v = m_val;
-    m_doc.AddMember("Inp", v, alloc);
+    m_doc.AddMember(DIR_STR, v, alloc);
   }
   break;
 
   case PrfIo::Cmd::SET:
   {
     v.SetString(encodePort(m_port).c_str(), alloc);
-    m_doc.AddMember("Port", v, alloc);
+    m_doc.AddMember(PORT_STR, v, alloc);
 
     v = m_bit;
-    m_doc.AddMember("Bit", v, alloc);
+    m_doc.AddMember(BIT_STR, v, alloc);
 
     v = m_val;
-    m_doc.AddMember("Val", v, alloc);
+    m_doc.AddMember(VAL_STR, v, alloc);
   }
   break;
 
   case PrfIo::Cmd::GET:
   {
     v.SetString(encodePort(m_port).c_str(), alloc);
-    m_doc.AddMember("Port", v, alloc);
+    m_doc.AddMember(PORT_STR, v, alloc);
 
     v = m_bit;
-    m_doc.AddMember("Bit", v, alloc);
+    m_doc.AddMember(BIT_STR, v, alloc);
 
     v = getInput(m_port, m_bit);
-    m_doc.AddMember("Val", v, alloc);
+    m_doc.AddMember(VAL_STR, v, alloc);
   }
   break;
 
