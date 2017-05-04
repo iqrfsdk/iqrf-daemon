@@ -60,25 +60,3 @@ sudo ./install-systemd.sh
 ```Bash
 sudo systemctl start/stop/restart/status IQRF
 ```
-
-## How to test UDP channel
-
-Use IQRF IDE and follow the instruction for UDP connection.
-Then use IQMESH Network Manager.
-
-## How to test MQ channel
-
-```Bash
-cd scripts/
-./mq-iqrfapp-test.sh
-```
-
-## How to test MQTT channel
-
-```Bash
-sudo apt-get install mosquitto
-sudo apt-get install mosquitto-clients
-
-cd scripts/
-./mqtt-local-pub-test.sh
-```

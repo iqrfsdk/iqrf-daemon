@@ -12,8 +12,8 @@ IQRF GW daemon with the multiple communication channels - UDP/MQ/MQTT.
 
 [http://repos.iqrfsdk.org/](http://repos.iqrfsdk.org/)
 
--   iqrf-daemon_0.5.0-1_amd64.deb
--   iqrf-daemon_0.5.0-1_armhf.deb
+-   iqrf-daemon_0.5.1-1_amd64.deb
+-   iqrf-daemon_0.5.1-1_armhf.deb
 -   libpaho.mqtt.c_1.1.0_amd64.deb
 -   libpaho.mqtt.c_1.1.0-1_armhf.deb
 
@@ -70,7 +70,7 @@ sudo systemctl status iqrf-daemon.service
            └─9540 /usr/bin/iqrf_startup /etc/iqrf-daemon/config.json
 ```
 
-### Adjust your configuration 
+### Set your configuration 
 
 Follow the guidance [here](https://github.com/iqrfsdk/iqrf-daemon/wiki/Configuration)
 
@@ -89,7 +89,7 @@ and restart the service:
 sudo systemctl restart iqrf-daemon.service
 ```
 
-### Content of iqrf-daemon (v0.5.0) package
+### Content of iqrf-daemon (v0.5.1) package
 
 ```Bash
 dpkg -L iqrf-daemon
@@ -122,6 +122,15 @@ dpkg -L iqrf-daemon
 /etc/iqrf-daemon/iqrfapp.json
 /etc/iqrf-daemon/BaseService.json
 ```
+
+### Changes for iqrf-daemon
+
+0.5.0 -> 0.5.1
+
+Fixes:
+- iqrfapp cmdline parser
+- json dpa response timestamps 
+- json dpa response fields order
 
 ### Content of libpaho.mqtt.c (v1.1.0) package
 

@@ -2,6 +2,8 @@
 
 [https://hub.docker.com/u/iqrfsdk](https://hub.docker.com/u/iqrfsdk)
 
+Work in progress ... meanwhile check [this](https://github.com/iqrfsdk/iot-starter-kit/tree/master/extensions/resin.io/up)
+
 ## Install Docker CE
 
 ### Add Docker's official GPG key, add repository to the source list and install it
