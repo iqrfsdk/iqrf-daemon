@@ -121,8 +121,8 @@ void PrfCommonJson::encodeTimestamp(std::string& to, std::chrono::time_point<std
 
   auto fromUs = std::chrono::duration_cast<std::chrono::microseconds>(from.time_since_epoch()).count() % 1000000;
   auto time = std::chrono::system_clock::to_time_t(from);
-  auto tm = *std::gmtime(&time);
-  //auto tm = *std::localtime(&time);
+  //auto tm = *std::gmtime(&time);
+  auto tm = *std::localtime(&time);
   
   char buf[80];
   strftime(buf, sizeof(buf), "%Y-%m-%d %X", &tm);
