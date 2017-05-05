@@ -4,7 +4,7 @@
 
   "TasksJson": [
     {
-      "time": "*/5 * * * * * *",
+      "time": "*/5 1 * * * * *",
       "service": "BaseServiceForMQTT1",
       "message": {
         "type": "std-per-ledg",
@@ -38,6 +38,28 @@
         "pnum": "06",
         "pcmd": "3"
       }
+    },
+    {
+      "time": "*/5 * * * * * *",
+      "service": "BaseServiceForMQTT1",
+      "message": {
+        "ctype": "dpa",
+        "type": "raw-hdp",
+        "msgid": "1",
+        "timeout": 1000,
+        "nadr": "00",
+        "pnum": "0d",
+        "pcmd": "00",
+        "hwpid": "ffff",
+        "req-data": "c0.00.00",
+        "request": ".",
+        "request-ts": "",
+        "confirmation": ".",
+        "confirmation-ts": "",
+        "response": ".",
+        "response-ts": ""
+      }
     }
+
   ]
 }

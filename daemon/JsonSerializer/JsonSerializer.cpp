@@ -97,6 +97,7 @@ void PrfCommonJson::encodeHexaNum(std::string& to, uint16_t from)
 
 void PrfCommonJson::encodeBinary(std::string& to, const uint8_t* from, int len)
 {
+  to.clear();
   if (len > 0) {
     std::ostringstream ostr;
     ostr << iqrf::TracerHexString(from, len, true);
@@ -119,20 +120,23 @@ void PrfCommonJson::encodeTimestamp(std::string& to, std::chrono::time_point<std
 {
   using namespace std::chrono;
 
-  auto fromUs = std::chrono::duration_cast<std::chrono::microseconds>(from.time_since_epoch()).count() % 1000000;
-  auto time = std::chrono::system_clock::to_time_t(from);
-  //auto tm = *std::gmtime(&time);
-  auto tm = *std::localtime(&time);
-  
-  char buf[80];
-  strftime(buf, sizeof(buf), "%Y-%m-%d %X", &tm);
+  to.clear();
+  if (from.time_since_epoch() != system_clock::duration()) {
+    auto fromUs = std::chrono::duration_cast<std::chrono::microseconds>(from.time_since_epoch()).count() % 1000000;
+    auto time = std::chrono::system_clock::to_time_t(from);
+    //auto tm = *std::gmtime(&time);
+    auto tm = *std::localtime(&time);
 
-  std::ostringstream os;
-  os.fill('0'); os.width(6);
-  //os << std::put_time(&tm, "%F %T.") <<  fromUs; // << std::put_time(&tm, " %Z\n");
-  os << buf << "." <<  fromUs;
+    char buf[80];
+    strftime(buf, sizeof(buf), "%Y-%m-%d %X", &tm);
 
-  to = os.str();
+    std::ostringstream os;
+    os.fill('0'); os.width(6);
+    //os << std::put_time(&tm, "%F %T.") <<  fromUs; // << std::put_time(&tm, " %Z\n");
+    os << buf << "." << fromUs;
+
+    to = os.str();
+  }
 }
 
 void PrfCommonJson::parseRequestJson(rapidjson::Value& val, DpaTask& dpaTask)
