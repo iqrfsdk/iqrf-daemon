@@ -247,6 +247,9 @@ std::string PrfPulseMeterJson::encodeResponse(const std::string& errStr)
   using namespace rapidjson;
   using namespace std::chrono;
 
+  addResponseJsonPrio1Params(*this);
+  addResponseJsonPrio2Params(*this);
+
   m_doc.RemoveAllMembers();
 
   Document::AllocatorType& alloc = m_doc.GetAllocator();
@@ -322,9 +325,6 @@ std::string PrfPulseMeterJson::encodeResponse(const std::string& errStr)
   v.SetString(buf, alloc);
   m_doc.AddMember("Time", v, alloc);
 
-  //v.SetString(errStr.c_str(), doc.GetAllocator());
-  //doc.AddMember("Status", v, doc.GetAllocator());
-
   m_statusJ = errStr;
-  return encodeResponseJson(*this);
+  return encodeResponseJsonFinal(*this);
 }
