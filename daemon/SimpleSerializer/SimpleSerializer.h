@@ -22,6 +22,7 @@
 #include "PrfThermometer.h"
 #include "PrfLeds.h"
 #include "PlatformDep.h"
+#include <algorithm>
 #include <vector>
 #include <string>
 
