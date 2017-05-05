@@ -37,6 +37,8 @@ public:
   explicit PrfRawSimple(std::istream& istr);
   virtual ~PrfRawSimple() {};
   std::string encodeResponse(const std::string& errStr) override;
+private:
+  bool m_dotNotation = false;
 };
 
 class PrfThermometerSimple : public PrfThermometer

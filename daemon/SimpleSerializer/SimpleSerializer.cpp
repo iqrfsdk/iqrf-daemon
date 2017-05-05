@@ -105,6 +105,15 @@ PrfRawSimple::PrfRawSimple(std::istream& istr)
   int i = 0;
 
   std::vector<std::string> vstrings = parseTokens(*this, istr);
+  //workaround to handle "."
+  if (vstrings.size() == 1) {
+    std::string dotbuf = vstrings[0];
+    vstrings.clear();
+    m_dotNotation = true;
+    std::replace(dotbuf.begin(), dotbuf.end(), '.', ' ');
+    std::istringstream is(dotbuf);
+    vstrings = parseTokens(*this, is);
+  }
 
   int sz = (int)vstrings.size();
   while (i < MAX_DPA_BUFFER && i < sz) {
@@ -120,8 +129,20 @@ std::string PrfRawSimple::encodeResponse(const std::string& errStr)
   std::ostringstream ostr;
   int len = getResponse().Length();
   TRC_DBG(PAR(len));
-  ostr << getPrfName() << " " <<
-    iqrf::TracerHexString((unsigned char*)getResponse().DpaPacket().Buffer, len, true);
+
+  std::ostringstream os;
+  os << iqrf::TracerHexString((unsigned char*)getResponse().DpaPacket().Buffer, len, true);
+  std::string buf = os.str();
+
+  if (buf[buf.size() - 1] == ' ') {
+    buf.pop_back();
+  }
+
+  if (m_dotNotation) {
+    std::replace(buf.begin(), buf.end(), ' ', '.');
+  }
+
+  ostr << getPrfName() << " " << buf;
 
   encodeTokens(*this, errStr, ostr);
 

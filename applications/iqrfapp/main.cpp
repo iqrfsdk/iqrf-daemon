@@ -26,16 +26,20 @@ TRC_INIT()
 void helpAndExit()
 {
   std::cerr << "Usage" << std::endl;
+  std::cerr << "  iqrfapp help" << std::endl << std::endl;
+  std::cerr << "  iqrfapp JsonDpaRequest" << std::endl << std::endl;
   std::cerr << "  iqrfapp [<perif> <num> <command>]" << std::endl << std::endl;
   std::cerr << "  iqrfapp raw <buffer>" << std::endl << std::endl;
   std::cerr << "  iqrfapp conf [Operational|Forwarding|Service]" << std::endl << std::endl;
   std::cerr << "Example" << std::endl;
   std::cerr << "  iqrfapp" << std::endl;
-  std::cerr << "  iqrfapp Thermometer 1 READ" << std::endl;
-  std::cerr << "  iqrfapp LedG 0 PULSE" << std::endl;
-  std::cerr << "  iqrfapp LedR 1 PULSE" << std::endl;
-  std::cerr << "  iqrfapp Raw 01 00 06 03 ff ff" << std::endl;
-  std::cerr << "  iqrfapp Raw 01.00.06.03.ff.ff" << std::endl;
+  std::cerr << "  iqrfapp help" << std::endl;
+  std::cerr << "  iqrfapp \"{\\\"type\\\":\\\"raw\\\", \\\"request\\\":\\\"01.00.06.03.ff.ff\\\"}\"" << std::endl;
+  std::cerr << "  iqrfapp raw 01 00 06 03 ff ff" << std::endl;
+  std::cerr << "  iqrfapp raw 01.00.06.03.ff.ff" << std::endl;
+  std::cerr << "  iqrfapp std-per-thermometer 1 READ" << std::endl;
+  std::cerr << "  iqrfapp std-per-ledg 0 PULSE" << std::endl;
+  std::cerr << "  iqrfapp std-per-ledr 1 PULSE" << std::endl;
   std::cerr << "  iqrfapp conf Operational" << std::endl;
   exit(-1);
 }
@@ -48,28 +52,40 @@ int handleMessageFromMq(const ustring& message)
   return 0;
 }
 
+//just workaround - TODO cmdl params are not properly tested - maybe boost?
 int main(int argc, char** argv)
 {
   TRC_START("", iqrf::Level::inf, 0);
   std::string command;
   bool cmdl = false;
 
-  if (argc == 1) {
+  switch (argc) {
+  case 1:
+  {
     cmdl = true;
+    break;
   }
-  //just workaround - TODO cmdl params are not properly tested
-  else if (argc == 3) {
+  case 2:
+  {
     std::string arg1 = argv[1];
-    std::string arg2 = argv[2];
-    if (arg1 != "conf" || !(arg2 == "Operational" || arg2 == "Forwarding" || arg2 == "Service")) {
+    if (arg1 == "help") {
       helpAndExit();
     }
+    break;
   }
-  else if (argc == 2) {
+  case 3:
+  {
     std::string arg1 = argv[1];
+    std::string arg2 = argv[2];
+    if (arg1 == "conf" && arg2 != "Operational" && arg2 != "Forwarding" && arg2 != "Service") {
+      helpAndExit();
+    }
+    if (arg1 != "raw") {
+      helpAndExit();
+    }
+    break;
   }
-  else if (argc < 4) {
-    helpAndExit();
+  default:; //just continue and try
   }
 
   std::ostringstream os;
