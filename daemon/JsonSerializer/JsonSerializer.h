@@ -180,8 +180,11 @@ public:
     addResponseJsonPrio1Params(*this);
     addResponseJsonPrio2Params(*this);
 
-    v = L::getLedState();
-    m_doc.AddMember("LedState", v, m_doc.GetAllocator());
+    int ls = L::getLedState();
+    if (ls >= 0) {
+      v.SetString((ls ? "on" : "off"), m_doc.GetAllocator());
+      m_doc.AddMember("led-state", v, m_doc.GetAllocator());
+    }
 
     m_statusJ = errStr;
     return encodeResponseJsonFinal(*this);
