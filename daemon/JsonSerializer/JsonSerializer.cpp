@@ -187,6 +187,10 @@ void PrfCommonJson::addResponseJsonPrio1Params(const DpaTask& dpaTask)
     v.SetString(m_msgid.c_str(), alloc);
     m_doc.AddMember(MSGID_STR, v, alloc);
   }
+  if (m_has_timeout) {
+    v = m_timeoutJ;
+    m_doc.AddMember(TIMEOUT_STR, v, alloc);
+  }
   if (m_has_nadr) {
     v.SetString(m_nadr.c_str(), alloc);
     m_doc.AddMember(NADR_STR, v, alloc);
@@ -204,10 +208,6 @@ void PrfCommonJson::addResponseJsonPrio2Params(const DpaTask& dpaTask)
   if (m_has_hwpid) {
     v.SetString(m_hwpid.c_str(), alloc);
     m_doc.AddMember(HWPID_STR, v, alloc);
-  }
-  if (m_has_timeout) {
-    v = m_timeoutJ;
-    m_doc.AddMember(TIMEOUT_STR, v, alloc);
   }
   if (m_has_request) {
     encodeBinary(m_requestJ, dpaTask.getRequest().DpaPacket().Buffer, dpaTask.getRequest().Length());
