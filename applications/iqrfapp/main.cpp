@@ -26,9 +26,10 @@ TRC_INIT()
 void helpAndExit()
 {
   std::cerr << "Usage" << std::endl;
+  std::cerr << "  iqrfapp" << std::endl << std::endl;
   std::cerr << "  iqrfapp help" << std::endl << std::endl;
-  std::cerr << "  iqrfapp JsonDpaRequest" << std::endl << std::endl;
-  std::cerr << "  iqrfapp [<perif> <num> <command>]" << std::endl << std::endl;
+  std::cerr << "  iqrfapp <JsonDpaRequest>" << std::endl << std::endl;
+  std::cerr << "  iqrfapp <perif> <num> <command>" << std::endl << std::endl;
   std::cerr << "  iqrfapp raw <buffer>" << std::endl << std::endl;
   std::cerr << "  iqrfapp conf [Operational|Forwarding|Service]" << std::endl << std::endl;
   std::cerr << "Example" << std::endl;
