@@ -74,8 +74,8 @@ void UdpMessaging::resetExclusive()
 
 int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
 {
-  TRC_DBG("==================================" << std::endl <<
-    "Received from UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
+  //TRC_DBG("==================================" << std::endl <<
+  //  "Received from UDP: " << std::endl << FORM_HEX(udpMessage.data(), udpMessage.size()));
 
   size_t msgSize = udpMessage.size();
   std::basic_string<unsigned char> message;
@@ -126,8 +126,13 @@ int UdpMessaging::handleMessageFromUdp(const ustring& udpMessage)
       m_exclusiveChannel->sendTo(message);
     }
     else {
-      m_operationalTransaction->setMessage(message);
-      m_daemon->executeDpaTransaction(*m_operationalTransaction);
+      TRC_WAR(std::endl <<
+        "****************************************************" << std::endl <<
+        "CANNOT SEND DPA MESSAGE IN OPERATIONAL MODE" << std::endl <<
+        "****************************************************" << std::endl <<
+        "Messages from UDP are accepted only in service mode" << std::endl);
+      //m_operationalTransaction->setMessage(message);
+      //m_daemon->executeDpaTransaction(*m_operationalTransaction);
     }
   }
   return 0;
