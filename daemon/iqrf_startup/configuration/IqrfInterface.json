@@ -1,3 +1,4 @@
 {
-  "IqrfInterface": "COM3"
+  "IqrfInterface": "COM3",
+  "DpaHandlerTimeout": 500
 }

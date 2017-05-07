@@ -138,6 +138,7 @@ private:
   int m_traceFileSize = 0;
   iqrf::Level m_level;
   std::string m_iqrfInterfaceName;
+  int m_dpaHandlerTimeout = 200;
 
   std::string m_configurationDir;
   int m_watchDogTimeoutMilis = 10000;

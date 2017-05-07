@@ -294,6 +294,8 @@ void DaemonController::startIqrfIf()
     try {
       jutils::assertIsObject("", fnd->second.m_doc);
       m_iqrfInterfaceName = jutils::getMemberAs<std::string>("IqrfInterface", fnd->second.m_doc);
+      //
+      m_dpaHandlerTimeout = jutils::getPossibleMemberAs<int>("DpaHandlerTimeout", fnd->second.m_doc, m_dpaHandlerTimeout);
       TRC_INF(PAR(m_iqrfInterfaceName));
 
       size_t found = m_iqrfInterfaceName.find("spi");
@@ -318,7 +320,9 @@ void DaemonController::startDpa()
 {
   try {
     m_dpaHandler = ant_new DpaHandler(m_iqrfInterface);
-    m_dpaHandler->Timeout(200);    // Default timeout is infinite
+    if (m_dpaHandlerTimeout > 0) {
+      m_dpaHandler->Timeout(200);    // Default timeout is infinite
+    }
   }
   catch (std::exception& ae) {
     TRC_ERR("There was an error during DPA handler creation: " << ae.what());
