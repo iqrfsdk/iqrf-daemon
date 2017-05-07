@@ -31,7 +31,7 @@ public:
   virtual const std::string& getName() const = 0;
 
   // interface
-  virtual const std::string& parseCategory(const std::string& request) = 0;
+  virtual std::string parseCategory(const std::string& request) = 0;
   virtual std::unique_ptr<DpaTask> parseRequest(const std::string& request) = 0;
   virtual std::string parseConfig(const std::string& request) = 0;
   //virtual std::string parseSched(const std::string& request);

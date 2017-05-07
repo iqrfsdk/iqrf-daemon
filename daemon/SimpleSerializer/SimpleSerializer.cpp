@@ -188,7 +188,7 @@ void SimpleSerializer::init()
   m_dpaParser.registerClass<PrfRawSimple>(PrfRawSimple::PRF_NAME);
 }
 
-const std::string& SimpleSerializer::parseCategory(const std::string& request)
+std::string SimpleSerializer::parseCategory(const std::string& request)
 {
   std::istringstream istr(request);
   std::string category;
@@ -218,12 +218,14 @@ std::unique_ptr<DpaTask> SimpleSerializer::parseRequest(const std::string& reque
 
 std::string SimpleSerializer::parseConfig(const std::string& request)
 {
+  std::string cmd = "unknown";
+
   std::istringstream istr(request);
-  std::string category, command;
-  istr >> category >> command;
+  std::string category;
+  istr >> category >> cmd;
   if (category == CAT_CONF_STR) {
     m_lastError = "OK";
-    return command;
+    return cmd;
   }
   else {
     std::ostringstream ostr;

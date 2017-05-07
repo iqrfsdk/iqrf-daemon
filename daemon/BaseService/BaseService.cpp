@@ -97,35 +97,36 @@ void BaseService::handleMsgFromMessaging(const ustring& msg)
   std::string command;
 
   //parse
+  bool handled = false;
+  std::string ctype;
+  std::string lastError = "Unknown ctype";
   for (auto ser : m_serializerVect) {
-    std::string cat = ser->parseCategory(msgs);
-    if (cat == CAT_DPA_STR) {
+    ctype = ser->parseCategory(msgs);
+    if (ctype == CAT_DPA_STR) {
       dpaTask = ser->parseRequest(msgs);
       if (dpaTask) {
+        DpaTransactionTask trans(*dpaTask);
+        m_daemon->executeDpaTransaction(trans);
+        int result = trans.waitFinish();
+        os << dpaTask->encodeResponse(trans.getErrorStr());
+        lastError = ser->getLastError();
+        handled = true;
         break;
       }
     }
-    else if (cat == CAT_CONF_STR) {
+    else if (ctype == CAT_CONF_STR) {
       command = ser->parseConfig(msgs);
       if (!command.empty()) {
+        os << m_daemon->doCommand(command);
+        lastError = ser->getLastError();
+        handled = true;
         break;
       }
     }
   }
 
-  // process parse result
-  if (dpaTask) {
-    DpaTransactionTask trans(*dpaTask);
-    m_daemon->executeDpaTransaction(trans);
-    int result = trans.waitFinish();
-    os << dpaTask->encodeResponse(trans.getErrorStr());
-  }
-  else if (!command.empty()) {
-    os << m_daemon->doCommand(command);
-  }
-  else {
-    //os << m_serializer->getLastError();
-    os << "PARSE ERROR";
+  if (!handled) {
+    os << "PARSE ERROR: " << PAR(ctype) << PAR(lastError);
   }
 
   ustring msgu((unsigned char*)os.str().data(), os.str().size());

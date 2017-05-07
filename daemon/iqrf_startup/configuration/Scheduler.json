@@ -4,9 +4,10 @@
 
   "TasksJson": [
     {
-      "time": "*/5 1 * * * * *",
+      "time": "*/5 * * * * * *",
       "service": "BaseServiceForMQTT1",
       "message": {
+        "ctype": "dpa",
         "type": "std-per-ledg",
         "nadr": "1",
         "cmd": "PULSE",
@@ -25,6 +26,7 @@
       "time": "*/5 1 * * * * *",
       "service": "BaseServiceForMQTT1",
       "message": {
+        "ctype": "dpa",
         "type": "raw",
         "request": "01.00.06.03.ff.ff"
       }
@@ -33,6 +35,7 @@
       "time": "*/5 1 * * * * *",
       "service": "BaseServiceForMQTT1",
       "message": {
+        "ctype": "dpa",
         "type": "raw-hdp",
         "nadr": "1",
         "pnum": "06",

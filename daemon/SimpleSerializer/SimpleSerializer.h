@@ -87,7 +87,7 @@ public:
   const std::string& getName() const override { return m_name; }
 
   //interface
-  const std::string& parseCategory(const std::string& request) override;
+  std::string parseCategory(const std::string& request) override;
   std::unique_ptr<DpaTask> parseRequest(const std::string& request) override;
   std::string parseConfig(const std::string& request) override;
   std::string getLastError() const override;

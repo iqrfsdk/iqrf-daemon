@@ -653,10 +653,22 @@ void JsonSerializer::init()
   registerClass<PrfOsJson>(PrfOs::PRF_NAME);
 }
 
-const std::string& JsonSerializer::parseCategory(const std::string& request)
+std::string JsonSerializer::parseCategory(const std::string& request)
 {
-  //TODO
-  return CAT_DPA_STR;
+  std::string ctype;
+  try {
+    Document doc;
+    jutils::parseString(request, doc);
+
+    jutils::assertIsObject("", doc);
+    //ctype = jutils::getPossibleMemberAs<std::string>("ctype", doc, ctype);
+    ctype = jutils::getMemberAs<std::string>("ctype", doc);
+  }
+  catch (std::exception &e) {
+    m_lastError = e.what();
+  }
+  return ctype;
+  //return CAT_DPA_STR;
 }
 
 std::unique_ptr<DpaTask> JsonSerializer::parseRequest(const std::string& request)
@@ -679,8 +691,26 @@ std::unique_ptr<DpaTask> JsonSerializer::parseRequest(const std::string& request
 
 std::string JsonSerializer::parseConfig(const std::string& request)
 {
-  //TODO
-  return "";
+  std::string cmd;
+  try {
+    Document doc;
+    jutils::parseString(request, doc);
+
+    jutils::assertIsObject("", doc);
+
+    std::string type = jutils::getMemberAs<std::string>("type", doc);
+
+    //TODO factory
+    //obj = createObject(type, doc);
+
+    if (type == "mode") {
+      cmd = jutils::getMemberAs<std::string>("cmd", doc);
+    }
+  }
+  catch (std::exception &e) {
+    m_lastError = e.what();
+  }
+  return cmd;
 }
 
 std::string JsonSerializer::getLastError() const

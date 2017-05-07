@@ -659,17 +659,17 @@ std::string DaemonController::doCommand(const std::string& cmd)
 {
   std::ostringstream ostr;
   if (m_iqrfInterface != nullptr) {
-    if (cmd == "Operational") {
+    if (cmd == "operational") {
       setMode(Mode::Operational);
       ostr << PAR(cmd) << " done";
       return ostr.str();
     }
-    if (cmd == "Service") {
+    if (cmd == "service") {
       setMode(Mode::Service);
       ostr << PAR(cmd) << " done";
       return ostr.str();
     }
-    if (cmd == "Forwarding") {
+    if (cmd == "forwarding") {
       setMode(Mode::Forwarding);
       ostr << PAR(cmd) << " done";
       return ostr.str();
