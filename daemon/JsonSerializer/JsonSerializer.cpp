@@ -97,12 +97,13 @@ void PrfCommonJson::encodeHexaNum(std::string& to, uint16_t from)
 
 void PrfCommonJson::encodeBinary(std::string& to, const uint8_t* from, int len)
 {
+  bool dot = std::string::npos != to.find_first_of('.');
   to.clear();
   if (len > 0) {
     std::ostringstream ostr;
     ostr << iqrf::TracerHexString(from, len, true);
 
-    if (m_dotNotation || std::string::npos != to.find_first_of('.')) {
+    if (m_dotNotation || dot) {
       to = ostr.str();
       std::replace(to.begin(), to.end(), ' ', '.');
       if (to[to.size() - 1] == '.')

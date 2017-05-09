@@ -14,9 +14,9 @@
         "hwpid": "ffff",
         "timeout": 200,
         "msgid": "",
-        "request": "",
+        "request": ".",
         "request-ts": "",
-        "response": "",
+        "response": ".",
         "response-ts": "",
         "confirmation": ".",
         "confirmation-ts": ""
