@@ -183,7 +183,7 @@ public:
     int ls = L::getLedState();
     if (ls >= 0) {
       v.SetString((ls ? "on" : "off"), m_doc.GetAllocator());
-      m_doc.AddMember("led-state", v, m_doc.GetAllocator());
+      m_doc.AddMember("led_state", v, m_doc.GetAllocator());
     }
 
     m_statusJ = errStr;

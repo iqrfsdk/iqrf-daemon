@@ -15,11 +15,11 @@
         "timeout": 200,
         "msgid": "",
         "request": ".",
-        "request-ts": "",
+        "request_ts": "",
         "response": ".",
-        "response-ts": "",
+        "response_ts": "",
         "confirmation": ".",
-        "confirmation-ts": ""
+        "confirmation_ts": ""
       }
     },
     {
@@ -54,13 +54,13 @@
         "pnum": "0d",
         "pcmd": "00",
         "hwpid": "ffff",
-        "req-data": "c0.00.00",
+        "req_data": "c0.00.00",
         "request": ".",
-        "request-ts": "",
+        "request_ts": "",
         "confirmation": ".",
-        "confirmation-ts": "",
+        "confirmation_ts": "",
         "response": ".",
-        "response-ts": ""
+        "response_ts": ""
       }
     },
     {
@@ -73,15 +73,15 @@
         "timeout": 5000,
         "cmd": "SEND",
         "hwpid": "ffff",
-        "frc-type": "GET_BYTE",
-        "frc-user": 0,
-        "user-data": "00.00",
+        "frc_type": "GET_BYTE",
+        "frc_user": 0,
+        "user_data": "00.00",
         "request": ".",
-        "request-ts": "",
+        "request_ts": "",
         "confirmation": ".",
-        "confirmation-ts": "",
+        "confirmation_ts": "",
         "response": ".",
-        "response-ts": ""
+        "response_ts": ""
       }
     }
   ]

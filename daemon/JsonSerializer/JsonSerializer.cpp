@@ -41,11 +41,11 @@ INIT_COMPONENT(ISerializer, JsonSerializer)
 #define TIMEOUT_STR "timeout"
 #define MSGID_STR "msgid"
 #define REQUEST_STR "request"
-#define REQUEST_TS_STR "request-ts"
+#define REQUEST_TS_STR "request_ts"
 #define RESPONSE_STR "response"
-#define RESPONSE_TS_STR "response-ts"
+#define RESPONSE_TS_STR "response_ts"
 #define CONFIRMATION_STR "confirmation"
-#define CONFIRMATION_TS_STR "confirmation-ts"
+#define CONFIRMATION_TS_STR "confirmation_ts"
 #define CMD_STR "cmd"
 #define STATUS_STR "status"
 
@@ -293,10 +293,10 @@ const std::string PrfRawHdpJson::PRF_NAME("raw-hdp");
 
 #define PNUM_STR "pnum"
 #define PCMD_STR "pcmd"
-#define REQD_STR "req-data"
+#define REQD_STR "req_data"
 #define RCODE_STR "rcode"
 #define DPAVAL_STR "dpaval"
-#define RESD_STR "res-data"
+#define RESD_STR "res_data"
 
 PrfRawHdpJson::PrfRawHdpJson(rapidjson::Value& val)
 {
@@ -386,11 +386,11 @@ std::string PrfThermometerJson::encodeResponse(const std::string& errStr)
 }
 
 //-------------------------------
-#define FRC_CMD_STR "frc-cmd"
-#define FRC_TYPE_STR "frc-type"
-#define FRC_USER_STR "frc-user"
-#define FRC_USER_DATA_STR "user-data"
-#define FRC_DATA_STR "frc-data"
+#define FRC_CMD_STR "frc_cmd"
+#define FRC_TYPE_STR "frc_type"
+#define FRC_USER_STR "frc_user"
+#define FRC_USER_DATA_STR "user_data"
+#define FRC_DATA_STR "frc_data"
 
 PrfFrcJson::PrfFrcJson(rapidjson::Value& val)
 {
