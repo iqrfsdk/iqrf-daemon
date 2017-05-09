@@ -213,6 +213,13 @@ void PrfCommonJson::addResponseJsonPrio2Params(const DpaTask& dpaTask)
     v.SetString(m_hwpid.c_str(), alloc);
     m_doc.AddMember(HWPID_STR, v, alloc);
   }
+}
+
+std::string PrfCommonJson::encodeResponseJsonFinal(const DpaTask& dpaTask)
+{
+  Document::AllocatorType& alloc = m_doc.GetAllocator();
+  rapidjson::Value v;
+
   if (m_has_request) {
     encodeBinary(m_requestJ, dpaTask.getRequest().DpaPacket().Buffer, dpaTask.getRequest().Length());
     v.SetString(m_requestJ.c_str(), alloc);
@@ -243,12 +250,6 @@ void PrfCommonJson::addResponseJsonPrio2Params(const DpaTask& dpaTask)
     v.SetString(m_response_ts.c_str(), alloc);
     m_doc.AddMember(RESPONSE_TS_STR, v, alloc);
   }
-}
-
-std::string PrfCommonJson::encodeResponseJsonFinal(const DpaTask& dpaTask)
-{
-  Document::AllocatorType& alloc = m_doc.GetAllocator();
-  rapidjson::Value v;
 
   v.SetString(m_statusJ.c_str(), alloc);
   m_doc.AddMember(STATUS_STR, v, alloc);
