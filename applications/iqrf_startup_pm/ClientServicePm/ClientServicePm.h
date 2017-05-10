@@ -68,7 +68,7 @@ public:
     m_taskHandle = m_scheduler->scheduleTaskPeriodic(clientId, task, sec, tp);
   }
 
-  void isScheduled()
+  bool isScheduled()
   {
     return m_taskHandle != IScheduler::TASK_HANDLE_INVALID;
   }
