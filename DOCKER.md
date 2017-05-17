@@ -2,7 +2,7 @@
 
 [https://hub.docker.com/u/iqrfsdk](https://hub.docker.com/u/iqrfsdk)
 
-Work in progress ... meanwhile check [this](https://github.com/iqrfsdk/iot-starter-kit/tree/master/extensions/resin.io/up)
+Work in [progress](https://github.com/iqrfsdk/iot-starter-kit/tree/master/workshop/iqrf-docker)
 
 ## Install Docker CE
 
@@ -105,3 +105,5 @@ Share images, automate workflows, and more with a free Docker ID:
 For more examples and ideas, visit:
  https://docs.docker.com/engine/userguide/
 ```
+
+Enjoy and spread the joy!
