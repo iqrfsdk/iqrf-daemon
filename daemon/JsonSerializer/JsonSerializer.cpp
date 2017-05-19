@@ -17,6 +17,7 @@
 #include "LaunchUtils.h"
 #include "JsonSerializer.h"
 #include "DpaTransactionTask.h"
+#include "DpaMessage.h"
 #include "IqrfLogging.h"
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
@@ -47,6 +48,8 @@ INIT_COMPONENT(ISerializer, JsonSerializer)
 #define CONFIRMATION_STR "confirmation"
 #define CONFIRMATION_TS_STR "confirmation_ts"
 #define CMD_STR "cmd"
+#define RCODE_STR "rcode"
+#define DPAVAL_STR "dpaval"
 #define STATUS_STR "status"
 
 //////////////////////////////////////////
@@ -157,6 +160,8 @@ void PrfCommonJson::parseRequestJson(rapidjson::Value& val, DpaTask& dpaTask)
   m_has_confirmation = jutils::getMemberIfExistsAs<std::string>(CONFIRMATION_STR, val, m_confirmationJ);
   m_has_confirmation_ts = jutils::getMemberIfExistsAs<std::string>(CONFIRMATION_TS_STR, val, m_confirmation_ts);
   m_has_cmd = jutils::getMemberIfExistsAs<std::string>(CMD_STR, val, m_cmdJ);
+  m_has_rcode = jutils::getMemberIfExistsAs<std::string>(RCODE_STR, val, m_rcodeJ);
+  m_has_dpaval = jutils::getMemberIfExistsAs<std::string>(DPAVAL_STR, val, m_dpavalJ);
 
   if (m_has_nadr) {
     uint16_t nadr;
@@ -221,6 +226,16 @@ std::string PrfCommonJson::encodeResponseJsonFinal(const DpaTask& dpaTask)
   Document::AllocatorType& alloc = m_doc.GetAllocator();
   rapidjson::Value v;
 
+  if (m_has_rcode) {
+    encodeHexaNum(m_rcodeJ, dpaTask.getResponse().DpaPacket().DpaResponsePacket_t.ResponseCode);
+    v.SetString(m_rcodeJ.c_str(), alloc);
+    m_doc.AddMember(RCODE_STR, v, alloc);
+  }
+  if (m_has_dpaval) {
+    encodeHexaNum(m_dpavalJ, dpaTask.getResponse().DpaPacket().DpaResponsePacket_t.DpaValue);
+    v.SetString(m_dpavalJ.c_str(), alloc);
+    m_doc.AddMember(DPAVAL_STR, v, alloc);
+  }
   if (m_has_request) {
     encodeBinary(m_requestJ, dpaTask.getRequest().DpaPacket().Buffer, dpaTask.getRequest().Length());
     v.SetString(m_requestJ.c_str(), alloc);
@@ -294,8 +309,6 @@ const std::string PrfRawHdpJson::PRF_NAME("raw-hdp");
 #define PNUM_STR "pnum"
 #define PCMD_STR "pcmd"
 #define REQD_STR "req_data"
-#define RCODE_STR "rcode"
-#define DPAVAL_STR "dpaval"
 #define RESD_STR "res_data"
 
 PrfRawHdpJson::PrfRawHdpJson(rapidjson::Value& val)
@@ -336,17 +349,8 @@ std::string PrfRawHdpJson::encodeResponse(const std::string& errStr)
   v.SetString(m_pcmd.c_str(), alloc);
   m_doc.AddMember(PCMD_STR, v, alloc);
 
-  const DpaMessage& response = getResponse();
-  
-  std::string rcode;
-  encodeHexaNum(rcode, response.DpaPacket().DpaResponsePacket_t.ResponseCode);
-  v.SetString(rcode.c_str(), alloc);
-  m_doc.AddMember(RCODE_STR, v, alloc);
-
-  std::string dpaval;
-  encodeHexaNum(dpaval, response.DpaPacket().DpaResponsePacket_t.DpaValue);
-  v.SetString(dpaval.c_str(), alloc);
-  m_doc.AddMember(DPAVAL_STR, v, alloc);
+  m_has_rcode = true; //mandatory here
+  m_has_dpaval = true; //mandatory here
 
   if (m_dotNotation) {
     m_responseJ = ".";

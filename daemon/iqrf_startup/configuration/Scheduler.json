@@ -19,7 +19,9 @@
         "response": ".",
         "response_ts": "",
         "confirmation": ".",
-        "confirmation_ts": ""
+        "confirmation_ts": "",
+        "rcode": "",
+        "dpaval": ""
       }
     },
     {

@@ -79,6 +79,8 @@ public:
   bool m_has_confirmation = false;
   bool m_has_confirmation_ts = false;
   bool m_has_cmd = false;
+  bool m_has_rcode = false;
+  bool m_has_dpaval = false;
 
   std::string m_ctype;
   std::string m_type;
@@ -94,6 +96,8 @@ public:
   std::string m_confirmation_ts;
   std::string m_cmdJ;
   std::string m_statusJ;
+  std::string m_rcodeJ;
+  std::string m_dpavalJ;
 
   mutable rapidjson::Document m_doc;
 
