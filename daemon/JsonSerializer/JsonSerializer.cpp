@@ -359,9 +359,15 @@ std::string PrfRawHdpJson::encodeResponse(const std::string& errStr)
   
   //TODO data
   int datalen = getResponse().Length() - sizeof(TDpaIFaceHeader) - 2; //DpaValue ResponseCode
-  encodeBinary(m_requestJ, getResponse().DpaPacket().DpaResponsePacket_t.DpaMessage.Response.PData, datalen );
-  v.SetString(m_requestJ.c_str(), alloc);
-  m_doc.AddMember(RESD_STR, v, alloc);
+  if (datalen > 0) {
+    std::string res_data;
+    if (m_dotNotation) {
+      res_data = ".";
+    }
+    encodeBinary(res_data, getResponse().DpaPacket().DpaResponsePacket_t.DpaMessage.Response.PData, datalen);
+    v.SetString(res_data.c_str(), alloc);
+    m_doc.AddMember(RESD_STR, v, alloc);
+  }
   
   m_statusJ = errStr;
   
