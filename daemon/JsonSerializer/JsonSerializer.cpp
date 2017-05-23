@@ -484,7 +484,7 @@ std::string PrfFrcJson::encodeResponse(const std::string& errStr)
   values.pop_back();
 
   v.SetString(values.c_str(), alloc);
-  m_doc.AddMember("FRC_DATA_STR", v, alloc);
+  m_doc.AddMember(FRC_DATA_STR, v, alloc);
 
   m_statusJ = errStr;
   return encodeResponseJsonFinal(*this);
