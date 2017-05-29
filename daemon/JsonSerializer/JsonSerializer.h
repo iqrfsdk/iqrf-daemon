@@ -24,6 +24,7 @@
 #include "PrfIo.h"
 #include "PrfOs.h"
 #include "PrfLeds.h"
+#include "PrfStdSen.h"
 #include "PlatformDep.h"
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
@@ -198,6 +199,14 @@ public:
 
 typedef PrfLedJson<PrfLedG> PrfLedGJson;
 typedef PrfLedJson<PrfLedR> PrfLedRJson;
+
+class PrfStdSenJson : public PrfStdSen, public PrfCommonJson
+{
+public:
+  explicit PrfStdSenJson(rapidjson::Value& val);
+  virtual ~PrfStdSenJson() {}
+  std::string encodeResponse(const std::string& errStr) override;
+};
 
 class JsonSerializer : public ObjectFactory<DpaTask, rapidjson::Value>, public ISerializer
 {

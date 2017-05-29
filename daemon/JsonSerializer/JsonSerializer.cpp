@@ -599,7 +599,6 @@ std::string PrfIoJson::encodeResponse(const std::string& errStr)
   return encodeResponseJsonFinal(*this);
 }
 
-//////////////////
 //-------------------------------
 PrfOsJson::PrfOsJson(rapidjson::Value& val)
 {
@@ -640,6 +639,77 @@ std::string PrfOsJson::encodeResponse(const std::string& errStr)
   return encodeResponseJsonFinal(*this);
 }
 
+//-------------------------------
+#define SENSORS_STR "sensors"
+
+PrfStdSenJson::PrfStdSenJson(rapidjson::Value& val)
+{
+  parseRequestJson(val, *this);
+
+  switch (getCmd()) {
+
+  case PrfStdSen::Cmd::READ:
+  {
+    std::vector<std::string> sensors;
+    sensors = jutils::getPossibleMemberAsVector<std::string>(SENSORS_STR, val, sensors);
+    readCommand(sensors);
+  }
+  break;
+
+  case PrfStdSen::Cmd::READT:
+  {
+    std::vector<std::string> sensors;
+    sensors = jutils::getPossibleMemberAsVector<std::string>(SENSORS_STR, val, sensors);
+    readtCommand(sensors);
+  }
+  break;
+
+  case PrfStdSen::Cmd::ENUM:
+  {
+    enumCommand();
+  }
+  break;
+
+  default:
+    ;
+  }
+}
+
+std::string PrfStdSenJson::encodeResponse(const std::string& errStr)
+{
+
+  Document::AllocatorType& alloc = m_doc.GetAllocator();
+  rapidjson::Value v;
+
+  addResponseJsonPrio1Params(*this);
+  addResponseJsonPrio2Params(*this);
+
+  switch (getCmd()) {
+
+  case PrfStdSenJson::Cmd::READ:
+  {
+  }
+  break;
+
+  case PrfStdSenJson::Cmd::READT:
+  {
+  }
+  break;
+
+  case PrfStdSenJson::Cmd::ENUM:
+  {
+  }
+  break;
+
+  default:
+    ;
+  }
+
+  m_statusJ = errStr;
+  return encodeResponseJsonFinal(*this);
+}
+
+
 ///////////////////////////////////////////
 JsonSerializer::JsonSerializer()
   :m_name("Json")
@@ -663,6 +733,7 @@ void JsonSerializer::init()
   registerClass<PrfFrcJson>(PrfFrc::PRF_NAME);
   registerClass<PrfIoJson>(PrfIo::PRF_NAME);
   registerClass<PrfOsJson>(PrfOs::PRF_NAME);
+  registerClass<PrfStdSenJson>(PrfStdSenJson::PRF_NAME);
 }
 
 std::string JsonSerializer::parseCategory(const std::string& request)

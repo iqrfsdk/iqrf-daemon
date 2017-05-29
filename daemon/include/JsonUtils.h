@@ -178,7 +178,7 @@ namespace jutils
   }
 
   template<typename T>
-  inline std::vector<T> getPossibleMemberAsVector(const std::string& name, const rapidjson::Value& v, std::vector<T> defaultVal = std::vector<T>())
+  inline std::vector<T> getPossibleMemberAsVector(const std::string& name, const rapidjson::Value& v, std::vector<T> defaultVal)
   {
     const auto m = v.FindMember(name.c_str());
     if (m == v.MemberEnd())
@@ -191,6 +191,25 @@ namespace jutils
     for (auto itr = vct.Begin(); itr != vct.End(); ++itr) {
       assertIs<T>(name, *itr);
       defaultVal.push_back(itr->Get<T>());
+    }
+
+    return defaultVal;
+  }
+
+  template<>
+  inline std::vector<std::string> getPossibleMemberAsVector(const std::string& name, const rapidjson::Value& v, std::vector<std::string> defaultVal )
+  {
+    const auto m = v.FindMember(name.c_str());
+    if (m == v.MemberEnd())
+      return defaultVal;
+
+    const rapidjson::Value& vct = m->value;
+    assertIsArray(name, vct);
+    defaultVal.clear();
+
+    for (auto itr = vct.Begin(); itr != vct.End(); ++itr) {
+      assertIs<std::string>(name, *itr);
+      defaultVal.push_back(std::string(itr->GetString()));
     }
 
     return defaultVal;

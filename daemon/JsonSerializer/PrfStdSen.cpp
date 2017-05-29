@@ -61,13 +61,21 @@ void PrfStdSen::parseResponse(const DpaMessage& response)
   }
 }
 
-void PrfStdSen::readCommand()
+void PrfStdSen::readCommand(std::vector<std::string> sensorNames)
 {
+  selectSensors(sensorNames);
+
   setCmd(Cmd::READ);
   TDpaMessage& dpaMsg = m_request.DpaPacket().DpaRequestPacket_t.DpaMessage;
-  std::copy(&m_bitmap, &m_bitmap + 1, dpaMsg.Request.PData);
-  
-  size_t maxSize = (DPA_MAX_DATA_LENGTH - sizeof(m_bitmap)) / 5;
+
+  size_t maxSize = 0;
+  if (m_bitmap != 0) {
+    std::copy(&m_bitmap, &m_bitmap + 1, dpaMsg.Request.PData);
+    maxSize = (DPA_MAX_DATA_LENGTH - sizeof(m_bitmap)) / 5;
+  }
+  else {
+    maxSize = DPA_MAX_DATA_LENGTH / 5;
+  }
 
   //TODO WrittenData
   maxSize = 0;
@@ -77,27 +85,12 @@ void PrfStdSen::readCommand()
   //maxSize = directions.size();
   //TDpaMessage& dpaMsg = m_request.DpaPacket().DpaRequestPacket_t.DpaMessage;
 
-  m_request.SetLength(sizeof(TDpaIFaceHeader) + sizeof(m_bitmap) + 5 * maxSize);
-}
-
-void PrfStdSen::readCommand(std::vector<std::string> sensorNames)
-{
-  selectSensors(sensorNames);
-
-  //TODO WrittenData
-  size_t maxSize = 0;
-
-  setCmd(Cmd::READ);
-  TDpaMessage& dpaMsg = m_request.DpaPacket().DpaRequestPacket_t.DpaMessage;
-  std::copy(&m_bitmap, &m_bitmap + 1, dpaMsg.Request.PData);
-
-  m_request.SetLength(sizeof(TDpaIFaceHeader) + sizeof(m_bitmap) + 5 * maxSize);
-}
-
-void PrfStdSen::readtCommand()
-{
-  readCommand();
-  setCmd(Cmd::READT);
+  if (m_bitmap != 0) {
+    m_request.SetLength(sizeof(TDpaIFaceHeader) + sizeof(m_bitmap) + 5 * maxSize);
+  }
+  else {
+    m_request.SetLength(sizeof(TDpaIFaceHeader) + 5 * maxSize);
+  }
 }
 
 void PrfStdSen::readtCommand(std::vector<std::string> sensorNames)
@@ -109,12 +102,14 @@ void PrfStdSen::readtCommand(std::vector<std::string> sensorNames)
 void PrfStdSen::enumCommand()
 {
   m_bitmap = 0;
-  readCommand();
+  readCommand(std::vector<std::string>());
   setCmd(Cmd::ENUM);
 }
 
 void PrfStdSen::selectSensors(const std::vector<std::string>& sensorNames)
 {
+  m_bitmap = 0;
+
   m_required.clear();
   for (auto const &name : sensorNames) {
     m_required.push_back(std::make_pair(m_stdSensor.getSensor(name), name));

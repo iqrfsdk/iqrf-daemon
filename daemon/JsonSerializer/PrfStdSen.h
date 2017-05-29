@@ -182,7 +182,7 @@ public:
 private:
   std::string m_name;
   std::string m_producer;
-  uint16_t m_hwpid;
+  uint16_t m_hwpid = 0;
   std::vector<Sensor> m_sensors;
 };
 ////////////////////////
@@ -230,9 +230,7 @@ public:
   void parseCommand(const std::string& command) override;
   const std::string& encodeCommand() const override;
 
-  void readCommand(); //1st one
   void readCommand(std::vector<std::string> sensorNames);
-  void readtCommand();
   void readtCommand(std::vector<std::string> sensorNames);
   void enumCommand();
 
