@@ -24,17 +24,28 @@ const std::string STR_CMD_READ("READ");
 const std::string STR_CMD_READT("READT");
 const std::string STR_CMD_ENUM("ENUM");
 
+//TODO temporary till the remote repo ready
 ////////////////////////////////////////////////////////
 const StdSensor MIC1("MIC1", "Microrisc", 1, {
-  { 0, "Temperature", "Celsius", 2, "Temperature1", 0.5, 46, 0.0625, 4500 }
+  { 0, "Temperature", "Celsius", "Temperature1", { 0.5, 46, 0.0625, 4500, 0, 0 } }
 });
 
 const StdSensor PRO1("PRO1", "Protronic", 1, {
-  { 0, "Temperature", "Celsius", 2, "Temperature1", 0.5, 46, 0.0625, 4500 },
-  { 2, "CO2", "ppm", 2, "CO2_1", 1, 5, 15, 5 },
-  { 0x80, "Humidity", "%", 1, "Humidity1", 0.5, 5, 0, 0 }
+  { 0, "Temperature", "Celsius", "Temperature1", { 0.5, 46, 0.0625, 4500, 0, 0 } },
+  { 2, "CO2", "ppm", "CO2_1", { 1, 5, 15, 5, 0, 0 } },
+  { 0x80, "Humidity", "%", "Humidity1", { 0.5, 5, 0, 0, 0, 0 } }
 });
 
+class StdSensorRepoInitializer {
+public:
+  StdSensorRepoInitializer() {
+    StdSensorRepo& repo = StdSensorRepo::get();
+    repo.addStdSensor(MIC1);
+    repo.addStdSensor(PRO1);
+  }
+};
+
+static StdSensorRepoInitializer s_init;
 
 /////////////////////////////////////////////
 PrfStdSen::PrfStdSen()
@@ -54,6 +65,15 @@ PrfStdSen::~PrfStdSen()
 void PrfStdSen::parseResponse(const DpaMessage& response)
 {
   if (getCmd() == Cmd::READ) {
+    if (m_bitmap == 0) {
+      //1st sensor
+      TDpaMessage& dpaMsg = m_request.DpaPacket().DpaResponsePacket_t.DpaMessage;
+      const Sensor* sen = getStdSensor()->getSensor(0);
+      //if (nullptr != sen) {
+      //  sen->
+      //}
+      //dpaMsg.Response.PData[]
+    }
   }
   else if (getCmd() == Cmd::READT) {
   }
@@ -73,9 +93,6 @@ void PrfStdSen::readCommand(std::vector<std::string> sensorNames)
     std::copy(&m_bitmap, &m_bitmap + 1, dpaMsg.Request.PData);
     maxSize = (DPA_MAX_DATA_LENGTH - sizeof(m_bitmap)) / 5;
   }
-  else {
-    maxSize = DPA_MAX_DATA_LENGTH / 5;
-  }
 
   //TODO WrittenData
   maxSize = 0;
@@ -87,9 +104,6 @@ void PrfStdSen::readCommand(std::vector<std::string> sensorNames)
 
   if (m_bitmap != 0) {
     m_request.SetLength(sizeof(TDpaIFaceHeader) + sizeof(m_bitmap) + 5 * maxSize);
-  }
-  else {
-    m_request.SetLength(sizeof(TDpaIFaceHeader) + 5 * maxSize);
   }
 }
 
@@ -103,28 +117,30 @@ void PrfStdSen::enumCommand()
 {
   m_bitmap = 0;
   readCommand(std::vector<std::string>());
-  setCmd(Cmd::ENUM);
+  setCmd(Cmd::READ); //ENUM is just pseudo-command
 }
 
 void PrfStdSen::selectSensors(const std::vector<std::string>& sensorNames)
 {
   m_bitmap = 0;
-
   m_required.clear();
-  for (auto const &name : sensorNames) {
-    m_required.push_back(std::make_pair(m_stdSensor.getSensor(name), name));
-  }
-  
   m_selected.clear();
-  for (auto &req : m_required) {
-    if (req.first > -1) {
-      m_selected.insert(req.first);
-    }
-  }
 
-  for (auto &sel : m_selected) {
-    if (sel < 32) {
-      m_bitmap |= 1 << sel;
+  if (m_stdSensor != nullptr) {
+    for (auto const &name : sensorNames) {
+      m_required.push_back(std::make_pair(m_stdSensor->getSensor(name), name));
+    }
+
+    for (auto &req : m_required) {
+      if (req.first > -1) {
+        m_selected.insert(req.first);
+      }
+    }
+
+    for (auto &sel : m_selected) {
+      if (sel < 32) {
+        m_bitmap |= 1 << sel;
+      }
     }
   }
 }

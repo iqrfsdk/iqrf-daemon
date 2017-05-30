@@ -11,7 +11,7 @@
         "type": "std-sen",
         "nadr": "1",
         "cmd": "READ",
-        "hwpid": "ffff",
+        "device": "PRO1",
         "sensors": [
           "Temperature1",
           "CO2_1",

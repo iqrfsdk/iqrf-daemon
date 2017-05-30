@@ -24,30 +24,62 @@
 
 #define PNUM_SE 0x5E
 
+struct ScaleParameters
+{
+  ScaleParameters() {}
+  
+  ScaleParameters(
+  double sByte,
+  int oByte,
+  double sWord,
+  int oWord,
+  double sDWord,
+  int oDWord
+  )
+    :scaleByte(sByte)
+    ,offsetByte(oByte)
+    ,scaleWord(sWord)
+    ,offsetWord(oWord)
+    ,scaleDWord(sDWord)
+    ,offsetDWord(oDWord)
+  {}
+
+  double scaleByte = 0.0;
+  int offsetByte = 0;
+  double scaleWord = 0.0;
+  int offsetWord = 0;
+  double scaleDWord = 0.0;
+  int offsetDWord = 0;
+};
+
 class Sensor
 {
 public:
   Sensor() {}
 
-  Sensor(uint8_t sid, const std::string& sensorType, const std::string& units, uint8_t retlen, const std::string& sensorName,
-    double scale, int offset, double scale2, int offset2)
+  Sensor(uint8_t sid, const std::string& sensorType, const std::string& units, const std::string& sensorName, ScaleParameters scaleParameters)
     :m_sid(sid)
     , m_sensorType(sensorType)
     , m_units(units)
-    , m_retlen(retlen)
+    , m_retlen(-1)
     , m_sensorName(sensorName)
-    , m_scale(scale)
-    , m_offset(offset)
-    , m_scale2(scale2)
-    , m_offset2(offset2)
+    , m_sp(scaleParameters)
   {
+    if ((m_sid & 0x80) == 0)
+      m_retlen = 2;
+    else if ((m_sid & 0xE0) == 0x80)
+      m_retlen = 1;
+    else if ((m_sid & 0xE0) == 0xA0)
+      m_retlen = 4;
+    else if ((m_sid & 0xC0) == 0xC0)
+      m_retlen = -1;
   }
 
   virtual ~Sensor() {}
 
   void scale(uint8_t& f, double val) const
   {
-    double fd = m_scale * val + m_offset;
+    double fd = m_sp.scaleByte * val + m_sp.offsetByte;
     if (fd > std::numeric_limits<uint8_t>::max()) {
       f = 0;
     }
@@ -58,7 +90,7 @@ public:
 
   void scale(uint16_t& f, double val) const
   {
-    double fd = m_scale2 * val + m_offset2;
+    double fd = m_sp.scaleWord * val + m_sp.offsetWord;
     if (fd > std::numeric_limits<uint16_t>::max()) {
       f = 0;
     }
@@ -67,16 +99,41 @@ public:
     }
   }
 
+  void scale(uint32_t& f, double val) const
+  {
+    double fd = m_sp.scaleDWord * val + m_sp.offsetDWord;
+    if (fd > std::numeric_limits<uint32_t>::max()) {
+      f = 0;
+    }
+    else {
+      f = (uint32_t)floor(fd);
+    }
+  }
+
   void descale(double& val, uint8_t f) const
   {
     int fi = f;
-    val = (fi - m_offset) / m_scale;
+    val = (fi - m_sp.offsetByte) / m_sp.scaleByte;
   }
 
   void descale(double& val, uint16_t f) const
   {
     int fi = f;
-    val = (fi - m_offset2) / m_scale2;
+    val = (fi - m_sp.offsetWord) / m_sp.scaleWord;
+  }
+
+  void descale(double& val, uint32_t f) const
+  {
+    int fi = f;
+    val = (fi - m_sp.offsetDWord) / m_sp.scaleDWord;
+  }
+
+  virtual const uint8_t* descale(const uint8_t* data)
+  {
+    if (m_retlen == 1) {
+
+    }
+    return 0;
   }
 
   int getSid() const { return m_sid; }
@@ -90,10 +147,7 @@ private:
   std::string m_units;
   uint8_t m_retlen;
   std::string m_sensorName;
-  double m_scale = 0;
-  int m_offset = 0;
-  double m_scale2 = 0;
-  int m_offset2 = 0;
+  ScaleParameters m_sp;
 };
 
 /*
@@ -157,7 +211,7 @@ public:
   uint16_t getHwpid() const { return m_hwpid; }
 
   //returns sensor according if index valid else nullptr
-  const Sensor* getSensor(int index)
+  const Sensor* getSensor(int index) const
   {
     if (index >=0 && index < m_sensors.size()) {
       return &m_sensors[index];
@@ -168,7 +222,7 @@ public:
   }
 
   //returns index according name if name exists else -1
-  int getSensor(const std::string& sensorName)
+  int getSensor(const std::string& sensorName) const
   {
     int retval = -1;
     for (int i = 0; i < m_sensors.size(); i++) {
@@ -197,17 +251,22 @@ public:
   }
   virtual ~StdSensorRepo() {}
   void addStdSensor(const StdSensor& stdSensor) {
-    m_stdSensors.insert(std::make_pair(stdSensor.getHwpid(), stdSensor));
+    m_stdSensors.insert(std::make_pair(stdSensor.getName(), stdSensor));
   }
-  const StdSensor& getSensor(int i);
+  
+  const StdSensor* getSensor(const std::string& name)
+  {
+    auto found = m_stdSensors.find(name);
+    if (found != m_stdSensors.end()) {
+      return &found->second;
+    }
+    else
+      return nullptr;
+  }
+
 private:
   StdSensorRepo() {}
-  std::map<int, StdSensor> m_stdSensors;
-};
-
-class SelectedSensor
-{
-
+  std::map<std::string, StdSensor> m_stdSensors;
 };
 
 //////////////////////////////////////////////
@@ -242,7 +301,11 @@ public:
   void setBitmap(uint32_t bitmap) { m_bitmap = bitmap ? bitmap : 1; m_useBitmap = true; }
   void resetBitmap() { m_bitmap = 1; m_useBitmap = false; }
 
+  void setStdSensor(const StdSensor* stdSensor) { m_stdSensor = stdSensor; }
+  const StdSensor* getStdSensor() { return m_stdSensor; }
+
 protected:
+  const StdSensor* m_stdSensor = nullptr;
 
 private:
   void selectSensors(const std::vector<std::string>& sensorNames);
@@ -251,8 +314,6 @@ private:
   uint32_t m_bitmap = 1;
   bool m_useBitmap = true;
   std::basic_string<unsigned char> Writtendata; //TODO
-
-  StdSensor m_stdSensor;
 
   std::vector<std::pair<int,std::string>> m_required;
   std::set<int> m_selected;

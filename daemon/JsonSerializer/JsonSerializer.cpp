@@ -641,10 +641,14 @@ std::string PrfOsJson::encodeResponse(const std::string& errStr)
 
 //-------------------------------
 #define SENSORS_STR "sensors"
+#define DEVICE_STR "device"
 
 PrfStdSenJson::PrfStdSenJson(rapidjson::Value& val)
 {
   parseRequestJson(val, *this);
+  std::string device = jutils::getMemberAs<std::string>(DEVICE_STR, val);
+  
+   setStdSensor(StdSensorRepo::get().getSensor(device));
 
   switch (getCmd()) {
 
