@@ -20,6 +20,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <cmath>
 
 #define PNUM_SE 0x5E
 
