@@ -79,7 +79,7 @@ public:
 
   void scale(uint8_t& f, double val) const
   {
-    double fd = m_sp.scaleByte * val + m_sp.offsetByte;
+    double fd = m_sp.scaleByte / val + m_sp.offsetByte;
     if (fd > std::numeric_limits<uint8_t>::max()) {
       f = 0;
     }
@@ -90,7 +90,7 @@ public:
 
   void scale(uint16_t& f, double val) const
   {
-    double fd = m_sp.scaleWord * val + m_sp.offsetWord;
+    double fd = m_sp.scaleWord / val + m_sp.offsetWord;
     if (fd > std::numeric_limits<uint16_t>::max()) {
       f = 0;
     }
@@ -101,7 +101,7 @@ public:
 
   void scale(uint32_t& f, double val) const
   {
-    double fd = m_sp.scaleDWord * val + m_sp.offsetDWord;
+    double fd = m_sp.scaleDWord / val + m_sp.offsetDWord;
     if (fd > std::numeric_limits<uint32_t>::max()) {
       f = 0;
     }
@@ -113,27 +113,43 @@ public:
   void descale(double& val, uint8_t f) const
   {
     int fi = f;
-    val = (fi - m_sp.offsetByte) / m_sp.scaleByte;
+    val = (fi - m_sp.offsetByte) * m_sp.scaleByte;
   }
 
   void descale(double& val, uint16_t f) const
   {
     int fi = f;
-    val = (fi - m_sp.offsetWord) / m_sp.scaleWord;
+    val = (fi - m_sp.offsetWord) * m_sp.scaleWord;
   }
 
   void descale(double& val, uint32_t f) const
   {
     int fi = f;
-    val = (fi - m_sp.offsetDWord) / m_sp.scaleDWord;
+    val = (fi - m_sp.offsetDWord) * m_sp.scaleDWord;
   }
 
-  virtual const uint8_t* descale(const uint8_t* data)
+  virtual const uint8_t* descale(double& val, const uint8_t* data)
   {
-    if (m_retlen == 1) {
-
+    switch (m_retlen)
+    {
+    case 1:
+      descale(val, *data);
+      return data++;
+    case 2:
+      uint16_t word;
+      std::copy(data, data + 2, &word);
+      descale(val, word);
+      return data + 2;
+    case 4:
+      uint32_t dword;
+      std::copy(data, data + 2, &dword);
+      descale(val, dword);
+      return data + 4;
+    case -1:
+    default:
+      //TODO
+      ;
     }
-    return 0;
   }
 
   int getSid() const { return m_sid; }
