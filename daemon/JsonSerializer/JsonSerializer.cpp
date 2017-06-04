@@ -643,12 +643,18 @@ std::string PrfOsJson::encodeResponse(const std::string& errStr)
 #define SENSORS_STR "sensors"
 #define DEVICE_STR "device"
 
+#define SENTYPE_STR "type"
+#define SENNAME_STR "name"
+#define SENVALUE_STR "value"
+#define SENUNITS_STR "units"
+#define SENSID_STR "sid"
+
 PrfStdSenJson::PrfStdSenJson(rapidjson::Value& val)
 {
   parseRequestJson(val, *this);
   std::string device = jutils::getMemberAs<std::string>(DEVICE_STR, val);
   
-   setStdSensor(StdSensorRepo::get().getSensor(device));
+   setStdSensor(StdSensorRepo::get().getStdSensor(device));
 
   switch (getCmd()) {
 
@@ -658,7 +664,7 @@ PrfStdSenJson::PrfStdSenJson(rapidjson::Value& val)
     sensors = jutils::getPossibleMemberAsVector<std::string>(SENSORS_STR, val, sensors);
 
     //TODO just 4 test
-    this->prepareWriteDataToSensor("CO2_1", 0x12345678);
+    //this->prepareWriteDataToSensor("CO2_1", 0x12345678);
 
     readCommand(sensors);
   }
@@ -696,16 +702,76 @@ std::string PrfStdSenJson::encodeResponse(const std::string& errStr)
 
   case PrfStdSenJson::Cmd::READ:
   {
+    Value arr(kArrayType);
+    for (auto & sel : m_selected) {
+      
+      Value senObj(kObjectType);
+      
+      //v.SetString(m_stdSensor->getSensor(sel.first)->getType().c_str(), alloc);
+      //senObj.AddMember(SENTYPE_STR, v, alloc);
+
+      v.SetString(m_stdSensor->getSensor(sel.first)->getName().c_str(), alloc);
+      senObj.AddMember(SENNAME_STR, v, alloc);
+
+      v = sel.second;
+      senObj.AddMember(SENVALUE_STR, v, alloc);
+
+      //v.SetString(m_stdSensor->getSensor(sel.first)->getUnits().c_str(), alloc);
+      //senObj.AddMember(SENUNITS_STR, v, alloc);
+      
+      arr.PushBack(senObj, alloc);
+    }
+
+    m_doc.AddMember(SENSORS_STR, arr, alloc);
+ 
   }
   break;
 
   case PrfStdSenJson::Cmd::READT:
   {
+    Value arr(kArrayType);
+    for (auto & sel : m_selected) {
+
+      Value senObj(kObjectType);
+
+      v.SetString(m_stdSensor->getSensor(sel.first)->getType().c_str(), alloc);
+      senObj.AddMember(SENTYPE_STR, v, alloc);
+
+      v.SetString(m_stdSensor->getSensor(sel.first)->getName().c_str(), alloc);
+      senObj.AddMember(SENNAME_STR, v, alloc);
+
+      v = sel.second;
+      senObj.AddMember(SENVALUE_STR, v, alloc);
+
+      v.SetString(m_stdSensor->getSensor(sel.first)->getUnits().c_str(), alloc);
+      senObj.AddMember(SENUNITS_STR, v, alloc);
+
+      arr.PushBack(senObj, alloc);
+    }
+
+    m_doc.AddMember(SENSORS_STR, arr, alloc);
+
   }
   break;
 
   case PrfStdSenJson::Cmd::ENUM:
   {
+    Value arr(kArrayType);
+    for (auto & enm : m_enumerated) {
+
+      Value senObj(kObjectType);
+
+      v.SetString(enm.second.c_str(), alloc);
+      senObj.AddMember(SENTYPE_STR, v, alloc);
+
+      v = enm.first;
+      senObj.AddMember(SENSID_STR, v, alloc);
+
+      arr.PushBack(senObj, alloc);
+    }
+
+    m_doc.AddMember(SENSORS_STR, arr, alloc);
+
   }
   break;
 

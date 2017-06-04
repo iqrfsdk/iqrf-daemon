@@ -22,9 +22,9 @@
 #include <set>
 #include <cmath>
 
+#define PNUM_SE 0x5E
 //TODO just 4 test
-//#define PNUM_SE 0x5E
-#define PNUM_SE 0x0A
+//#define PNUM_SE 0x0A
 
 struct ScaleParameters
 {
@@ -277,12 +277,18 @@ public:
     static StdSensorRepo repo;
     return repo;
   }
+
   virtual ~StdSensorRepo() {}
+
   void addStdSensor(const StdSensor& stdSensor) {
     m_stdSensors.insert(std::make_pair(stdSensor.getName(), stdSensor));
   }
   
-  const StdSensor* getSensor(const std::string& name)
+  void addSensor(const Sensor& sensor) {
+    m_sensors.insert(std::make_pair(sensor.getSid(), sensor));
+  }
+
+  const StdSensor* getStdSensor(const std::string& name)
   {
     auto found = m_stdSensors.find(name);
     if (found != m_stdSensors.end()) {
@@ -292,9 +298,20 @@ public:
       return nullptr;
   }
 
+  const Sensor* getSensor(uint8_t sid)
+  {
+    auto found = m_sensors.find(sid);
+    if (found != m_sensors.end()) {
+      return &found->second;
+    }
+    else
+      return nullptr;
+  }
+
 private:
   StdSensorRepo() {}
   std::map<std::string, StdSensor> m_stdSensors;
+  std::map<int, Sensor> m_sensors;
 };
 
 //////////////////////////////////////////////
@@ -333,7 +350,7 @@ public:
 protected:
   const StdSensor* m_stdSensor = nullptr;
 
-private:
+protected:
   void selectSensors(const std::vector<std::string>& sensorNames);
   void parseResponseRead(const DpaMessage& response, bool typed);
 
@@ -342,6 +359,6 @@ private:
   std::map<int, uint32_t> m_writeDataToSensors;
   std::vector<std::pair<int,std::string>> m_required;
   std::map<int, double> m_selected;
-  std::vector<int> m_enumerated;
+  std::multimap<int, std::string> m_enumerated;
 
 };

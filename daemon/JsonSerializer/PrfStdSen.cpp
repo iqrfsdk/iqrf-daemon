@@ -27,20 +27,30 @@ const std::string STR_CMD_ENUM("ENUM");
 
 //TODO temporary till the remote repo ready
 ////////////////////////////////////////////////////////
+const Sensor Temperature{ 1, "Temperature", "Celsius", "Temperature1",{ 0.5, 46, 0.0625, 4500, 0, 0 } };
+const Sensor CO2{ 2, "CO2", "ppm", "CO2_1",{ 16, 5, 1, 5, 0, 0 } };
+const Sensor Humidity{ 0x80, "Humidity", "%", "Humidity1",{ 0.5, 5, 0, 0, 0, 0 } };
+
 const StdSensor MIC1("MIC1", "Microrisc", 1, {
-  { 0, "Temperature", "Celsius", "Temperature1", { 0.5, 46, 0.0625, 4500, 0, 0 } }
+  Temperature
 });
 
 const StdSensor PRO1("PRO1", "Protronic", 1, {
-  { 0, "Temperature", "Celsius", "Temperature1", { 0.5, 46, 0.0625, 4500, 0, 0 } },
-  { 2, "CO2", "ppm", "CO2_1", { 16, 5, 1, 5, 0, 0 } },
-  { 0x80, "Humidity", "%", "Humidity1", { 0.5, 5, 0, 0, 0, 0 } }
+  Temperature,
+  CO2,
+  Humidity
 });
+////////////////////////////////////////////////////////////
 
 class StdSensorRepoInitializer {
 public:
   StdSensorRepoInitializer() {
     StdSensorRepo& repo = StdSensorRepo::get();
+    
+    repo.addSensor(Temperature);
+    repo.addSensor(CO2);
+    repo.addSensor(Humidity);
+
     repo.addStdSensor(MIC1);
     repo.addStdSensor(PRO1);
   }
@@ -90,13 +100,13 @@ void PrfStdSen::parseResponseRead(const DpaMessage& response, bool typed)
   }
 }
 
-void PrfStdSen::parseResponse(const DpaMessage& response1)
+void PrfStdSen::parseResponse(const DpaMessage& response)
 {
   //TODO just 4 test
-  std::vector<uint8_t> test{ 0x00, 0x00, 0x5E, 0x80, 0xFF, 0xFF, 0x00, 0x07, 0xFA, 0x12, 0x55, 0xC3, 0x37 };
-  std::vector<uint8_t> test2{ 0x00, 0x00, 0x5E, 0x81, 0xFF, 0xFF, 0x00, 0x07, 0x01, 0xFA, 0x12, 0x02, 0x55, 0xC3, 0x80, 0x37 };
-  std::vector<uint8_t> test3{ 0x00, 0x00, 0x5E, 0x80, 0xFF, 0xFF, 0x00, 0x07, 0x01, 0x02, 0x80 };
-  DpaMessage response(test3.data(), test3.size());
+  //std::vector<uint8_t> test{ 0x00, 0x00, 0x5E, 0x80, 0xFF, 0xFF, 0x00, 0x07, 0xFA, 0x12, 0x55, 0xC3, 0x37 };
+  //std::vector<uint8_t> test2{ 0x00, 0x00, 0x5E, 0x81, 0xFF, 0xFF, 0x00, 0x07, 0x01, 0xFA, 0x12, 0x02, 0x55, 0xC3, 0x80, 0x37 };
+  //std::vector<uint8_t> test3{ 0x00, 0x00, 0x5E, 0x80, 0xFF, 0xFF, 0x00, 0x07, 0x01, 0x02, 0x80 };
+  //DpaMessage response(test3.data(), test3.size());
 
   const uint8_t* data = response.DpaPacket().DpaResponsePacket_t.DpaMessage.Response.PData;
   unsigned datalen = response.Length() - sizeof(TDpaIFaceHeader) - 2;
@@ -111,7 +121,14 @@ void PrfStdSen::parseResponse(const DpaMessage& response1)
   case Cmd::ENUM:
     if (datalen <= 32) {
       while (datalen > 0) {
-        m_enumerated.push_back(*data++);
+        uint8_t ix = *data++;
+        const Sensor* sen = StdSensorRepo::get().getSensor(ix);
+        if (nullptr != sen) {
+          m_enumerated.insert(std::make_pair(ix, sen->getType()));
+        }
+        else {
+          m_enumerated.insert(std::make_pair(ix, "unknown"));
+        }
         datalen--;
       }
     }
@@ -132,7 +149,6 @@ void PrfStdSen::readCommand(std::vector<std::string> sensorNames)
 
   size_t maxSize = 0;
   if (m_bitmap != 0) {
-    m_bitmap = 0x11223344;
     std::copy((uint8_t*)(&m_bitmap), (uint8_t*)(&m_bitmap) + sizeof(m_bitmap), dpaMsg.Request.PData);
     maxSize = (DPA_MAX_DATA_LENGTH - sizeof(m_bitmap)) / (sizeof(uint8_t) + sizeof(uint32_t));
   }
