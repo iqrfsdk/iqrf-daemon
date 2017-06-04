@@ -321,7 +321,10 @@ void DaemonController::startDpa()
   try {
     m_dpaHandler = ant_new DpaHandler(m_iqrfInterface);
     if (m_dpaHandlerTimeout > 0) {
-      m_dpaHandler->Timeout(200);    // Default timeout is infinite
+      m_dpaHandler->Timeout(m_dpaHandlerTimeout);    // Default timeout is infinite
+    }
+    else {
+      m_dpaHandler->Timeout(200);
     }
   }
   catch (std::exception& ae) {

@@ -16,6 +16,7 @@
 
 #include "PrfStdSen.h"
 #include "IqrfLogging.h"
+#include <array>
 
 const std::string PrfStdSen::PRF_NAME("std-sen");
 
@@ -32,7 +33,7 @@ const StdSensor MIC1("MIC1", "Microrisc", 1, {
 
 const StdSensor PRO1("PRO1", "Protronic", 1, {
   { 0, "Temperature", "Celsius", "Temperature1", { 0.5, 46, 0.0625, 4500, 0, 0 } },
-  { 2, "CO2", "ppm", "CO2_1", { 1, 5, 15, 5, 0, 0 } },
+  { 2, "CO2", "ppm", "CO2_1", { 16, 5, 1, 5, 0, 0 } },
   { 0x80, "Humidity", "%", "Humidity1", { 0.5, 5, 0, 0, 0, 0 } }
 });
 
@@ -62,22 +63,63 @@ PrfStdSen::~PrfStdSen()
 {
 }
 
-void PrfStdSen::parseResponse(const DpaMessage& response)
+void PrfStdSen::parseResponseRead(const DpaMessage& response, bool typed)
 {
-  if (getCmd() == Cmd::READ) {
-    if (m_bitmap == 0) {
-      //1st sensor
-      TDpaMessage& dpaMsg = m_request.DpaPacket().DpaResponsePacket_t.DpaMessage;
-      const Sensor* sen = getStdSensor()->getSensor(0);
-      //if (nullptr != sen) {
-      //  sen->
-      //}
-      //dpaMsg.Response.PData[]
+  const uint8_t* data = response.DpaPacket().DpaResponsePacket_t.DpaMessage.Response.PData;
+  unsigned datalen = response.Length() - sizeof(TDpaIFaceHeader) - 2;
+
+  for (auto& idx : m_selected) {
+    const Sensor* sen = m_stdSensor->getSensor(idx.first);
+    if (sen != nullptr) {
+      if (typed) {
+        if (0 != datalen) {
+          uint8_t type = *data++;
+          if (type != sen->getSid()) {
+            //TODO error
+          }
+        }
+        else {
+          //TODO error
+        }
+      }
+      sen->descale(idx.second, data, datalen);
+    }
+    else {
+      //TODO handle error
     }
   }
-  else if (getCmd() == Cmd::READT) {
-  }
-  else if (getCmd() == Cmd::ENUM) {
+}
+
+void PrfStdSen::parseResponse(const DpaMessage& response1)
+{
+  //TODO just 4 test
+  std::vector<uint8_t> test{ 0x00, 0x00, 0x5E, 0x80, 0xFF, 0xFF, 0x00, 0x07, 0xFA, 0x12, 0x55, 0xC3, 0x37 };
+  std::vector<uint8_t> test2{ 0x00, 0x00, 0x5E, 0x81, 0xFF, 0xFF, 0x00, 0x07, 0x01, 0xFA, 0x12, 0x02, 0x55, 0xC3, 0x80, 0x37 };
+  std::vector<uint8_t> test3{ 0x00, 0x00, 0x5E, 0x80, 0xFF, 0xFF, 0x00, 0x07, 0x01, 0x02, 0x80 };
+  DpaMessage response(test3.data(), test3.size());
+
+  const uint8_t* data = response.DpaPacket().DpaResponsePacket_t.DpaMessage.Response.PData;
+  unsigned datalen = response.Length() - sizeof(TDpaIFaceHeader) - 2;
+
+  switch (getCmd()) {
+  case Cmd::READ:
+    parseResponseRead(response, false);
+    break;
+  case Cmd::READT:
+    parseResponseRead(response, true);
+    break;
+  case Cmd::ENUM:
+    if (datalen <= 32) {
+      while (datalen > 0) {
+        m_enumerated.push_back(*data++);
+        datalen--;
+      }
+    }
+    else {
+      //TODO error
+    }
+    break;
+  default:;
   }
 }
 
@@ -90,20 +132,37 @@ void PrfStdSen::readCommand(std::vector<std::string> sensorNames)
 
   size_t maxSize = 0;
   if (m_bitmap != 0) {
-    std::copy(&m_bitmap, &m_bitmap + 1, dpaMsg.Request.PData);
-    maxSize = (DPA_MAX_DATA_LENGTH - sizeof(m_bitmap)) / 5;
+    m_bitmap = 0x11223344;
+    std::copy((uint8_t*)(&m_bitmap), (uint8_t*)(&m_bitmap) + sizeof(m_bitmap), dpaMsg.Request.PData);
+    maxSize = (DPA_MAX_DATA_LENGTH - sizeof(m_bitmap)) / (sizeof(uint8_t) + sizeof(uint32_t));
+  }
+  else {
+    if (m_writeDataToSensors.size() > 0) {
+      //TODO error cannot write data if bitmap = 0
+    }
   }
 
-  //TODO WrittenData
-  maxSize = 0;
-  //if (directions.size() > maxSize)
-  //  THROW_EX(std::logic_error, PAR(maxSize) << NAME_PAR(dirSize, directions.size()) << " too long");
+  if (m_writeDataToSensors.size() <= maxSize) {
+    maxSize = 0;
+    uint8_t* data = dpaMsg.Request.PData + sizeof(m_bitmap);
+    for (const auto& wd : m_writeDataToSensors) {
+      *data++ = wd.first;
+      std::copy((uint8_t*)(&wd.second), (uint8_t*)(&wd.second) + sizeof(wd.second), data);
+      data += sizeof(wd.second);
+      ++maxSize;
+    }
 
-  //maxSize = directions.size();
-  //TDpaMessage& dpaMsg = m_request.DpaPacket().DpaRequestPacket_t.DpaMessage;
+  }
+  else {
+    //TODO error
+    //  THROW_EX(std::logic_error, PAR(maxSize) << NAME_PAR(dirSize, directions.size()) << " too long");
+  }
 
   if (m_bitmap != 0) {
-    m_request.SetLength(sizeof(TDpaIFaceHeader) + sizeof(m_bitmap) + 5 * maxSize);
+    m_request.SetLength(sizeof(TDpaIFaceHeader) + sizeof(m_bitmap) + maxSize * (sizeof(uint8_t) + sizeof(uint32_t)));
+  }
+  else {
+    m_request.SetLength(sizeof(TDpaIFaceHeader));
   }
 }
 
@@ -116,8 +175,27 @@ void PrfStdSen::readtCommand(std::vector<std::string> sensorNames)
 void PrfStdSen::enumCommand()
 {
   m_bitmap = 0;
-  readCommand(std::vector<std::string>());
-  setCmd(Cmd::READ); //ENUM is just pseudo-command
+  setPcmd((uint8_t)Cmd::READ); //cmd ENUM just virtual
+  TDpaMessage& dpaMsg = m_request.DpaPacket().DpaRequestPacket_t.DpaMessage;
+  std::copy(&m_bitmap, &m_bitmap + 1, dpaMsg.Request.PData);
+  m_request.SetLength(sizeof(TDpaIFaceHeader) + sizeof(m_bitmap));
+}
+
+void PrfStdSen::prepareWriteDataToSensor(const std::string& sensorName, uint32_t data)
+{
+  if (nullptr != m_stdSensor) {
+    uint8_t ix = m_stdSensor->getSensor(sensorName);
+    if (ix >= 0) {
+      m_writeDataToSensors.insert(std::make_pair(ix, data));
+    }
+    else {
+      //TODO errror
+    }
+  }
+  else {
+    //TODO error
+  }
+  m_writeDataToSensors;
 }
 
 void PrfStdSen::selectSensors(const std::vector<std::string>& sensorNames)
@@ -125,24 +203,44 @@ void PrfStdSen::selectSensors(const std::vector<std::string>& sensorNames)
   m_bitmap = 0;
   m_required.clear();
   m_selected.clear();
+  bool use1st = false;
 
   if (m_stdSensor != nullptr) {
-    for (auto const &name : sensorNames) {
-      m_required.push_back(std::make_pair(m_stdSensor->getSensor(name), name));
+
+    if (sensorNames.size() == 0) { // no sensorNames explicitly required => require 1st by default
+      m_required.push_back(std::make_pair(0, m_stdSensor->getSensor(0)->getName()));
+    }
+    else { // sensorNames are there, put them to required
+      for (auto const &name : sensorNames) {
+        m_required.push_back(std::make_pair(m_stdSensor->getSensor(name), name));
+      }
     }
 
+    // order them to selected
     for (auto &req : m_required) {
       if (req.first > -1) {
-        m_selected.insert(req.first);
+        m_selected.insert(std::make_pair(req.first, 0.0));
       }
     }
 
+    // set bitmap according selected
     for (auto &sel : m_selected) {
-      if (sel < 32) {
-        m_bitmap |= 1 << sel;
+      if (sel.first < 32) {
+        m_bitmap |= 1 << sel.first;
       }
     }
+
+    //handle special cases
+    if (m_bitmap == 0) { // sensorNames has invalid names => nothing selected
+      m_selected.insert(std::make_pair(0, 0.0)); //select 1st by default just to polute bitmap. Zero bitmap is reserved for ENUM cmd
+      m_bitmap = 1;
+    }
+
   }
+  else {
+    //TODO error
+  }
+
 }
 
 ////////////////////////////

@@ -4,12 +4,23 @@
 
   "TasksJson": [
     {
+      "time": "*/5 1 * * * * *",
+      "service": "BaseServiceForMQTT1",
+      "message": {
+        "ctype": "dpa",
+        "type": "std-sen",
+        "nadr": "0",
+        "cmd": "ENUM",
+        "device": "PRO1"
+      }
+    },
+    {
       "time": "*/5 * * * * * *",
       "service": "BaseServiceForMQTT1",
       "message": {
         "ctype": "dpa",
         "type": "std-sen",
-        "nadr": "1",
+        "nadr": "0",
         "cmd": "READ",
         "device": "PRO1",
         "sensors": [
@@ -28,7 +39,7 @@
         "nadr": "1",
         "cmd": "PULSE",
         "hwpid": "ffff",
-        "timeout": 200,
+        "timeout": 300,
         "msgid": "",
         "request": ".",
         "request_ts": "",

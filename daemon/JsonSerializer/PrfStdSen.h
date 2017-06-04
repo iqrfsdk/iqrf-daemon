@@ -22,7 +22,9 @@
 #include <set>
 #include <cmath>
 
-#define PNUM_SE 0x5E
+//TODO just 4 test
+//#define PNUM_SE 0x5E
+#define PNUM_SE 0x0A
 
 struct ScaleParameters
 {
@@ -128,26 +130,36 @@ public:
     val = (fi - m_sp.offsetDWord) * m_sp.scaleDWord;
   }
 
-  virtual const uint8_t* descale(double& val, const uint8_t* data)
+  virtual void descale(double& val, const uint8_t*& data, unsigned& len) const
   {
+    if (m_retlen > len) {
+      //TODO error
+    }
+    
     switch (m_retlen)
     {
     case 1:
       descale(val, *data);
-      return data++;
+      data++;
+      len--;
+      break;
     case 2:
       uint16_t word;
-      std::copy(data, data + 2, &word);
+      std::copy(data, data + 2, (uint8_t*)&word);
       descale(val, word);
-      return data + 2;
+      data += 2;
+      len -= 2;
+      break;
     case 4:
       uint32_t dword;
-      std::copy(data, data + 2, &dword);
+      std::copy(data, data + 4, (uint8_t*)&dword);
       descale(val, dword);
-      return data + 4;
+      data += 4;
+      len -= 4;
+      break;
     case -1:
     default:
-      //TODO
+      //TODO error
       ;
     }
   }
@@ -310,12 +322,10 @@ public:
   void readtCommand(std::vector<std::string> sensorNames);
   void enumCommand();
 
+  void prepareWriteDataToSensor(const std::string& sensorName, uint32_t data);
+
   Cmd getCmd() const;
   void setCmd(Cmd cmd);
-
-  uint32_t getBitmap() { return m_bitmap; }
-  void setBitmap(uint32_t bitmap) { m_bitmap = bitmap ? bitmap : 1; m_useBitmap = true; }
-  void resetBitmap() { m_bitmap = 1; m_useBitmap = false; }
 
   void setStdSensor(const StdSensor* stdSensor) { m_stdSensor = stdSensor; }
   const StdSensor* getStdSensor() { return m_stdSensor; }
@@ -325,13 +335,13 @@ protected:
 
 private:
   void selectSensors(const std::vector<std::string>& sensorNames);
+  void parseResponseRead(const DpaMessage& response, bool typed);
 
   Cmd m_cmd = Cmd::READ;
   uint32_t m_bitmap = 1;
-  bool m_useBitmap = true;
-  std::basic_string<unsigned char> Writtendata; //TODO
-
+  std::map<int, uint32_t> m_writeDataToSensors;
   std::vector<std::pair<int,std::string>> m_required;
-  std::set<int> m_selected;
+  std::map<int, double> m_selected;
+  std::vector<int> m_enumerated;
 
 };

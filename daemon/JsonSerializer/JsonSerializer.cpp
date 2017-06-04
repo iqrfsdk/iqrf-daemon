@@ -656,6 +656,10 @@ PrfStdSenJson::PrfStdSenJson(rapidjson::Value& val)
   {
     std::vector<std::string> sensors;
     sensors = jutils::getPossibleMemberAsVector<std::string>(SENSORS_STR, val, sensors);
+
+    //TODO just 4 test
+    this->prepareWriteDataToSensor("CO2_1", 0x12345678);
+
     readCommand(sensors);
   }
   break;
