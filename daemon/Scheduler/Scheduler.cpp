@@ -127,8 +127,10 @@ int Scheduler::handleScheduledRecord(const ScheduleRecord& record)
   //  "Scheduled msg: " << std::endl << FORM_HEX(record.getTask().data(), record.getTask().size()));
 
   {
-    std::lock_guard<std::mutex> lck(m_messageHandlersMutex);
+    //std::lock_guard<std::mutex> lck(m_messageHandlersMutex);
+    m_messageHandlersMutex.lock();
     auto found = m_messageHandlers.find(record.getClientId());
+    m_messageHandlersMutex.unlock();
     if (found != m_messageHandlers.end()) {
       //TRC_DBG(NAME_PAR(Task, record.getTask()) << " has been passed to: " << NAME_PAR(ClinetId, record.getClientId()));
       found->second(record.getTask());

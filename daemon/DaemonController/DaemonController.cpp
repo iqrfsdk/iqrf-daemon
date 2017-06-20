@@ -186,7 +186,8 @@ void DaemonController::run(const std::string& cfgFileName)
   }
 
   std::unique_lock<std::mutex> lock(m_stopConditionMutex);
-  while (m_running && ((std::chrono::system_clock::now() - m_lastRefreshTime)) < m_timeout)
+  //while (m_running && ((std::chrono::system_clock::now() - m_lastRefreshTime)) < m_timeout)
+  while (m_running)
     m_stopConditionVariable.wait_for(lock, m_timeout);
 
   try {
