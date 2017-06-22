@@ -1,0 +1,17 @@
+{
+  "Implements": "IService",
+  "Instances": [
+    {
+      "Name": "ProtocolBridgeClientService",
+      "Messaging": "MqttMessaging",
+      "Serializers": [
+        "JsonSerializer"
+      ],
+      "Properties": {
+        "FrcPeriod": 5,
+        "SleepPeriod": 30,
+        "ProtocolBridges": [ 1 ]
+      }
+    }
+  ]
+}
