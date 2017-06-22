@@ -101,6 +101,14 @@ void ProtocolBridgeClientService::start()
 		std::chrono::system_clock::now()
 	);
 
+	// schedule periodic task of get and process data from protocol bridge
+	std::chrono::duration<int, std::ratio<60, 1> > one_minute(1);
+	m_daemon->getScheduler()->scheduleTaskPeriodic(
+		getClientName(),
+		SCHEDULED_GET_AND_PROCESS_DATA_TASK,
+		one_minute
+	);
+
 	TRC_INF("ProtocolBridgeClientService :" << PAR(m_name) << " started");
 
 	TRC_LEAVE("");
@@ -472,14 +480,6 @@ void ProtocolBridgeClientService::getAndProcessDataFromMeters(const std::string&
 	for (std::pair<uint8_t, BridgeStatusData> activeBridgesStatusData : activeBridgesStatusMap) {
 		sleepProtocolBridge(activeBridgesStatusData.first);
 	}
-
-	// schedule task for next iteration
-	std::chrono::duration<int, std::ratio<60, 1> > one_minute(1);
-	m_daemon->getScheduler()->scheduleTaskAt(
-		getClientName(), 
-		SCHEDULED_GET_AND_PROCESS_DATA_TASK, 
-		std::chrono::system_clock::now() + one_minute
-	);
 }
 
 
