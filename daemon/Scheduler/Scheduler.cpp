@@ -28,6 +28,11 @@ Scheduler::Scheduler()
 
 Scheduler::~Scheduler()
 {
+  if (m_timerThread.joinable())
+    m_timerThread.join();
+
+  delete m_dpaTaskQueue;
+  m_dpaTaskQueue = nullptr;
 }
 
 void Scheduler::updateConfiguration(const rapidjson::Value& cfg)
@@ -98,11 +103,7 @@ void Scheduler::stop()
     m_conditionVariable.notify_one();
   }
 
-  if (m_timerThread.joinable())
-    m_timerThread.join();
-
-  delete m_dpaTaskQueue;
-  m_dpaTaskQueue = nullptr;
+  m_dpaTaskQueue->stopQueue();
 
   TRC_INF("Scheduler stopped");
   TRC_LEAVE("");
@@ -127,10 +128,8 @@ int Scheduler::handleScheduledRecord(const ScheduleRecord& record)
   //  "Scheduled msg: " << std::endl << FORM_HEX(record.getTask().data(), record.getTask().size()));
 
   {
-    //std::lock_guard<std::mutex> lck(m_messageHandlersMutex);
-    m_messageHandlersMutex.lock();
+    std::lock_guard<std::mutex> lck(m_messageHandlersMutex);
     auto found = m_messageHandlers.find(record.getClientId());
-    m_messageHandlersMutex.unlock();
     if (found != m_messageHandlers.end()) {
       //TRC_DBG(NAME_PAR(Task, record.getTask()) << " has been passed to: " << NAME_PAR(ClinetId, record.getClientId()));
       found->second(record.getTask());
@@ -240,7 +239,7 @@ void Scheduler::timer()
     ScheduleRecord::getTime(timePoint, timeStr);
 
     // fire all expired tasks
-    while (true) {
+    while (m_runTimerThread) {
 
       m_scheduledTasksMutex.lock();
 

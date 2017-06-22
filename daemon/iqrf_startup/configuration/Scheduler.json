@@ -20,7 +20,7 @@
       }
     },
     {
-      "time": "*/3 1 * * * * *",
+      "time": "*/3 * * * * * *",
       "service": "BaseServiceForMQTT1",
       "message": {
         "ctype": "dpa",

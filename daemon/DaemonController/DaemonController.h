@@ -94,7 +94,6 @@ private:
   void stopIqrfIf();
   void stopDpa();
   void stopClients();
-  void stopScheduler();
   void stopTrace();
 
   void start();
@@ -141,7 +140,7 @@ private:
   int m_dpaHandlerTimeout = 200;
 
   std::string m_configurationDir;
-  int m_watchDogTimeoutMilis = 10000;
+  int m_watchDogTimeoutMilis = 0;
   std::map<std::string, ComponentDescriptor> m_componentMap;
 
   void loadSerializerComponent(const ComponentDescriptor& componentDescriptor);
