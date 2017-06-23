@@ -43,7 +43,6 @@ public:
   static const std::string PRF_NAME;
 
   PrfPulseMeter();
-  PrfPulseMeter(uint16_t address);
   virtual ~PrfPulseMeter();
 
   void commandReadCounters(const std::chrono::seconds& sec);
@@ -100,8 +99,8 @@ class PrfPulseMeterJson : public PrfPulseMeter, public PrfCommonJson
 public:
   PrfPulseMeterJson();
   PrfPulseMeterJson(const PrfPulseMeterJson& o);
-  PrfPulseMeterJson(uint16_t address);
-  explicit PrfPulseMeterJson(rapidjson::Value& val);
+  PrfPulseMeterJson(const rapidjson::Value& val);
+  void setNadr(uint16_t nadr);
   virtual ~PrfPulseMeterJson() {}
   std::string encodeResponse(const std::string& errStr) override;
 };

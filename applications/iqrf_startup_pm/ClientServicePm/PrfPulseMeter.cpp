@@ -35,13 +35,6 @@ PrfPulseMeter::PrfPulseMeter()
   setCmd(Cmd::READ_COUNTERS);
 }
 
-PrfPulseMeter::PrfPulseMeter(uint16_t address)
-  : DpaTask(PRF_NAME, PNUM_PULSEMETER)
-{
-  setAddress(address);
-  setCmd(Cmd::READ_COUNTERS);
-}
-
 PrfPulseMeter::~PrfPulseMeter()
 {
 }
@@ -228,18 +221,22 @@ PrfPulseMeterJson::PrfPulseMeterJson()
 {
 }
 
-PrfPulseMeterJson::PrfPulseMeterJson(uint16_t address)
-  : PrfPulseMeter(address)
-{
-}
-
 PrfPulseMeterJson::PrfPulseMeterJson(const PrfPulseMeterJson& o)
-  : PrfPulseMeter(o)
+  :PrfCommonJson(o)
+  ,PrfPulseMeter(o)
 {
 }
 
-PrfPulseMeterJson::PrfPulseMeterJson(rapidjson::Value& val)
+PrfPulseMeterJson::PrfPulseMeterJson(const rapidjson::Value& val)
 {
+  parseRequestJson(val, *this);
+}
+
+void PrfPulseMeterJson::setNadr(uint16_t nadr)
+{
+  encodeHexaNum(m_nadr, nadr);
+  this->setAddress(nadr);
+  m_has_nadr = true;
 }
 
 std::string PrfPulseMeterJson::encodeResponse(const std::string& errStr)
@@ -247,10 +244,10 @@ std::string PrfPulseMeterJson::encodeResponse(const std::string& errStr)
   using namespace rapidjson;
   using namespace std::chrono;
 
+  m_doc.RemoveAllMembers();
+
   addResponseJsonPrio1Params(*this);
   addResponseJsonPrio2Params(*this);
-
-  m_doc.RemoveAllMembers();
 
   Document::AllocatorType& alloc = m_doc.GetAllocator();
   rapidjson::Value v;

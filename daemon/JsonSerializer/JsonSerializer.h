@@ -39,7 +39,8 @@ class PrfCommonJson
 protected:
 
   PrfCommonJson();
-  void parseRequestJson(rapidjson::Value& val, DpaTask& dpaTask);
+  PrfCommonJson(const PrfCommonJson& o);
+  void parseRequestJson(const rapidjson::Value& val, DpaTask& dpaTask);
   void addResponseJsonPrio1Params(const DpaTask& dpaTask);
   void addResponseJsonPrio2Params(const DpaTask& dpaTask);
   std::string encodeResponseJsonFinal(const DpaTask& dpaTask);
@@ -99,7 +100,7 @@ public:
   std::string m_rcodeJ;
   std::string m_dpavalJ;
 
-  mutable rapidjson::Document m_doc;
+  rapidjson::Document m_doc;
 
   bool m_dotNotation = false;
 };
@@ -107,7 +108,7 @@ public:
 class PrfRawJson : public PrfRaw, public PrfCommonJson
 {
 public:
-  explicit PrfRawJson(rapidjson::Value& val);
+  explicit PrfRawJson(const rapidjson::Value& val);
   virtual ~PrfRawJson() {}
   std::string encodeResponse(const std::string& errStr) override;
 private:
@@ -118,7 +119,7 @@ class PrfRawHdpJson : public PrfRaw, public PrfCommonJson
 public:
   static const std::string PRF_NAME;
 
-  explicit PrfRawHdpJson(rapidjson::Value& val);
+  explicit PrfRawHdpJson(const rapidjson::Value& val);
   virtual ~PrfRawHdpJson() {}
   std::string encodeResponse(const std::string& errStr) override;
 private:
@@ -131,7 +132,7 @@ private:
 class PrfThermometerJson : public PrfThermometer, public PrfCommonJson
 {
 public:
-  explicit PrfThermometerJson(rapidjson::Value& val);
+  explicit PrfThermometerJson(const rapidjson::Value& val);
   virtual ~PrfThermometerJson() {}
   std::string encodeResponse(const std::string& errStr) override;
 };
@@ -139,7 +140,7 @@ public:
 class PrfFrcJson : public PrfFrc, public PrfCommonJson
 {
 public:
-  explicit PrfFrcJson(rapidjson::Value& val);
+  explicit PrfFrcJson(const rapidjson::Value& val);
   virtual ~PrfFrcJson() {}
   std::string encodeResponse(const std::string& errStr) override;
 private:
@@ -150,7 +151,7 @@ private:
 class PrfIoJson : public PrfIo, public PrfCommonJson
 {
 public:
-  explicit PrfIoJson(rapidjson::Value& val);
+  explicit PrfIoJson(const rapidjson::Value& val);
   virtual ~PrfIoJson() {}
   std::string encodeResponse(const std::string& errStr) override;
 private:
@@ -162,7 +163,7 @@ private:
 class PrfOsJson : public PrfOs, public PrfCommonJson
 {
 public:
-  explicit PrfOsJson(rapidjson::Value& val);
+  explicit PrfOsJson(const rapidjson::Value& val);
   virtual ~PrfOsJson() {}
   std::string encodeResponse(const std::string& errStr) override;
 };
@@ -171,7 +172,7 @@ template <typename L>
 class PrfLedJson : public L, public PrfCommonJson
 {
 public:
-  explicit PrfLedJson(rapidjson::Value& val) {
+  explicit PrfLedJson(const rapidjson::Value& val) {
     parseRequestJson(val, *this);
   }
 
