@@ -650,7 +650,9 @@ void DaemonController::stop()
 
   m_scheduler->stop();
   m_dpaTransactionQueue->stopQueue();
-  m_dpaHandler->KillDpaTransaction();
+
+  if (nullptr != m_dpaHandler)
+    m_dpaHandler->KillDpaTransaction();
 
   stopClients();
 

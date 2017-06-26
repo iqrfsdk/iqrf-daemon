@@ -57,9 +57,15 @@ void ClientServicePm::updateConfiguration(const rapidjson::Value& cfg)
   m_frcPeriod = jutils::getPossibleMemberAs<int>("FrcPeriod", cfg, m_frcPeriod);
   m_sleepPeriod = jutils::getPossibleMemberAs<int>("SleepPeriod", cfg, m_sleepPeriod);
 
+  const auto v = jutils::getMember("DpaRequestJsonPattern", cfg);
+  if (!v->value.IsObject())
+    THROW_EX(std::logic_error, "Expected: Json Object, detected: " << NAME_PAR(name, v->value.GetString()) << NAME_PAR(type, v->value.GetType()));
+
   std::vector<int> vect = jutils::getMemberAsVector<int>("Pulsemeters", cfg);
   for (int node : vect) {
-    PrfPulseMeterSchd pm(PrfPulseMeterJson(node), m_daemon->getScheduler());
+    PrfPulseMeterJson prfPulseMeterJson(v->value);
+    prfPulseMeterJson.setNadr(node);
+    PrfPulseMeterSchd pm(prfPulseMeterJson, m_daemon->getScheduler());
     m_watchedPm.push_back(pm);
   }
 

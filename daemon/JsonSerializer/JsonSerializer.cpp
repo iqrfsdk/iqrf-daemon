@@ -56,7 +56,44 @@ INIT_COMPONENT(ISerializer, JsonSerializer)
 PrfCommonJson::PrfCommonJson()
 {
   m_doc.SetObject();
+}
 
+PrfCommonJson::PrfCommonJson(const PrfCommonJson& o)
+{
+  m_has_ctype = o.m_has_ctype;
+  m_has_type = o.m_has_type;
+  m_has_nadr = o.m_has_nadr;
+  m_has_hwpid = o.m_has_hwpid;
+  m_has_timeout = o.m_has_timeout;
+  m_has_msgid = o.m_has_msgid;
+  m_has_request = o.m_has_request;
+  m_has_request_ts = o.m_has_request_ts;
+  m_has_response = o.m_has_response;
+  m_has_response_ts = o.m_has_response_ts;
+  m_has_confirmation = o.m_has_confirmation;
+  m_has_confirmation_ts = o.m_has_confirmation_ts;
+  m_has_cmd = o.m_has_cmd;
+  m_has_rcode = o.m_has_rcode;
+  m_has_dpaval = o.m_has_dpaval;
+
+  m_ctype = o.m_ctype;
+  m_type = o.m_type;
+  m_nadr = o.m_nadr;
+  m_hwpid = o.m_hwpid;
+  m_timeoutJ = o.m_timeoutJ;
+  m_msgid = o.m_msgid;
+  m_requestJ = o.m_requestJ;
+  m_request_ts = o.m_request_ts;
+  m_responseJ = o.m_responseJ;
+  m_response_ts = o.m_response_ts;
+  m_confirmationJ = o.m_confirmationJ;
+  m_confirmation_ts = o.m_confirmation_ts;
+  m_cmdJ = o.m_cmdJ;
+  m_statusJ = o.m_statusJ;
+  m_rcodeJ = o.m_rcodeJ;
+  m_dpavalJ = o.m_dpavalJ;
+
+  m_doc.SetObject();
 }
 
 int PrfCommonJson::parseBinary(uint8_t* to, const std::string& from, int maxlen)
@@ -143,7 +180,7 @@ void PrfCommonJson::encodeTimestamp(std::string& to, std::chrono::time_point<std
   }
 }
 
-void PrfCommonJson::parseRequestJson(rapidjson::Value& val, DpaTask& dpaTask)
+void PrfCommonJson::parseRequestJson(const rapidjson::Value& val, DpaTask& dpaTask)
 {
   jutils::assertIsObject("", val);
 
@@ -278,7 +315,7 @@ std::string PrfCommonJson::encodeResponseJsonFinal(const DpaTask& dpaTask)
 
 /////////////////////////////////////////
 //-------------------------------
-PrfRawJson::PrfRawJson(rapidjson::Value& val)
+PrfRawJson::PrfRawJson(const rapidjson::Value& val)
 {
   parseRequestJson(val, *this);
 
@@ -311,7 +348,7 @@ const std::string PrfRawHdpJson::PRF_NAME("raw-hdp");
 #define REQD_STR "req_data"
 #define RESD_STR "res_data"
 
-PrfRawHdpJson::PrfRawHdpJson(rapidjson::Value& val)
+PrfRawHdpJson::PrfRawHdpJson(const rapidjson::Value& val)
 {
   parseRequestJson(val, *this);
 
@@ -376,7 +413,7 @@ std::string PrfRawHdpJson::encodeResponse(const std::string& errStr)
 }
 
 //-------------------------------
-PrfThermometerJson::PrfThermometerJson(rapidjson::Value& val)
+PrfThermometerJson::PrfThermometerJson(const rapidjson::Value& val)
 {
   parseRequestJson(val, *this);
 }
@@ -402,7 +439,7 @@ std::string PrfThermometerJson::encodeResponse(const std::string& errStr)
 #define FRC_USER_DATA_STR "user_data"
 #define FRC_DATA_STR "frc_data"
 
-PrfFrcJson::PrfFrcJson(rapidjson::Value& val)
+PrfFrcJson::PrfFrcJson(const rapidjson::Value& val)
 {
   parseRequestJson(val, *this);
 
@@ -496,7 +533,7 @@ std::string PrfFrcJson::encodeResponse(const std::string& errStr)
 #define DIR_STR "inp"
 #define VAL_STR "val"
 
-PrfIoJson::PrfIoJson(rapidjson::Value& val)
+PrfIoJson::PrfIoJson(const rapidjson::Value& val)
 {
   parseRequestJson(val, *this);
 
@@ -601,7 +638,7 @@ std::string PrfIoJson::encodeResponse(const std::string& errStr)
 
 //////////////////
 //-------------------------------
-PrfOsJson::PrfOsJson(rapidjson::Value& val)
+PrfOsJson::PrfOsJson(const rapidjson::Value& val)
 {
   parseRequestJson(val, *this);
 

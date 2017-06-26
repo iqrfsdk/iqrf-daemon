@@ -56,11 +56,6 @@ public:
   bool isSync() const { return m_sync; }
   void setSync(bool val) { m_sync = val; }
 
-  //void scheduleTaskAt(const std::string& clientId, const std::string& task, const std::chrono::system_clock::time_point& tp)
-  //{
-  //  m_taskHandle = m_scheduler->scheduleTaskAt(clientId, task, tp);
-  //}
-
   void scheduleTaskPeriodic(const std::string& clientId, const std::string& task, const std::chrono::seconds& sec,
     const std::chrono::system_clock::time_point& tp = std::chrono::system_clock::now())
   {
@@ -134,4 +129,6 @@ private:
   bool m_frcActive = false;
 
   std::unique_ptr<TaskQueue<PrfPulseMeterSchd*>> m_taskQueue;
+
+  rapidjson::Value m_dpaRequestJsonPattern;
 };
