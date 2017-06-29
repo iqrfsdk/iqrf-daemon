@@ -10,7 +10,20 @@
       "Properties": {
         "FrcPeriod": 5,
         "SleepPeriod": 30,
-        "ProtocolBridges": [ 1 ]
+        "ProtocolBridges": [ 1 ],
+        "DpaRequestJsonPattern": {
+          "ctype": "dpa",
+          "type": "ProtocolBridge",
+          "cmd": "SYSINFO",
+          "hwpid": "ffff",
+          "timeout": 10000,
+          "request": "",
+          "request_ts": "",
+          "confirmation": "",
+          "confirmation_ts": "",
+          "response": "",
+          "response_ts": ""
+        }
       }
     }
   ]

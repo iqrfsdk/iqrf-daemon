@@ -55,9 +55,16 @@ void ProtocolBridgeClientService::updateConfiguration(const rapidjson::Value& cf
 	// update watched Protocol Bridges
 	m_watchedProtocolBridges.clear();
 
-	std::vector<int> protocolBridgesAddrs = jutils::getMemberAsVector<int>("ProtocolBridges", cfg);
-	for (int protoBridgeAddr : protocolBridgesAddrs) {
-		ProtocolBridgeSchd protoBridgeSchd(ProtocolBridgeJson(protoBridgeAddr), m_daemon->getScheduler());
+	const auto v = jutils::getMember("DpaRequestJsonPattern", cfg);
+	if (!v->value.IsObject()) {
+		THROW_EX(std::logic_error, "Expected: Json Object, detected: " << NAME_PAR(name, v->value.GetString()) << NAME_PAR(type, v->value.GetType()));
+	}
+
+	std::vector<int> vect = jutils::getMemberAsVector<int>("Pulsemeters", cfg);
+	for (int protoBridgeAddr : vect) {
+		ProtocolBridgeJson protocolBridgeJson(v->value);
+		protocolBridgeJson.setNadr(protoBridgeAddr);
+		ProtocolBridgeSchd protoBridgeSchd(protocolBridgeJson, m_daemon->getScheduler());
 		m_watchedProtocolBridges.emplace(protoBridgeAddr, protoBridgeSchd);
 	}
 

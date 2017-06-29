@@ -47,13 +47,6 @@ ProtocolBridge::ProtocolBridge()
 	setCmd(Cmd::SYSINFO);
 }
 
-ProtocolBridge::ProtocolBridge(uint16_t address)
-	: DpaTask(PRF_NAME, PNUM_PROTOCOL_BRIDGE)
-{
-	setAddress(address);
-	setCmd(Cmd::SYSINFO);
-}
-
 ProtocolBridge::~ProtocolBridge()
 {
 }
@@ -660,22 +653,18 @@ void ProtocolBridge::setCmd(ProtocolBridge::Cmd cmd) {
 }
 
 ProtocolBridgeJson::ProtocolBridgeJson()
-	:ProtocolBridge()
-{
-}
-
-ProtocolBridgeJson::ProtocolBridgeJson(uint16_t address)
-	: ProtocolBridge(address)
+	: ProtocolBridge()
 {
 }
 
 ProtocolBridgeJson::ProtocolBridgeJson(const ProtocolBridgeJson& o)
-	: ProtocolBridge(o)
+	: PrfCommonJson(o), ProtocolBridge(o)
 {
 }
 
-ProtocolBridgeJson::ProtocolBridgeJson(rapidjson::Value& val)
+ProtocolBridgeJson::ProtocolBridgeJson(const rapidjson::Value& val)
 {
+	parseRequestJson(val, *this);
 }
 
 // converts specified bytes to hexa string
@@ -691,6 +680,12 @@ static std::string bytesToHexaString(uint8_t data[], int len) {
 	}
 		
 	return ss.str();
+}
+
+void ProtocolBridgeJson::setNadr(uint16_t nadr) {
+	encodeHexaNum(m_nadr, nadr);
+	this->setAddress(nadr);
+	m_has_nadr = true;
 }
 
 void ProtocolBridgeJson::encodeSysinfoResponse(
@@ -930,10 +925,10 @@ std::string ProtocolBridgeJson::encodeResponse(const std::string& errStr)
 	using namespace rapidjson;
 	using namespace std::chrono;
 
+	m_doc.RemoveAllMembers();
+
 	addResponseJsonPrio1Params(*this);
 	addResponseJsonPrio2Params(*this);
-
-	m_doc.RemoveAllMembers();
 	
 	Document::AllocatorType& alloc = m_doc.GetAllocator();
 	rapidjson::Value v;

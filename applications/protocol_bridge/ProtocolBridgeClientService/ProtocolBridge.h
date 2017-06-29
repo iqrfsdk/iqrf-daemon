@@ -50,7 +50,6 @@ public:
 	static const std::string PRF_NAME;
 
 	ProtocolBridge();
-	ProtocolBridge(uint16_t address);
 	virtual ~ProtocolBridge();
 
 	// length of bitmap in GET VISIBLE CONFIRMATION and GET INVISIBLE CONFIRMATION
@@ -308,8 +307,8 @@ class ProtocolBridgeJson : public ProtocolBridge, public PrfCommonJson
 public:
 	ProtocolBridgeJson();
 	ProtocolBridgeJson(const ProtocolBridgeJson& o);
-	ProtocolBridgeJson(uint16_t address);
-	explicit ProtocolBridgeJson(rapidjson::Value& val);
+	explicit ProtocolBridgeJson(const rapidjson::Value& val);
+	void setNadr(uint16_t nadr);
 	virtual ~ProtocolBridgeJson() {}
 	std::string encodeResponse(const std::string& errStr) override;
 
