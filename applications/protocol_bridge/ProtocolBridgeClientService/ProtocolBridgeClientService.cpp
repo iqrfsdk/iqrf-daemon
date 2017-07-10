@@ -60,7 +60,7 @@ void ProtocolBridgeClientService::updateConfiguration(const rapidjson::Value& cf
 		THROW_EX(std::logic_error, "Expected: Json Object, detected: " << NAME_PAR(name, v->value.GetString()) << NAME_PAR(type, v->value.GetType()));
 	}
 
-	std::vector<int> vect = jutils::getMemberAsVector<int>("Pulsemeters", cfg);
+	std::vector<int> vect = jutils::getMemberAsVector<int>("ProtocolBridges", cfg);
 	for (int protoBridgeAddr : vect) {
 		ProtocolBridgeJson protocolBridgeJson(v->value);
 		protocolBridgeJson.setNadr(protoBridgeAddr);

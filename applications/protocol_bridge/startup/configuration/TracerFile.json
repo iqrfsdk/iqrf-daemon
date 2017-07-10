@@ -1,4 +1,5 @@
 {
-  "TraceFileName": "",
-  "TraceFileSize": 0
+    "TraceFileName": "/var/log/iqrf-daemon.log",
+    "TraceFileSize": 0,
+    "VerbosityLevel": "dbg"
 }

@@ -19,8 +19,10 @@
 extern void init_JsonSerializer();
 extern void init_MqttMessaging();
 extern void init_ProtocolBridgeClientService();
+extern void init_UdpMessaging();
 
 #define STATIC_INIT \
 init_JsonSerializer(); \
 init_MqttMessaging(); \
-init_ProtocolBridgeClientService();
+init_ProtocolBridgeClientService(); \
+init_UdpMessaging();

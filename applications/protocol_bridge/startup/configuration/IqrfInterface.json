@@ -1,3 +1,4 @@
 {
-  "IqrfInterface": "COM3"
+    "IqrfInterface": "/dev/spidev2.0",
+    "DpaHandlerTimeout": 500
 }

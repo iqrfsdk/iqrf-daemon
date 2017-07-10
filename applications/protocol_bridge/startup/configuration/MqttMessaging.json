@@ -1,21 +1,55 @@
 {
-  "Implements": "IMessaging",
-  "Instances": [
-    {
-      "Name": "MqttMessaging",
-      "Properties": {
-        "BrokerAddr": "tcp://192.168.1.26:1883",
-        "ClientId": "IqrfDpaMessaging",
-        "Enabled": true,
-        "Persistence": 1,
-        "Qos": 1,
-        "Timeout:": 10000,
-        "TopicRequest": "Iqrf/DpaRequest",
-        "TopicResponse": "Iqrf/DpaResponse",
-        "User": "",
-        "Password": "",
-        "EnabledSSL": false
-      }
-    }
-  ]
+    "Implements": "IMessaging",
+    "Instances": [
+        {
+            "Name": "MqttMessaging1",
+            "Enabled": true,
+            "Properties": {
+                "BrokerAddr": "tcp://10.0.0.4:1883",
+                "ClientId": "UpGw",
+                "Persistence": 1,
+                "Qos": 1,
+                "TopicRequest": "Iqrf/DpaRequest",
+                "TopicResponse": "Iqrf/DpaResponse",
+                "User": "",
+                "Password": "",
+                "EnabledSSL": false,
+                "KeepAliveInterval": 20,
+                "ConnectTimeout": 5,
+                "MinReconnect": 1,
+                "MaxReconnect": 64,
+                "TrustStore": "",
+                "KeyStore": "",
+                "PrivateKey": "",
+                "PrivateKeyPassword": "",
+                "EnabledCipherSuites": "",
+                "EnableServerCertAuth": false
+            }
+        },
+        {
+            "Name": "MqttMessaging2",
+            "Enabled": false,
+            "Properties": {
+                "BrokerAddr": "ssl://iqrfgw01.azure-devices.net:8883",
+                "ClientId": "UpGW",
+                "Persistence": 1,
+                "Qos": 1,
+                "TopicRequest": "devices/UpGW/messages/devicebound/#",
+                "TopicResponse": "devices/UpGW/messages/events/",
+                "User": "iqrfgw01.azure-devices.net/UpGW",
+                "Password": "",
+                "EnabledSSL": true,
+                "KeepAliveInterval": 20,
+                "ConnectTimeout": 5,
+                "MinReconnect": 1,
+                "MaxReconnect": 64,
+                "TrustStore": "",
+                "KeyStore": "",
+                "PrivateKey": "",
+                "PrivateKeyPassword": "",
+                "EnabledCipherSuites": "",
+                "EnableServerCertAuth": true
+            }
+        }
+    ]
 }

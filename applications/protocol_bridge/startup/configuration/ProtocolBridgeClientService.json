@@ -3,7 +3,7 @@
   "Instances": [
     {
       "Name": "ProtocolBridgeClientService",
-      "Messaging": "MqttMessaging",
+      "Messaging": "MqttMessaging1",
       "Serializers": [
         "JsonSerializer"
       ],
