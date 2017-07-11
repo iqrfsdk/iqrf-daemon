@@ -63,6 +63,16 @@ public:
     return retval;
   }
 
+  void stopQueue()
+  {
+    {
+      std::unique_lock<std::mutex> lck(m_taskQueueMutex);
+      m_runWorkerThread = false;
+      m_taskPushed = true;
+    }
+    m_conditionVariable.notify_all();
+  }
+
 private:
   //thread function
   void worker()
@@ -77,7 +87,7 @@ private:
       //lock is reacquired here
       m_taskPushed = false;
 
-      while (true) {
+      while (m_runWorkerThread) {
         if (!m_taskQueue.empty()) {
           auto task = m_taskQueue.front();
           m_taskQueue.pop();

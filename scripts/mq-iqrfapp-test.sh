@@ -5,4 +5,4 @@
 # Tested on AAEON UP, UbiLinux
 
 echo "Sending DPA request to pulse red led on the node 1"
-sudo /usr/local/bin/iqrfapp Raw 01 00 06 03 ff ff
+sudo iqrfapp "{\"ctype\":\"dpa\",\"type\":\"raw\",\"msgid\":\"1\",\"timeout\":1000,\"request\":\"01.00.06.03.ff.ff\"}"

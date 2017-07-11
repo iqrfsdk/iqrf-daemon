@@ -185,15 +185,30 @@ void DaemonController::run(const std::string& cfgFileName)
     CATCH_EX("error", std::exception, e);
   }
 
-  std::unique_lock<std::mutex> lock(m_stopConditionMutex);
-  while (m_running && ((std::chrono::system_clock::now() - m_lastRefreshTime)) < m_timeout)
-    m_stopConditionVariable.wait_for(lock, m_timeout);
+  {
+    std::unique_lock<std::mutex> lock(m_stopConditionMutex);
+    while (m_running && (m_watchDogTimeoutMilis == 0 || (std::chrono::system_clock::now() - m_lastRefreshTime) < m_timeout ) )
+      m_stopConditionVariable.wait_for(lock, m_timeout);
+  }
+
+  bool wdog = m_running;
 
   try {
     stop();
   }
   catch (std::exception& e) {
     CATCH_EX("error", std::exception, e);
+  }
+
+  if (wdog) {
+    std::cout << std::endl << "!!!!!! WatchDog exit." << std::endl <<
+      "Set appropriate <time> in millis or disable by set to zero in case of long DPA transactions" << std::endl <<
+      "config.json: \"WatchDogTimeoutMilis\": <time>" << std::endl;
+    TRC_ERR("WatchDog exit");
+  }
+  else {
+    std::cout << std::endl << "!!!!!! normal exit." << std::endl;
+    TRC_ERR("normal exit");
   }
 
   TRC_LEAVE("");
@@ -631,22 +646,24 @@ void DaemonController::stopClients()
   TRC_LEAVE("");
 }
 
-
-void DaemonController::stopScheduler()
-{
-  m_scheduler->stop();
-  delete m_scheduler;
-}
-
 void DaemonController::stop()
 {
   TRC_ENTER("");
   TRC_INF("daemon stops");
 
+  m_scheduler->stop();
+  m_dpaTransactionQueue->stopQueue();
+
+  if (nullptr != m_dpaHandler)
+    m_dpaHandler->KillDpaTransaction();
+
   stopClients();
-  stopScheduler();
+
   stopDpa();
   stopIqrfIf();
+  
+  delete m_scheduler;
+
   stopTrace();
 
   TRC_LEAVE("");

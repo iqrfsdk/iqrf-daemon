@@ -57,7 +57,7 @@ void UdpMessagingTransaction::processFinish(DpaRequest::DpaRequestStatus status)
     m_forwarded->processFinish(status);
   }
 
-  m_success = isProcessed(status);
+  m_success = (status == DpaRequest::DpaRequestStatus::kAborted);
 }
 
 void UdpMessagingTransaction::setMessage(ustring message)

@@ -28,6 +28,11 @@ Scheduler::Scheduler()
 
 Scheduler::~Scheduler()
 {
+  if (m_timerThread.joinable())
+    m_timerThread.join();
+
+  delete m_dpaTaskQueue;
+  m_dpaTaskQueue = nullptr;
 }
 
 void Scheduler::updateConfiguration(const rapidjson::Value& cfg)
@@ -98,11 +103,7 @@ void Scheduler::stop()
     m_conditionVariable.notify_one();
   }
 
-  if (m_timerThread.joinable())
-    m_timerThread.join();
-
-  delete m_dpaTaskQueue;
-  m_dpaTaskQueue = nullptr;
+  m_dpaTaskQueue->stopQueue();
 
   TRC_INF("Scheduler stopped");
   TRC_LEAVE("");
@@ -238,7 +239,7 @@ void Scheduler::timer()
     ScheduleRecord::getTime(timePoint, timeStr);
 
     // fire all expired tasks
-    while (true) {
+    while (m_runTimerThread) {
 
       m_scheduledTasksMutex.lock();
 
