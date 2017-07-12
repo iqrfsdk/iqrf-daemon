@@ -157,13 +157,14 @@ ProtocolBridgeClientService::getActiveBridgesStatusMap() {
 	PrfFrc frc(PrfFrc::Cmd::SEND, PrfFrc::FrcType::GET_BYTE, 0x00, { 0xC0, 0x00, 0x00 });
 	frc.setHwpid(0xFFFF);
 
+	TRC_DBG("GABSM Request: " << std::endl << FORM_HEX(frc.getRequest().DpaPacketData(), frc.getRequest().Length()));
+
 	DpaTransactionTask trans(frc);
 	m_daemon->executeDpaTransaction(trans);
 	int result = trans.waitFinish();
 
-	TRC_DBG("Response: " << NAME_PAR(STATUS, trans.getErrorStr()));
-
-	// it is neccessary firstly to call some function to get a response? 
+	TRC_DBG("Transaction status: " << NAME_PAR(STATUS, trans.getErrorStr()));
+	TRC_DBG("GABSM Response: " << std::endl << FORM_HEX(frc.getResponse().DpaPacketData(), frc.getResponse().Length()));
 
 	std::map<uint8_t, BridgeStatusData> activeBridgesStatusMap;
 
@@ -193,9 +194,14 @@ std::list<uint8_t> ProtocolBridgeClientService::getNewVisibleMetersIndexes(uint8
 	bridge.commandGetNewVisible();
 	bridge.setHwpid(0xFFFF);
 
+	TRC_DBG("GNVMI Request: " << std::endl << FORM_HEX(bridge.getRequest().DpaPacketData(), bridge.getRequest().Length()));
+
 	DpaTransactionTask trans(bridge);
 	m_daemon->executeDpaTransaction(trans);
 	int result = trans.waitFinish();
+
+	TRC_DBG("Transaction status: " << NAME_PAR(STATUS, trans.getErrorStr()));
+	TRC_DBG("GNVMI Response: " << std::endl << FORM_HEX(bridge.getResponse().DpaPacketData(), bridge.getResponse().Length()));
 
 	ProtocolBridge::NewVisibleMetersResponse newVisibleMetersResponse = bridge.getNewVisibleMetersResponse();
 	
@@ -221,9 +227,14 @@ std::list<uint8_t> ProtocolBridgeClientService::getNewInvisibleMetersIndexes(uin
 	bridge.commandGetNewInvisible();
 	bridge.setHwpid(0xFFFF);
 
+	TRC_DBG("GNIMI Request: " << std::endl << FORM_HEX(bridge.getRequest().DpaPacketData(), bridge.getRequest().Length()));
+
 	DpaTransactionTask trans(bridge);
 	m_daemon->executeDpaTransaction(trans);
 	int result = trans.waitFinish();
+
+	TRC_DBG("Transaction status: " << NAME_PAR(STATUS, trans.getErrorStr()));
+	TRC_DBG("GNIMI Response: " << std::endl << FORM_HEX(bridge.getResponse().DpaPacketData(), bridge.getResponse().Length()));
 
 	ProtocolBridge::NewInvisibleMetersResponse newInvisibleMetersResponse = bridge.getNewInvisibleMetersResponse();
 
@@ -249,9 +260,14 @@ std::list<uint8_t> ProtocolBridgeClientService::getNewDataMetersIndexes(uint8_t 
 	bridge.commandGetNewDataInfo();
 	bridge.setHwpid(0xFFFF);
 
+	TRC_DBG("GNDMI Request: " << std::endl << FORM_HEX(bridge.getRequest().DpaPacketData(), bridge.getRequest().Length()));
+
 	DpaTransactionTask trans(bridge);
 	m_daemon->executeDpaTransaction(trans);
 	int result = trans.waitFinish();
+
+	TRC_DBG("Transaction status: " << NAME_PAR(STATUS, trans.getErrorStr()));
+	TRC_DBG("GNDMI Response: " << std::endl << FORM_HEX(bridge.getResponse().DpaPacketData(), bridge.getResponse().Length()));
 
 	ProtocolBridge::NewDataInfoResponse newDataInfoResponse = bridge.getNewDataInfoResponse();
 
@@ -279,9 +295,14 @@ ProtocolBridge::FullPacketResponse ProtocolBridgeClientService::getFullPacketRes
 	bridge.commandGetFullPacket(meterIndex);
 	bridge.setHwpid(0xFFFF);
 
+	TRC_DBG("GFP Request: " << std::endl << FORM_HEX(bridge.getRequest().DpaPacketData(), bridge.getRequest().Length()));
+
 	DpaTransactionTask trans(bridge);
 	m_daemon->executeDpaTransaction(trans);
 	int result = trans.waitFinish();
+
+	TRC_DBG("Transaction status: " << NAME_PAR(STATUS, trans.getErrorStr()));
+	TRC_DBG("GFP Response: " << std::endl << FORM_HEX(bridge.getResponse().DpaPacketData(), bridge.getResponse().Length()));
 
 	return bridge.getFullPacketResponse();
 }
@@ -305,9 +326,14 @@ void ProtocolBridgeClientService::confirmVisibleMeters(
 			bridge.commandGetVisibleConfirmation(mapIndex, confirmationBitmap);
 			bridge.setHwpid(0xFFFF);
 
+			TRC_DBG("CVM Request: " << std::endl << FORM_HEX(bridge.getRequest().DpaPacketData(), bridge.getRequest().Length()));
+
 			DpaTransactionTask trans(bridge);
 			m_daemon->executeDpaTransaction(trans);
 			int result = trans.waitFinish();
+
+			TRC_DBG("Transaction status: " << NAME_PAR(STATUS, trans.getErrorStr()));
+			TRC_DBG("CVM Response: " << std::endl << FORM_HEX(bridge.getResponse().DpaPacketData(), bridge.getResponse().Length()));
 
 			memset(confirmationBitmap, 0, ProtocolBridge::CONFIRMATION_BITMAP_LEN);
 			mapIndex++;
@@ -346,9 +372,14 @@ void ProtocolBridgeClientService::confirmInvisibleMeters(
 			bridge.commandGetInvisibleConfirmation(mapIndex, confirmationBitmap);
 			bridge.setHwpid(0xFFFF);
 
+			TRC_DBG("CIM Request: " << std::endl << FORM_HEX(bridge.getRequest().DpaPacketData(), bridge.getRequest().Length()));
+
 			DpaTransactionTask trans(bridge);
 			m_daemon->executeDpaTransaction(trans);
 			int result = trans.waitFinish();
+
+			TRC_DBG("Transaction status: " << NAME_PAR(STATUS, trans.getErrorStr()));
+			TRC_DBG("CIM Response: " << std::endl << FORM_HEX(bridge.getResponse().DpaPacketData(), bridge.getResponse().Length()));
 
 			memset(confirmationBitmap, 0, ProtocolBridge::CONFIRMATION_BITMAP_LEN);
 			mapIndex++;
@@ -437,9 +468,14 @@ void ProtocolBridgeClientService::sleepProtocolBridge(uint8_t bridgeAddress) {
 	bridge.commandSleepNow(m_sleepTime);
 	bridge.setHwpid(0xFFFF);
 
+	TRC_DBG("SPB Request: " << std::endl << FORM_HEX(bridge.getRequest().DpaPacketData(), bridge.getRequest().Length()));
+
 	DpaTransactionTask trans(bridge);
 	m_daemon->executeDpaTransaction(trans);
 	int result = trans.waitFinish();
+
+	TRC_DBG("Transaction status: " << NAME_PAR(STATUS, trans.getErrorStr()));
+	TRC_DBG("SPB Response: " << std::endl << FORM_HEX(bridge.getResponse().DpaPacketData(), bridge.getResponse().Length()));
 }
 
 
@@ -488,6 +524,3 @@ void ProtocolBridgeClientService::getAndProcessDataFromMeters(const std::string&
 		sleepProtocolBridge(activeBridgesStatusData.first);
 	}
 }
-
-
-
