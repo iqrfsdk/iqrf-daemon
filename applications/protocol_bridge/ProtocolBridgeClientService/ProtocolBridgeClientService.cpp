@@ -154,7 +154,7 @@ void ProtocolBridgeClientService::handleMsgFromMessaging(const ustring& msg)
 // returns list of status data of active bridges
 std::map<uint8_t, ProtocolBridgeClientService::BridgeStatusData>
 ProtocolBridgeClientService::getActiveBridgesStatusMap() {
-	PrfFrc frc(PrfFrc::Cmd::SEND, PrfFrc::FrcType::GET_BYTE, 0x00, { 0xC0, 0x00, 0x00 });
+	PrfFrc frc(PrfFrc::Cmd::SEND, PrfFrc::FrcType::GET_BYTE, 0x00, { 0x00, 0x00 });
 	frc.setHwpid(0xFFFF);
 
 	TRC_DBG("GABSM Request: " << std::endl << FORM_HEX(frc.getRequest().DpaPacketData(), frc.getRequest().Length()));
