@@ -170,7 +170,7 @@ ProtocolBridgeClientService::getActiveBridgesStatusMap() {
 
 	for (uint8_t addr = 1; addr <= frc.FRC_MAX_NODE_BYTE; addr++) {
 		uint8_t data = frc.getFrcData_Byte(addr);
-		std::bitset<sizeof(uint8_t)> dataByte(data);
+		std::bitset<8> dataByte(data);
 
 		if (dataByte.test(0)) {
 			BridgeStatusData bridgeStatusData;
@@ -207,7 +207,7 @@ std::list<uint8_t> ProtocolBridgeClientService::getNewVisibleMetersIndexes(uint8
 	
 	std::list<uint8_t> newVisibleMetersIndexes;
 	for (int byteIndex = 0; byteIndex < ProtocolBridge::VISIBLE_METERS_BITMAP_LEN; byteIndex++) {
-		std::bitset<sizeof(uint8_t)> dataByte(newVisibleMetersResponse.bitmap[byteIndex]);
+		std::bitset<8> dataByte(newVisibleMetersResponse.bitmap[byteIndex]);
 
 		for (int bitIndex = 0; bitIndex < 8; bitIndex++) {
 			if (dataByte.test(bitIndex)) {
@@ -240,7 +240,7 @@ std::list<uint8_t> ProtocolBridgeClientService::getNewInvisibleMetersIndexes(uin
 
 	std::list<uint8_t> newInvisibleMetersIndexes;
 	for (int byteIndex = 0; byteIndex < ProtocolBridge::INVISIBLE_METERS_BITMAP_LEN; byteIndex++) {
-		std::bitset<sizeof(uint8_t)> dataByte(newInvisibleMetersResponse.bitmap[byteIndex]);
+		std::bitset<8> dataByte(newInvisibleMetersResponse.bitmap[byteIndex]);
 
 		for (int bitIndex = 0; bitIndex < 8; bitIndex++) {
 			if (dataByte.test(bitIndex)) {
@@ -273,7 +273,7 @@ std::list<uint8_t> ProtocolBridgeClientService::getNewDataMetersIndexes(uint8_t 
 
 	std::list<uint8_t> newDataMetersIndexes;
 	for (int byteIndex = 0; byteIndex < ProtocolBridge::NEW_DATA_INFO_BITMAP_LEN; byteIndex++) {
-		std::bitset<sizeof(uint8_t)> dataByte(newDataInfoResponse.bitmap[byteIndex]);
+		std::bitset<8> dataByte(newDataInfoResponse.bitmap[byteIndex]);
 
 		for (int bitIndex = 0; bitIndex < 8; bitIndex++) {
 			if (dataByte.test(bitIndex)) {
