@@ -442,19 +442,19 @@ void ProtocolBridgeClientService::sendDataIntoAzure(
 	//encode output message
 	std::ostringstream os;
 	
-	os << "manufacturer: ";
+	os << "{\"manufacturer\": ";
 	for (int i = 0; i < MANUFACTURER_LEN; i++) {
-		os << std::uppercase << std::hex << packetHeader.manufacturer[i] << " ";
+		os << "\"" << std::setfill('0') << std::setw(sizeof(uint8_t)*2) << std::uppercase << std::hex << packetHeader.manufacturer[i] << "\" ";
 	}
 
-	os << "address: ";
+	os << "\"address\": ";
 	for (int i = 0; i < ADDRESS_LEN; i++) {
-		os << std::uppercase << std::hex << packetHeader.address[i] << " ";
+		os << "\"" << std::setfill('0') << std::setw(sizeof(uint8_t) * 2) << std::uppercase << std::hex << packetHeader.address[i] << "\" ";
 	}
 
-	os << "data: ";
+	os << "\"data\": ";
 	for (int i = 0; i < dataLen; i++) {
-		os << std::uppercase << std::hex << data[i] << " ";
+		os << "\"" << std::setfill('0') << std::setw(sizeof(uint8_t) * 2) << std::uppercase << std::hex << data[i] << "\"} ";
 	}
 
 	ustring msgu((unsigned char*)os.str().data(), os.str().size());
