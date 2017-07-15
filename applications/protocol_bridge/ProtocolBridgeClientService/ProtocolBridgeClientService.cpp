@@ -304,12 +304,6 @@ ProtocolBridge::FullPacketResponse ProtocolBridgeClientService::getFullPacketRes
 	TRC_DBG("Transaction status: " << NAME_PAR(STATUS, trans.getErrorStr()));
 	TRC_DBG("GFP Response: " << std::endl << FORM_HEX(bridge.getResponse().DpaPacketData(), bridge.getResponse().Length()));
 
-	//encode & send output message
-	//std::ostringstream os;
-	//os << bridge.encodeResponse(trans.getErrorStr());
-	//ustring msgu((unsigned char*)os.str().data(), os.str().size());
-	//m_messaging->sendMessage(msgu);
-
 	return bridge.getFullPacketResponse();
 }
 
@@ -452,18 +446,19 @@ void ProtocolBridgeClientService::sendDataIntoAzure(
 	for (int i = 0; i < MANUFACTURER_LEN; i++) {
 		os << std::setfill('0') << std::setw(sizeof(uint8_t)*2) << std::uppercase << std::hex << (int)packetHeader.manufacturer[i] << " ";
 	}
-	os << ",";
+	os << "\",";
 
 	os << "\"address\": \"";
 	for (int i = 0; i < ADDRESS_LEN; i++) {
 		os << std::setfill('0') << std::setw(sizeof(uint8_t) * 2) << std::uppercase << std::hex << (int)packetHeader.address[i] << " ";
 	}
-	os << ",";
+	os << "\",";
 
 	os << "\"data\": \"";
 	for (int i = 0; i < dataLen; i++) {
-		os << std::setfill('0') << std::setw(sizeof(uint8_t) * 2) << std::uppercase << std::hex << (int)data[i] << "\"} ";
+		os << std::setfill('0') << std::setw(sizeof(uint8_t) * 2) << std::uppercase << std::hex << (int)data[i] << " ";
 	}
+	os << "\"}";
 
 	ustring msgu((unsigned char*)os.str().data(), os.str().size());
 	m_messaging->sendMessage(msgu);
