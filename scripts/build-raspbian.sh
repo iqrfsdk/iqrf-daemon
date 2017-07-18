@@ -38,7 +38,9 @@ fi
 if [ -d "${LIBSPI_DIRECTORY}" ]; then
 	echo "Building libspi ..."
 	cd ${LIBSPI_DIRECTORY}
-	sudo apt-get install oracle-java8-jdk
+        if [ ! -d "${JAVA_HOME}" ]; then
+		sudo apt-get install oracle-java8-jdk
+        fi
 	bash buildMake.sh
 	cd ..
 fi
@@ -62,4 +64,3 @@ bash buildMake.sh ${LIB_DIRECTORY}
 echo "Building iqrfapp ..."
 cd ${IQRFAPP_DIRECTORY}
 bash buildMake.sh ../${LIB_DIRECTORY}
-

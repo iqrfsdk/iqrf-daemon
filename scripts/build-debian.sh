@@ -14,7 +14,7 @@ LIBCDC_DIRECTORY=clibcdc
 LIBSPI_DIRECTORY=clibspi
 PAHO_DIRECTORY=paho.mqtt.c
 
-export JAVA_HOME=/opt/jdk/jdk1.8.0_112
+export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 export JAVA_INCLUDE_PATH=${JAVA_HOME}/include
 export JAVA_INCLUDE_PATH2=${JAVA_INCLUDE_PATH}/linux
 
@@ -39,13 +39,7 @@ if [ -d "${LIBSPI_DIRECTORY}" ]; then
 	echo "Building libspi ..."
 	cd ${LIBSPI_DIRECTORY}
 	if [ ! -d "${JAVA_HOME}" ]; then
-		echo "Getting and installing Oracle Java for IQRF libraries Java stubs"
-		wget --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u112-b15/jdk-8u112-linux-x64.tar.gz
-		mkdir /opt/jdk
-		tar -zxf jdk-8u112-linux-x64.tar.gz -C /opt/jdk
-		update-alternatives --install /usr/bin/java java /opt/jdk/jdk1.8.0_112/bin/java 100
-		update-alternatives --install /usr/bin/javac javac /opt/jdk/jdk1.8.0_112/bin/javac 100
-		rm -rf jdk-8u112-linux-x64.tar.gz
+		apt-get install default-jdk
 	fi
 	bash buildMake.sh
 	cd ..
