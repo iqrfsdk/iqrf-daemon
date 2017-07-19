@@ -34,9 +34,9 @@ TRC_INIT()
 
 using namespace rapidjson;
 
-const std::string MODE_OPERATIONAL("operational");
-const std::string MODE_SERVICE("service");
-const std::string MODE_FORWARDING("forwarding");
+const char* MODE_OPERATIONAL("operational");
+const char* MODE_SERVICE("service");
+const char* MODE_FORWARDING("forwarding");
 
 DaemonController& DaemonController::getController()
 {
