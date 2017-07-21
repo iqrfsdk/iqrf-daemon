@@ -99,6 +99,7 @@ public:
 
   Scheduler::TaskHandle getTaskHandle() const { return m_taskHandle; }
   std::chrono::system_clock::time_point getNext(const std::chrono::system_clock::time_point& actualTimePoint, const std::tm& actualTime);
+  bool verifyTimePattern(const std::tm& actualTime) const;
   const std::string& getTask() const { return m_task; }
   const std::string& getClientId() const { return m_clientId; }
 
@@ -111,9 +112,8 @@ private:
   //The only method can do it
   friend void shuffleDuplicitHandle(ScheduleRecord& rec);
   void init();
-  int parseItem(const std::string& item, int mnm, int mxm, std::vector<int>& vec);
-  //return true - continue false - finish
-  bool compareTimeValVect(int& cval, const std::vector<int>& tvalV, bool& lw) const;
+  int parseItem(const std::string& item, int mnm, int mxm, std::vector<int>& vec, int offset = 0);
+  bool verifyTimePattern(int cval, const std::vector<int>& tvalV) const;
   std::string m_task;
   std::string m_clientId;
 
