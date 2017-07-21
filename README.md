@@ -14,8 +14,8 @@ IQRF GW daemon with the multiple communication channels - UDP/MQ/MQTT.
 
 -   iqrf-daemon_0.7.0-1_amd64.deb
 -   iqrf-daemon_0.7.0-1_armhf.deb
--   libpaho.mqtt.c_1.1.0_amd64.deb
--   libpaho.mqtt.c_1.1.0-1_armhf.deb
+-   libpaho.mqtt.c_1.2.0-1_amd64.deb
+-   libpaho.mqtt.c_1.2.0-1_armhf.deb
 
 ### Download public key to verify the packages from the repository
 
@@ -152,7 +152,7 @@ Fixes:
 - json dpa response timestamps 
 - json dpa response fields order
 
-### Content of libpaho.mqtt.c (v1.1.0) package
+### Content of libpaho.mqtt.c (v1.2.0) package
 
 ```Bash
 dpkg -L libpaho.mqtt.c
@@ -160,10 +160,10 @@ dpkg -L libpaho.mqtt.c
 /.
 /usr
 /usr/lib
-/usr/lib/libpaho-mqtt3c.so.1.1.0
-/usr/lib/libpaho-mqtt3as.so.1.1.0
-/usr/lib/libpaho-mqtt3cs.so.1.1.0
-/usr/lib/libpaho-mqtt3a.so.1.1.0
+/usr/lib/libpaho-mqtt3c.so.1.2.0
+/usr/lib/libpaho-mqtt3as.so.1.2.0
+/usr/lib/libpaho-mqtt3cs.so.1.2.0
+/usr/lib/libpaho-mqtt3a.so.1.2.0
 /usr/bin
 /usr/bin/MQTTVersion
 /usr/share
