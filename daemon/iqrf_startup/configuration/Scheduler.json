@@ -27,7 +27,6 @@
         "type":"raw-hdp",
         "msgid":"1",
         "timeout":1000,
-        /* Written in HEX format */
         "nadr":"01",
         "pnum":"06",
         "pcmd":"03",
