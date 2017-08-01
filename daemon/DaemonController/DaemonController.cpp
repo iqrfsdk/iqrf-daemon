@@ -676,10 +676,12 @@ void DaemonController::stop()
 
   stopClients();
 
+  TRC_DBG("daemon: before stopDpa");
   stopDpa();
   stopIqrfIf();
 
   delete m_scheduler;
+  TRC_DBG("daemon: after delete m_scheduler");
 
   stopTrace();
 
