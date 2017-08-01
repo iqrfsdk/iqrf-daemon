@@ -43,10 +43,12 @@ fi
 if [ -d "${LIBSPI_DIRECTORY}" ]; then
 	echo "Building libspi ..."
 	cd ${LIBSPI_DIRECTORY}
-	if ! grep -q "ppa:webupd8team/java" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
-		sudo add-apt-repository ppa:webupd8team/java
-		sudo apt-get update
-	fi
+        if [ ! -d "${JAVA_HOME}" ]; then
+        	if ! grep -q "ppa:webupd8team/java" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
+                	sudo add-apt-repository ppa:webupd8team/java
+                	sudo apt-get update
+        	fi
+        fi
 	sudo apt-get install oracle-java8-installer
 	bash buildMake.sh
 	cd ..

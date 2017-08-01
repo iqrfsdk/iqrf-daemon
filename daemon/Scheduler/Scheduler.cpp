@@ -267,9 +267,11 @@ void Scheduler::timer()
 
         nextWakeupAndUnlock(timePoint);
 
-        // fire
-        //TRC_INF("Task fired at: " << ScheduleRecord::asString(timePoint) << PAR(record->getTask()));
-        m_dpaTaskQueue->pushToQueue(*record); //copy record
+        if (record->verifyTimePattern(timeStr)) {
+          // fire
+          //TRC_INF("Task fired at: " << ScheduleRecord::asString(timePoint) << PAR(record->getTask()));
+          m_dpaTaskQueue->pushToQueue(*record); //copy record
+        }
 
       }
       else {
@@ -448,7 +450,7 @@ ScheduleRecord::ScheduleRecord(const std::string& rec)
   parseItem(mnt, 0, 59, m_vmin);
   parseItem(hrs, 0, 23, m_vhour);
   parseItem(day, 1, 31, m_vmday);
-  parseItem(mon, 1, 12, m_vmon) - 1;
+  parseItem(mon, 1, 12, m_vmon, -1);
   parseItem(yer, 0, 9000, m_vyear); //TODO maximum?
   parseItem(dow, 0, 6, m_vwday);
 }
@@ -476,7 +478,7 @@ ScheduleRecord::ScheduleRecord(const rapidjson::Value& rec)
   parseItem(mnt, 0, 59, m_vmin);
   parseItem(hrs, 0, 23, m_vhour);
   parseItem(day, 1, 31, m_vmday);
-  parseItem(mon, 1, 12, m_vmon) - 1;
+  parseItem(mon, 1, 12, m_vmon, -1);
   parseItem(yer, 0, 9000, m_vyear); //TODO maximum?
   parseItem(dow, 0, 6, m_vwday);
 
@@ -504,7 +506,7 @@ ScheduleRecord::ScheduleRecord(const rapidjson::Value& rec)
   m_clientId = jutils::getMemberAs<std::string>("service", rec);
 }
 
-int ScheduleRecord::parseItem(const std::string& item, int mnm, int mxm, std::vector<int>& vec)
+int ScheduleRecord::parseItem(const std::string& item, int mnm, int mxm, std::vector<int>& vec, int offset)
 {
   size_t position;
   int val = 0;
@@ -524,7 +526,7 @@ int ScheduleRecord::parseItem(const std::string& item, int mnm, int mxm, std::ve
     val = mnm % divid;
     val = val == 0 ? mnm : mnm - val + divid;
     while (val < mxm) {
-      vec.push_back(val);
+      vec.push_back(val + offset);
       val += divid;
     }
     val = mnm;
@@ -537,7 +539,7 @@ int ScheduleRecord::parseItem(const std::string& item, int mnm, int mxm, std::ve
       val = std::stoi(substr, &position);
       if (val < mnm || val > mxm)
         THROW_EX(std::logic_error, "Invalid value: " << PAR(val));
-      vec.push_back(val);
+      vec.push_back(val + offset);
 
       if (++position > substr.size() - 1)
         break;
@@ -551,14 +553,15 @@ int ScheduleRecord::parseItem(const std::string& item, int mnm, int mxm, std::ve
     if (val < mnm || val > mxm) {
       THROW_EX(std::logic_error, "Invalid value: " << PAR(val));
     }
-    vec.push_back(val);
+    vec.push_back(val + offset);
   }
 
   std::sort(vec.begin(), vec.end());
   return val;
 }
 
-system_clock::time_point ScheduleRecord::getNext(const std::chrono::system_clock::time_point& actualTimePoint, const std::tm& actualTime)
+/*
+system_clock::time_point ScheduleRecord::getNext1(const std::chrono::system_clock::time_point& actualTimePoint, const std::tm& actualTime)
 {
   system_clock::time_point tp;
 
@@ -641,6 +644,85 @@ bool ScheduleRecord::compareTimeValVect(int& cval, const std::vector<int>& tvalV
     return false;
   }
 }
+*/
+
+system_clock::time_point ScheduleRecord::getNext(const std::chrono::system_clock::time_point& actualTimePoint, const std::tm& actualTime)
+{
+  system_clock::time_point tp;
+
+  if (!m_periodic) {
+
+    //evaluate remaining seconds
+    int asec = actualTime.tm_sec;
+    int fsec = asec;
+    int dsec = 0;
+
+    //find closest valid sec
+    if (m_vsec.size() > 0 && m_vsec[0] < 0) {
+      fsec = 0; //seconds * use 0 and period is set to 60 sec by default
+    }
+    else {
+      fsec = m_vsec[0];
+      for (int sec : m_vsec) { //try to find greater in vector
+        if (sec > asec) {
+          fsec = sec;
+          break;
+        }
+      }
+    }
+
+    dsec = fsec - asec;
+    if (fsec <= asec) {
+      dsec += 60;
+    }
+
+    tp = actualTimePoint + seconds(dsec);
+
+    //TRC_DBG(
+    //  "???????????????????????" << std::endl <<
+    //  PAR(dsec) << std::endl <<
+    //  NAME_PAR(next, ScheduleRecord::asString(tp)) << std::endl <<
+    //  "???????????????????????" << std::endl
+    //);
+
+  }
+  else {
+    if (m_started)
+      tp = actualTimePoint + m_period;
+    else {
+      tp = m_startTime;
+      m_started = true;
+    }
+  }
+
+  return tp;
+}
+
+bool ScheduleRecord::verifyTimePattern(const std::tm& actualTime) const
+{
+  if (!m_periodic) {
+    if (!verifyTimePattern(actualTime.tm_min, m_vmin)) return false;
+    if (!verifyTimePattern(actualTime.tm_hour, m_vhour)) return false;
+    if (!verifyTimePattern(actualTime.tm_mday, m_vmday)) return false;
+    if (!verifyTimePattern(actualTime.tm_mon, m_vmon)) return false;
+    if (!verifyTimePattern(actualTime.tm_year, m_vyear)) return false;
+    if (!verifyTimePattern(actualTime.tm_wday, m_vwday)) return false;
+  }
+  return true;
+}
+
+bool ScheduleRecord::verifyTimePattern(int cval, const std::vector<int>& tvalV) const
+{
+  if (tvalV.size() > 0 && tvalV[0] >= 0) {
+    for (int tval : tvalV)
+      if (tval == cval)
+        return true;
+    return false;
+  }
+  else
+    return true;
+}
+
 
 std::string ScheduleRecord::asString(const std::chrono::system_clock::time_point& tp)
 {

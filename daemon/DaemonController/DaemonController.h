@@ -140,6 +140,7 @@ private:
   int m_dpaHandlerTimeout = 200;
 
   std::string m_configurationDir;
+  std::string m_modeStr;
   int m_watchDogTimeoutMilis = 0;
   std::map<std::string, ComponentDescriptor> m_componentMap;
 

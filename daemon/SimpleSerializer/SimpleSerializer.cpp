@@ -134,7 +134,7 @@ std::string PrfRawSimple::encodeResponse(const std::string& errStr)
   os << iqrf::TracerHexString((unsigned char*)getResponse().DpaPacket().Buffer, len, true);
   std::string buf = os.str();
 
-  if (buf[buf.size() - 1] == ' ') {
+  if (buf.size() > 0 && buf[buf.size() - 1] == ' ') {
     buf.pop_back();
   }
 

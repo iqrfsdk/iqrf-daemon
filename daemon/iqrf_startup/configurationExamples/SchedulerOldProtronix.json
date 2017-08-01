@@ -1,0 +1,39 @@
+{
+  "Tasks": [
+  ],
+
+  "TasksJson": [
+    {
+      "time": "*/3 * * * * * *",
+      "service": "BaseServiceForMQTT1",
+      "message": {
+        "ctype": "dpa",
+        "type": "raw",
+        "msgid": "7531",
+        "timeout": 10000,
+        "request": "01.00.0c.02.ff.ff.fe.01.42.00.03.75.31.75.33.75.32.01.86",
+        "request_ts": "2017-06-18 20:50:00.1065",
+        "confirmation": "01.00.0c.02.ff.ff.ff.2e.01.09.01",
+        "confirmation_ts": "2017-06-18 20:50:00.50894",
+        "response": "",
+        "response_ts": ""
+      }
+    },
+    {
+      "time": "*/3 * * * * * *",
+      "service": "BaseServiceForMQTT1",
+      "message": {
+        "ctype": "dpa",
+        "type": "raw",
+        "msgid": "7534",
+        "timeout": 10000,
+        "request": "02.00.0c.02.ff.ff.fe.01.42.00.03.75.34.75.33.75.32.cd.86",
+        "request_ts": "2017-06-18 20:50:00.1065",
+        "confirmation": "01.00.0c.02.ff.ff.ff.2e.01.09.01",
+        "confirmation_ts": "2017-06-18 20:50:00.50894",
+        "response": "",
+        "response_ts": ""
+      }
+    }
+  ]
+}

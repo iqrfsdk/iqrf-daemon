@@ -34,6 +34,10 @@ TRC_INIT()
 
 using namespace rapidjson;
 
+const char* MODE_OPERATIONAL("operational");
+const char* MODE_SERVICE("service");
+const char* MODE_FORWARDING("forwarding");
+
 DaemonController& DaemonController::getController()
 {
   static DaemonController mc;
@@ -128,6 +132,7 @@ DaemonController::DaemonController()
   , m_dpaHandler(nullptr)
   , m_dpaTransactionQueue(nullptr)
   , m_scheduler(nullptr)
+  , m_modeStr(MODE_OPERATIONAL)
   , m_mode(Mode::Operational)
 {
 }
@@ -150,6 +155,7 @@ void DaemonController::loadConfiguration(const std::string& cfgFileName)
   //prepare list
   m_configurationDir = jutils::getMemberAs<std::string>("ConfigurationDir", m_configuration);
   m_watchDogTimeoutMilis = jutils::getPossibleMemberAs<int>("WatchDogTimeoutMilis", m_configuration, m_watchDogTimeoutMilis);
+  m_modeStr = jutils::getPossibleMemberAs<std::string>("Mode", m_configuration, m_modeStr);
 
   const auto m = jutils::getMember("Components", m_configuration);
   const rapidjson::Value& vct = m->value;
@@ -187,7 +193,7 @@ void DaemonController::run(const std::string& cfgFileName)
 
   {
     std::unique_lock<std::mutex> lock(m_stopConditionMutex);
-    while (m_running && (m_watchDogTimeoutMilis == 0 || (std::chrono::system_clock::now() - m_lastRefreshTime) < m_timeout ) )
+    while (m_running && (m_watchDogTimeoutMilis == 0 || (std::chrono::system_clock::now() - m_lastRefreshTime) < m_timeout))
       m_stopConditionVariable.wait_for(lock, m_timeout);
   }
 
@@ -230,33 +236,45 @@ void DaemonController::setMode(Mode mode)
 
   case Mode::Operational:
   {
-    if (m_mode == Mode::Service) {
-      m_dpaExclusiveAccess->resetExclusive();
-      startDpa();
+    if (nullptr != m_dpaExclusiveAccess) {
+      if (m_mode == Mode::Service) {
+        m_dpaExclusiveAccess->resetExclusive();
+        startDpa();
+      }
     }
-    TRC_INF("Set Operational mode");
+    TRC_INF("Set mode " << MODE_OPERATIONAL);
     m_mode = mode;
   }
   break;
 
   case Mode::Forwarding:
   {
-    if (m_mode == Mode::Service) {
-      m_dpaExclusiveAccess->resetExclusive();
-      startDpa();
+    if (nullptr != m_dpaExclusiveAccess) {
+      if (m_mode == Mode::Service) {
+        m_dpaExclusiveAccess->resetExclusive();
+        startDpa();
+      }
+      TRC_INF("Set mode " << MODE_FORWARDING);
+      m_mode = mode;
     }
-    TRC_INF("Set Forwarding mode");
-    m_mode = mode;
+    else {
+      TRC_INF("Cannot switch mode: forwarding component is not configured");
+    }
   }
   break;
 
   case Mode::Service:
   {
-    m_mode = mode;
-    stopDpa();
-    m_dpaExclusiveAccess->setExclusive(m_iqrfInterface);
-    TRC_INF("Set Service mode");
-    m_mode = mode;
+    if (nullptr != m_dpaExclusiveAccess) {
+      m_mode = mode;
+      stopDpa();
+      m_dpaExclusiveAccess->setExclusive(m_iqrfInterface);
+      TRC_INF("Set mode " << MODE_SERVICE);
+      m_mode = mode;
+    }
+    else {
+      TRC_INF("Cannot switch mode: service component is not configured");
+    }
   }
   break;
 
@@ -596,7 +614,9 @@ void DaemonController::start()
   startScheduler();
   startClients();
 
-  //setMode(Mode::Forwarding);
+  if (MODE_OPERATIONAL != m_modeStr) {
+    doCommand(m_modeStr);
+  }
 
   TRC_INF("daemon started");
   TRC_LEAVE("");
@@ -658,7 +678,7 @@ void DaemonController::stop()
 
   stopDpa();
   stopIqrfIf();
-  
+
   delete m_scheduler;
 
   stopTrace();
@@ -680,17 +700,17 @@ std::string DaemonController::doCommand(const std::string& cmd)
 {
   std::ostringstream ostr;
   if (m_iqrfInterface != nullptr) {
-    if (cmd == "operational") {
+    if (cmd == MODE_OPERATIONAL) {
       setMode(Mode::Operational);
       ostr << PAR(cmd) << " done";
       return ostr.str();
     }
-    if (cmd == "service") {
+    if (cmd == MODE_SERVICE) {
       setMode(Mode::Service);
       ostr << PAR(cmd) << " done";
       return ostr.str();
     }
-    if (cmd == "forwarding") {
+    if (cmd == MODE_FORWARDING) {
       setMode(Mode::Forwarding);
       ostr << PAR(cmd) << " done";
       return ostr.str();
