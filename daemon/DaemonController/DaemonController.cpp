@@ -199,22 +199,22 @@ void DaemonController::run(const std::string& cfgFileName)
 
   bool wdog = m_running;
 
+  if (wdog) {
+    std::cout << std::endl << "!!!!!! WatchDog exit." << std::endl <<
+      "Set appropriate <time> in millis or disable by set to zero in case of long DPA transactions" << std::endl <<
+      "config.json: \"WatchDogTimeoutMilis\": <time>" << std::endl;
+    TRC_ERR("Invoking WatchDog exit");
+  }
+  else {
+    std::cout << std::endl << "!!!!!! normal exit." << std::endl;
+    TRC_ERR("Invoking Normal exit");
+  }
+
   try {
     stop();
   }
   catch (std::exception& e) {
     CATCH_EX("error", std::exception, e);
-  }
-
-  if (wdog) {
-    std::cout << std::endl << "!!!!!! WatchDog exit." << std::endl <<
-      "Set appropriate <time> in millis or disable by set to zero in case of long DPA transactions" << std::endl <<
-      "config.json: \"WatchDogTimeoutMilis\": <time>" << std::endl;
-    TRC_ERR("WatchDog exit");
-  }
-  else {
-    std::cout << std::endl << "!!!!!! normal exit." << std::endl;
-    TRC_ERR("normal exit");
   }
 
   TRC_LEAVE("");
@@ -630,27 +630,36 @@ void DaemonController::stopTrace()
 
 void DaemonController::stopIqrfIf()
 {
+  TRC_ENTER("");
+  TRC_DBG("Try to destroy: " << PAR(m_dpaTransactionQueue->size()));
   delete m_dpaTransactionQueue;
   m_dpaTransactionQueue = nullptr;
 
+  TRC_DBG("Try to destroy: " << PAR(m_iqrfInterface));
   delete m_iqrfInterface;
   m_iqrfInterface = nullptr;
+  TRC_LEAVE("");
 }
 
 void DaemonController::stopDpa()
 {
+  TRC_ENTER("");
+  TRC_DBG("Try to destroy: " << PAR(m_dpaHandler));
   delete m_dpaHandler;
   m_dpaHandler = nullptr;
+  TRC_LEAVE("");
 }
 
 void DaemonController::stopClients()
 {
   TRC_ENTER("");
+  TRC_DBG("Stopping: " << PAR(m_clients.size()));
   for (auto & cli : m_clients) {
     cli.second->stop();
   }
   m_clients.clear();
 
+  TRC_DBG("Stopping: " << PAR(m_messagings.size()));
   for (auto & ms : m_messagings) {
     ms.second->stop();
   }
@@ -668,17 +677,22 @@ void DaemonController::stop()
   TRC_ENTER("");
   TRC_INF("daemon stops");
 
+  TRC_DBG("Stopping: " << PAR(m_scheduler));
   m_scheduler->stop();
+
+  TRC_DBG("Stopping: " << PAR(m_dpaTransactionQueue->size()));
   m_dpaTransactionQueue->stopQueue();
 
-  if (nullptr != m_dpaHandler)
+  if (nullptr != m_dpaHandler) {
+    TRC_DBG("Killing DpaTransaction if any");
     m_dpaHandler->KillDpaTransaction();
+  }
 
   stopClients();
-
   stopDpa();
   stopIqrfIf();
 
+  TRC_DBG("Try to destroy: " << PAR(m_scheduler));
   delete m_scheduler;
 
   stopTrace();

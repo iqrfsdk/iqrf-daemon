@@ -28,11 +28,17 @@ Scheduler::Scheduler()
 
 Scheduler::~Scheduler()
 {
-  if (m_timerThread.joinable())
+  TRC_ENTER("");
+  if (m_timerThread.joinable()) {
+    TRC_DBG("Joining scheduler thread");
     m_timerThread.join();
+    TRC_DBG("scheduler thread joined");
+  }
 
+  TRC_DBG("Try to destroy: " << PAR(m_dpaTaskQueue->size()));
   delete m_dpaTaskQueue;
   m_dpaTaskQueue = nullptr;
+  TRC_LEAVE("");
 }
 
 void Scheduler::updateConfiguration(const rapidjson::Value& cfg)
