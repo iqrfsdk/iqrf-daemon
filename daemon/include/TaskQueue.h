@@ -73,6 +73,16 @@ public:
     m_conditionVariable.notify_all();
   }
 
+  size_t size()
+  {
+    size_t retval = 0;
+    {
+      std::unique_lock<std::mutex> lck(m_taskQueueMutex);
+      retval = m_taskQueue.size();
+    }
+    return retval;
+  }
+
 private:
   //thread function
   void worker()
