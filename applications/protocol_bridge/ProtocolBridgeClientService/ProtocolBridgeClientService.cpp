@@ -195,6 +195,8 @@ ProtocolBridgeClientService::getActiveBridgesStatusMap() {
 // returns new visible meters indexes for specified Protocol Bridge
 std::list<uint8_t> ProtocolBridgeClientService::getNewVisibleMetersIndexes(uint8_t bridgeAddress) {
 	TRC_ENTER("");
+	std::list<uint8_t> newVisibleMetersIndexes;
+
 	ProtocolBridgeSchd bridgeSchedule = m_watchedProtocolBridges.at(bridgeAddress);
 	ProtocolBridge bridge = bridgeSchedule.getDpa();
 
@@ -209,18 +211,22 @@ std::list<uint8_t> ProtocolBridgeClientService::getNewVisibleMetersIndexes(uint8
 
 	TRC_DBG("Transaction status: " << NAME_PAR(STATUS, trans.getErrorStr()));
 	TRC_DBG("Response: " << std::endl << FORM_HEX(bridge.getResponse().DpaPacketData(), bridge.getResponse().Length()));
-
-	ProtocolBridge::NewVisibleMetersResponse newVisibleMetersResponse = bridge.getNewVisibleMetersResponse();
 	
-	std::list<uint8_t> newVisibleMetersIndexes;
-	for (int byteIndex = 0; byteIndex < ProtocolBridge::VISIBLE_METERS_BITMAP_LEN; byteIndex++) {
-		std::bitset<8> dataByte(newVisibleMetersResponse.bitmap[byteIndex]);
+	if (result == 0) {
+		ProtocolBridge::NewVisibleMetersResponse newVisibleMetersResponse = bridge.getNewVisibleMetersResponse();
 
-		for (int bitIndex = 0; bitIndex < 8; bitIndex++) {
-			if (dataByte.test(bitIndex)) {
-				newVisibleMetersIndexes.push_back(byteIndex * 8 + bitIndex);
+		for (int byteIndex = 0; byteIndex < ProtocolBridge::VISIBLE_METERS_BITMAP_LEN; byteIndex++) {
+			std::bitset<8> dataByte(newVisibleMetersResponse.bitmap[byteIndex]);
+
+			for (int bitIndex = 0; bitIndex < 8; bitIndex++) {
+				if (dataByte.test(bitIndex)) {
+					newVisibleMetersIndexes.push_back(byteIndex * 8 + bitIndex);
+				}
 			}
 		}
+	}
+	else {
+		TRC_ERR("No processing run, check transaction return status!");
 	}
 	
 	TRC_LEAVE("");
@@ -230,6 +236,7 @@ std::list<uint8_t> ProtocolBridgeClientService::getNewVisibleMetersIndexes(uint8
 // returns new invisible meters indexes for specified Protocol Bridge
 std::list<uint8_t> ProtocolBridgeClientService::getNewInvisibleMetersIndexes(uint8_t bridgeAddress) {
 	TRC_ENTER("");
+	std::list<uint8_t> newInvisibleMetersIndexes;
 	ProtocolBridgeSchd bridgeSchedule = m_watchedProtocolBridges.at(bridgeAddress);
 	ProtocolBridge bridge = bridgeSchedule.getDpa();
 
@@ -245,17 +252,21 @@ std::list<uint8_t> ProtocolBridgeClientService::getNewInvisibleMetersIndexes(uin
 	TRC_DBG("Transaction status: " << NAME_PAR(STATUS, trans.getErrorStr()));
 	TRC_DBG("Response: " << std::endl << FORM_HEX(bridge.getResponse().DpaPacketData(), bridge.getResponse().Length()));
 
-	ProtocolBridge::NewInvisibleMetersResponse newInvisibleMetersResponse = bridge.getNewInvisibleMetersResponse();
+	if (result == 0) {
+		ProtocolBridge::NewInvisibleMetersResponse newInvisibleMetersResponse = bridge.getNewInvisibleMetersResponse();
 
-	std::list<uint8_t> newInvisibleMetersIndexes;
-	for (int byteIndex = 0; byteIndex < ProtocolBridge::INVISIBLE_METERS_BITMAP_LEN; byteIndex++) {
-		std::bitset<8> dataByte(newInvisibleMetersResponse.bitmap[byteIndex]);
+		for (int byteIndex = 0; byteIndex < ProtocolBridge::INVISIBLE_METERS_BITMAP_LEN; byteIndex++) {
+			std::bitset<8> dataByte(newInvisibleMetersResponse.bitmap[byteIndex]);
 
-		for (int bitIndex = 0; bitIndex < 8; bitIndex++) {
-			if (dataByte.test(bitIndex)) {
-				newInvisibleMetersIndexes.push_back(byteIndex * 8 + bitIndex);
+			for (int bitIndex = 0; bitIndex < 8; bitIndex++) {
+				if (dataByte.test(bitIndex)) {
+					newInvisibleMetersIndexes.push_back(byteIndex * 8 + bitIndex);
+				}
 			}
 		}
+	}
+	else {
+		TRC_ERR("No processing run, check transaction return status!");
 	}
 
 	TRC_LEAVE("");
@@ -265,6 +276,7 @@ std::list<uint8_t> ProtocolBridgeClientService::getNewInvisibleMetersIndexes(uin
 // returns indexes of meters with new data for specified Protocol Bridge
 std::list<uint8_t> ProtocolBridgeClientService::getNewDataMetersIndexes(uint8_t bridgeAddress) {
 	TRC_ENTER("");
+	std::list<uint8_t> newDataMetersIndexes;
 	ProtocolBridgeSchd bridgeSchedule = m_watchedProtocolBridges.at(bridgeAddress);
 	ProtocolBridge bridge = bridgeSchedule.getDpa();
 
@@ -280,17 +292,21 @@ std::list<uint8_t> ProtocolBridgeClientService::getNewDataMetersIndexes(uint8_t 
 	TRC_DBG("Transaction status: " << NAME_PAR(STATUS, trans.getErrorStr()));
 	TRC_DBG("Response: " << std::endl << FORM_HEX(bridge.getResponse().DpaPacketData(), bridge.getResponse().Length()));
 
-	ProtocolBridge::NewDataInfoResponse newDataInfoResponse = bridge.getNewDataInfoResponse();
+	if (result == 0) {
+		ProtocolBridge::NewDataInfoResponse newDataInfoResponse = bridge.getNewDataInfoResponse();
 
-	std::list<uint8_t> newDataMetersIndexes;
-	for (int byteIndex = 0; byteIndex < ProtocolBridge::NEW_DATA_INFO_BITMAP_LEN; byteIndex++) {
-		std::bitset<8> dataByte(newDataInfoResponse.bitmap[byteIndex]);
+		for (int byteIndex = 0; byteIndex < ProtocolBridge::NEW_DATA_INFO_BITMAP_LEN; byteIndex++) {
+			std::bitset<8> dataByte(newDataInfoResponse.bitmap[byteIndex]);
 
-		for (int bitIndex = 0; bitIndex < 8; bitIndex++) {
-			if (dataByte.test(bitIndex)) {
-				newDataMetersIndexes.push_back(byteIndex * 8 + bitIndex);
+			for (int bitIndex = 0; bitIndex < 8; bitIndex++) {
+				if (dataByte.test(bitIndex)) {
+					newDataMetersIndexes.push_back(byteIndex * 8 + bitIndex);
+				}
 			}
 		}
+	}
+	else {
+		TRC_ERR("No processing run, check transaction return status!");
 	}
 
 	TRC_LEAVE("");
