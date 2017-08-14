@@ -26,7 +26,7 @@ INIT_COMPONENT(IService, ProtocolBridgeClientService)
 const std::string SCHEDULED_GET_AND_PROCESS_DATA_TASK("SND_GET_AND_PROCESS_DATA_TASK");
 
 
-ProtocolBridgeClientService::ProtocolBridgeClientService(const std::string & name)
+ProtocolBridgeClientService::ProtocolBridgeClientService(const std::string &name)
 	:m_name(name)
 	, m_messaging(nullptr)
 	, m_daemon(nullptr)
@@ -543,21 +543,37 @@ void ProtocolBridgeClientService::getAndProcessDataFromMeters(const std::string&
 	/////////////////////////////////
 
 	std::map<uint8_t, BridgeStatusData> activeBridgesStatusMap = getActiveBridgesStatusMap();
-	for (std::pair<uint8_t, BridgeStatusData> activeBridgesStatusData : activeBridgesStatusMap) {
-		std::list<uint8_t> newVisibleMetersIndexes = getNewVisibleMetersIndexes(activeBridgesStatusData.first);
-		std::list<uint8_t> newInvisibleMetersIndexes = getNewInvisibleMetersIndexes(activeBridgesStatusData.first);
-		std::list<uint8_t> newDataMetersIndexes = getNewDataMetersIndexes(activeBridgesStatusData.first);
+
+	//for (std::pair<uint8_t, BridgeStatusData> activeBridgesStatusData : activeBridgesStatusMap)
+	for (std::map<uint8_t, BridgeStatusData>::iterator it = activeBridgesStatusMap.begin(); it != activeBridgesStatusMap.end(); it++) {
+
+		std::list<uint8_t> newVisibleMetersIndexes;
+		std::list<uint8_t> newInvisibleMetersIndexes;
+		std::list<uint8_t> newDataMetersIndexes;
+
+		if (it->second.isNewVisible) {
+			newVisibleMetersIndexes = getNewVisibleMetersIndexes(it->first);
+			// confirmation of visiblemeters
+			confirmVisibleMeters(it->first, newVisibleMetersIndexes);
+		}
+
+		if (it->second.isNewInvisible) {
+			newInvisibleMetersIndexes = getNewInvisibleMetersIndexes(it->first);
+			// confirmation of visible and invisible meters
+			confirmInvisibleMeters(it->first, newInvisibleMetersIndexes);
+		}
+
+		if (it->second.isData) {
+			newDataMetersIndexes = getNewDataMetersIndexes(it->first);
+		}
 
 		// getting full data packets for indexes of new data meters
 		for (uint8_t meterIndex : newDataMetersIndexes) {
+
 			ProtocolBridge::FullPacketResponse fullPacketResponse = getFullPacketResponse(
-				activeBridgesStatusData.first, meterIndex
+				it->first, meterIndex
 			);
 			
-			// confirmation of visible and invisible meters
-			confirmVisibleMeters(activeBridgesStatusData.first, newVisibleMetersIndexes);
-			confirmInvisibleMeters(activeBridgesStatusData.first, newInvisibleMetersIndexes);
-
 			// parsing of full packet response
 			PacketHeader packetHeader = parseFullPacketResponse(fullPacketResponse);
 
