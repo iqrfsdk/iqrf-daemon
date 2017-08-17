@@ -65,12 +65,12 @@ void DaemonController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
       }
       catch (std::exception& e) {
         CATCH_EX("Error in ExecuteDpaTransaction: ", std::exception, e);
-        dpaTransaction->processFinish(DpaRequest::kCreated);
+        dpaTransaction->processFinish(DpaRequest::kError);
       }
     }
     else {
       TRC_ERR("Dpa interface is not working");
-      dpaTransaction->processFinish(DpaRequest::kCreated);
+      dpaTransaction->processFinish(DpaRequest::kError);
     }
   }
   break;
@@ -84,12 +84,12 @@ void DaemonController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
       }
       catch (std::exception& e) {
         CATCH_EX("Error in ExecuteDpaTransaction: ", std::exception, e);
-        dpaTransaction->processFinish(DpaRequest::kCreated);
+        dpaTransaction->processFinish(DpaRequest::kError);
       }
     }
     else {
       TRC_ERR("Dpa interface is not working");
-      dpaTransaction->processFinish(DpaRequest::kCreated);
+      dpaTransaction->processFinish(DpaRequest::kError);
     }
   }
   break;
@@ -97,7 +97,7 @@ void DaemonController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
   case Mode::Service:
   {
     TRC_DBG("Dpa interface is in exclusiveMode");
-    dpaTransaction->processFinish(DpaRequest::kCreated);
+    dpaTransaction->processFinish(DpaRequest::kError);
   }
   break;
 
