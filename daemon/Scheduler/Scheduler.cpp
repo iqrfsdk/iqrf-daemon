@@ -256,6 +256,7 @@ void Scheduler::timer()
 
       auto begin = m_scheduledTasksByTime.begin();
       std::shared_ptr<ScheduleRecord> record = begin->second;
+      auto diff = begin->first.time_since_epoch().count() - timePoint.time_since_epoch().count();
 
       if (begin->first < timePoint) {
 
@@ -405,7 +406,9 @@ void ScheduleRecord::shuffleHandle()
 }
 
 ScheduleRecord::ScheduleRecord(const std::string& clientId, const std::string& task, const std::chrono::system_clock::time_point& tp)
-  : m_clientId(clientId)
+  : m_exactTime(true)
+  , m_clientId(clientId)
+  , m_startTime(tp)
 {
   init();
 
@@ -435,11 +438,47 @@ ScheduleRecord::ScheduleRecord(const std::string& clientId, const std::string& t
   m_task = task;
 }
 
+const std::map<std::string, std::string> NICKNAMES = {
+  {"@reboot", ""},
+  {"@yearly", "0 0 0 0 1 1 *" },
+  {"@annually", "0 0 0 0 1 1 *" },
+  {"@monthly", "0 0 0 0 1 * *" },
+  {"@weekly", "0 0 0 * * * 0" },
+  {"@daily", "0 0 0 * * * *" },
+  {"@hourly", "0 0 * * * * *" },
+  {"@minutely", "0 * * * * * *" }
+};
+
+std::string ScheduleRecord::solveNickname(const std::string& timeSpec)
+{
+  if (timeSpec.empty()) {
+    THROW_EX(std::logic_error, "Unexpected empty format:" << PAR(timeSpec));
+  }
+  if (!timeSpec.empty() && timeSpec[0] == '@') {
+    auto found = NICKNAMES.find(timeSpec);
+    if (found != NICKNAMES.end()) {
+      if (found->second.empty()) { //reboot
+        m_exactTime = true;
+        m_startTime = std::chrono::system_clock::now();
+        //return "" - second.empty()
+      }
+      return found->second;
+    }
+    THROW_EX(std::logic_error, "Unexpected format:" << PAR(timeSpec));
+  }
+  return timeSpec;
+}
+
 ScheduleRecord::ScheduleRecord(const std::string& rec)
 {
   init();
-  //parse(rec);
-  std::istringstream is(rec);
+  
+  std::string recStr = solveNickname(rec);
+  
+  if (m_exactTime)
+    return; //exact time is set - no reason to parse next items
+
+  std::istringstream is(recStr);
 
   std::string sec("*");
   std::string mnt("*");
@@ -468,25 +507,32 @@ ScheduleRecord::ScheduleRecord(const rapidjson::Value& rec)
   init();
 
   std::string tmr = jutils::getMemberAs<std::string>("time", rec);
-  std::istringstream is(tmr);
 
-  std::string sec("*");
-  std::string mnt("*");
-  std::string hrs("*");
-  std::string day("*");
-  std::string mon("*");
-  std::string yer("*");
-  std::string dow("*");
+  tmr = solveNickname(tmr);
 
-  is >> sec >> mnt >> hrs >> day >> mon >> yer >> dow;
+  if (!m_exactTime) {
 
-  parseItem(sec, 0, 59, m_vsec);
-  parseItem(mnt, 0, 59, m_vmin);
-  parseItem(hrs, 0, 23, m_vhour);
-  parseItem(day, 1, 31, m_vmday);
-  parseItem(mon, 1, 12, m_vmon, -1);
-  parseItem(yer, 0, 9000, m_vyear); //TODO maximum?
-  parseItem(dow, 0, 6, m_vwday);
+    std::istringstream is(tmr);
+
+    std::string sec("*");
+    std::string mnt("*");
+    std::string hrs("*");
+    std::string day("*");
+    std::string mon("*");
+    std::string yer("*");
+    std::string dow("*");
+
+    is >> sec >> mnt >> hrs >> day >> mon >> yer >> dow;
+
+    parseItem(sec, 0, 59, m_vsec);
+    parseItem(mnt, 0, 59, m_vmin);
+    parseItem(hrs, 0, 23, m_vhour);
+    parseItem(day, 1, 31, m_vmday);
+    parseItem(mon, 1, 12, m_vmon, -1);
+    parseItem(yer, 0, 9000, m_vyear); //TODO maximum?
+    parseItem(dow, 0, 6, m_vwday);
+  
+  }
 
   m_clientId = jutils::getMemberAs<std::string>("service", rec);
   
@@ -566,97 +612,14 @@ int ScheduleRecord::parseItem(const std::string& item, int mnm, int mxm, std::ve
   return val;
 }
 
-/*
-system_clock::time_point ScheduleRecord::getNext1(const std::chrono::system_clock::time_point& actualTimePoint, const std::tm& actualTime)
-{
-  system_clock::time_point tp;
-
-  if (!m_periodic) {
-    bool lower = false;
-    std::tm c_tm = actualTime;
-
-    while (true) {
-      if (!compareTimeValVect(c_tm.tm_sec, m_vsec, lower))
-        break;
-      if (!compareTimeValVect(c_tm.tm_min, m_vmin, lower))
-        break;
-      if (!compareTimeValVect(c_tm.tm_hour, m_vhour, lower))
-        break;
-
-      if (m_vwday[0] > 0) { //optional, but if present then break as day of week has prio in evaluation
-        compareTimeValVect(c_tm.tm_wday, m_vwday, lower);
-        break;
-      }
-
-      if (!compareTimeValVect(c_tm.tm_mday, m_vmday, lower))
-        break;
-      if (!compareTimeValVect(c_tm.tm_mon, m_vmon, lower))
-        break;
-      if (!compareTimeValVect(c_tm.tm_year, m_vyear, lower))
-        break;
-
-      break;
-    }
-
-    std::time_t tt = std::mktime(&c_tm);
-    if (tt == -1) {
-      THROW_EX(std::logic_error, "Invalid time conversion");
-    }
-    tp = system_clock::from_time_t(tt);
-  }
-  else {
-    if (m_started)
-      tp = actualTimePoint + m_period;
-    else {
-      tp = m_startTime;
-      m_started = true;
-    }
-  }
-
-  return tp;
-}
-
-//return true - continue false - finish
-bool ScheduleRecord::compareTimeValVect(int& cval, const std::vector<int>& tvalV, bool& lw) const
-{
-  int dif, tvaln;
-  int tval0 = tvalV[0];
-
-  if (tval0 >= 0) { //we have to compare
-    bool found = false;
-    for (int tval : tvalV) { //try to find greater in vector
-      tvaln = tval;
-      if (tval > cval) {
-        found = true;
-        break;
-      }
-    }
-
-    if (found) { //found the closest greater
-      cval = tvaln;
-      lw = true;
-    }
-    else if (cval > tvaln) {
-      cval = tval0; //next time
-      lw = false;
-    }
-    else {
-      cval = tval0; //just in the same greates time - remain lw
-    }
-    return true;
-  }
-  else { //don't care just next time
-    if (!lw) cval++;
-    return false;
-  }
-}
-*/
-
 system_clock::time_point ScheduleRecord::getNext(const std::chrono::system_clock::time_point& actualTimePoint, const std::tm& actualTime)
 {
   system_clock::time_point tp;
 
-  if (!m_periodic) {
+  if (m_exactTime) {
+    return m_startTime;
+  }
+  else if (!m_periodic) {
 
     //evaluate remaining seconds
     int asec = actualTime.tm_sec;
@@ -706,7 +669,7 @@ system_clock::time_point ScheduleRecord::getNext(const std::chrono::system_clock
 
 bool ScheduleRecord::verifyTimePattern(const std::tm& actualTime) const
 {
-  if (!m_periodic) {
+  if (!m_periodic && !m_exactTime) {
     if (!verifyTimePattern(actualTime.tm_min, m_vmin)) return false;
     if (!verifyTimePattern(actualTime.tm_hour, m_vhour)) return false;
     if (!verifyTimePattern(actualTime.tm_mday, m_vmday)) return false;

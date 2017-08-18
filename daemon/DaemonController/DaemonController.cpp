@@ -378,7 +378,7 @@ void DaemonController::startScheduler()
     }
   }
 
-  m_scheduler->start();
+  //m_scheduler->start();
 
   //Pet WatchDog at least from Scheduler if there is no DpaTransaction
   m_scheduler->registerMessageHandler("WatchDogPet", [this](const std::string& msg) {
@@ -600,6 +600,9 @@ void DaemonController::startClients()
       CATCH_EX("Cannot start messaging ", std::exception, e);
     }
   }
+
+  //all is ready => start Scheduler at the end
+  m_scheduler->start();
 
   TRC_LEAVE("");
 }

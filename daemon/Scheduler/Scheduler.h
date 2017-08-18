@@ -107,6 +107,18 @@ public:
   static void getTime(std::chrono::system_clock::time_point& timePoint, std::tm& timeStr);
 
 private:
+  //These special time specification "nicknames" which replace the 5 initial time and date fields,
+  //and are prefixed with the '@' character, are supported :
+  //@reboot : Run once after reboot.
+  //  @yearly : Run once a year, ie.  "0 0 0 0 1 1 *".
+  //  @annually : Run once a year, ie.  "0 0 0 0 1 1 *".
+  //  @monthly : Run once a month, ie. "0 0 0 0 1 * *".
+  //  @weekly : Run once a week, ie.  "0 0 0 * * * 0".
+  //  @daily : Run once a day, ie.   "0 0 0 * * * *".
+  //  @hourly : Run once an hour, ie. "0 0 * * * * *".
+  //  @minutely : Run once a minute, ie. "0 * * * * * *".
+  std::string solveNickname(const std::string& timeSpec);
+
   //Change handle it if duplicit detected by Scheduler
   void shuffleHandle(); //change handle it if duplicit exists
   //The only method can do it
@@ -127,6 +139,7 @@ private:
   std::vector<int> m_vwday;
 
   //explicit timing
+  bool m_exactTime = false;
   bool m_periodic = false;
   bool m_started = false;
   std::chrono::seconds m_period;
