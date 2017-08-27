@@ -216,21 +216,20 @@ void UdpMessaging::getGwIdent(ustring& message)
   //8. - Public IP address e.g. : 213.214.215.120
 
   const char* crlf = "\x0D\x0A";
-  const std::string& ipAddr = m_udpChannel->getListeningIpAdress();
 
-  //TODO set correct IP adresses, MAC, OS ver, etc
   std::basic_ostringstream<char> ostring;
   ostring << crlf <<
     "iqrf-daemon" << crlf <<
-    "v0.1.1" << crlf <<
-    "00 00 00 00 00 00" << crlf <<
-    "5.42" << crlf <<
-    ipAddr << crlf <<
-    "iqrf_xxxx" << crlf <<
-    "3.06D" << crlf <<
-    ipAddr << crlf;
+    m_daemon->getDaemonVersion() << crlf <<
+    m_udpChannel->getListeningMacAddress() << crlf <<
+    "0.00" << crlf << //TODO
+    m_udpChannel->getListeningIpAddress() << crlf <<
+    "iqrf_xxxx" << crlf << //TODO
+    m_daemon->getOsVersion() << "(" << m_daemon->getOsBuild() << ")" << crlf <<
+    m_udpChannel->getListeningIpAddress() << crlf; //TODO
 
-  ustring res((unsigned char*)ostring.str().data(), ostring.str().size());
+  std::string resp = ostring.str();
+  ustring res((unsigned char*)resp.data(), resp.size());
   message = res;
 }
 

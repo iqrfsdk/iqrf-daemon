@@ -72,16 +72,17 @@ public:
   void registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> message_handler) override;
   IScheduler* getScheduler() override { return m_scheduler; }
   std::string doCommand(const std::string& cmd) override;
+  const std::string& getModuleId() override { return m_moduleId; }
+  const std::string& getOsVersion() override { return m_osVersion; }
+  const std::string& getTrType() override { return m_trType; }
+  const std::string& getMcuType() override { return m_mcuType; }
+  const std::string& getOsBuild() override { return m_osBuild; }
+  const std::string& getDaemonVersion() override { return m_version; }
+  const std::string& getDaemonVersionBuild() override { return m_versionBuild; }
 
   void exit();
 
   void setMode(Mode mode);
-
-  const std::string& getModuleId() { return m_moduleId; }
-  const std::string& getOsVersion() { return m_osVersion; }
-  const std::string& getTrType() { return m_trType; }
-  const std::string& getMcuType() { return m_mcuType; }
-  const std::string& getOsBuild() { return m_osBuild; }
 
 private:
   std::mutex m_modeMtx;
@@ -161,4 +162,7 @@ private:
   bool m_fcc = false;
   std::string m_mcuType;
   std::string m_osBuild;
+
+  std::string m_version;
+  std::string m_versionBuild;
 };

@@ -137,6 +137,8 @@ DaemonController::DaemonController()
   , m_scheduler(nullptr)
   , m_modeStr(MODE_OPERATIONAL)
   , m_mode(Mode::Operational)
+  , m_version(DAEMON_VERSION)
+  , m_versionBuild(BUILD_TIMESTAMP)
 {
 }
 

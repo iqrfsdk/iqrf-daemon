@@ -33,4 +33,11 @@ public:
   virtual void registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> message_handler) = 0;
   virtual IScheduler* getScheduler() = 0;
   virtual std::string doCommand(const std::string& cmd) = 0;
+  virtual const std::string& getModuleId() = 0;
+  virtual const std::string& getOsVersion() = 0;
+  virtual const std::string& getTrType() = 0;
+  virtual const std::string& getMcuType() = 0;
+  virtual const std::string& getOsBuild() = 0;
+  virtual const std::string& getDaemonVersion() = 0;
+  virtual const std::string& getDaemonVersionBuild() = 0;
 };
