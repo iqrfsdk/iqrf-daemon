@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#include "PrfOs.h"
+#include "DpaTransactionTask.h"
+
 #include "UdpMessaging.h"
 #include "IqrfLogging.h"
 #include "LaunchUtils.h"
@@ -372,7 +375,27 @@ void DaemonController::startDpa()
     
     m_dpaHandler->SetRfCommunicationMode(m_communicationMode);
 
+    //TR module
+    PrfOs prfOs;
+    prfOs.read();
+    
+    DpaTransactionTask trans(prfOs);
+    executeDpaTransaction(trans);
+    int result = trans.waitFinish();
+
+    if (result != 0) {
+      THROW_EX(std::logic_error, "Cannot get TR parameters");
+    }
+
+    m_moduleId = prfOs.getModuleId();
+    m_osVersion = prfOs.getOsVersion();
+    m_trType = prfOs.getTrType();
+    m_mcuType = prfOs.getMcuType();
+    m_osBuild = prfOs.getOsBuild();
+
   }
+
+
   catch (std::exception& ae) {
     TRC_ERR("There was an error during DPA handler creation: " << ae.what());
   }

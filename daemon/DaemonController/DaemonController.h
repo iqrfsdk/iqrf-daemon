@@ -77,6 +77,12 @@ public:
 
   void setMode(Mode mode);
 
+  const std::string& getModuleId() { return m_moduleId; }
+  const std::string& getOsVersion() { return m_osVersion; }
+  const std::string& getTrType() { return m_trType; }
+  const std::string& getMcuType() { return m_mcuType; }
+  const std::string& getOsBuild() { return m_osBuild; }
+
 private:
   std::mutex m_modeMtx;
   Mode m_mode;
@@ -148,4 +154,11 @@ private:
   void loadMessagingComponent(const ComponentDescriptor& componentDescriptor);
   void loadServiceComponent(const ComponentDescriptor& componentDescriptor);
 
+  //TR module
+  std::string m_moduleId;
+  std::string m_osVersion;
+  std::string m_trType;
+  bool m_fcc = false;
+  std::string m_mcuType;
+  std::string m_osBuild;
 };
