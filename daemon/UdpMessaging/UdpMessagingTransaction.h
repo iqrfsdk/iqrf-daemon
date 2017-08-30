@@ -32,7 +32,7 @@ public:
   int getTimeout() const override;
   void processConfirmationMessage(const DpaMessage& confirmation) override;
   void processResponseMessage(const DpaMessage& response) override;
-  void processFinish(DpaRequest::DpaRequestStatus status) override;
+  void processFinish(DpaTransfer::DpaTransferStatus status) override;
   void setMessage(ustring message);
 private:
   DpaMessage m_message;

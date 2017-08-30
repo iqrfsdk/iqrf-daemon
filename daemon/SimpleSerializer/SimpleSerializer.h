@@ -18,7 +18,7 @@
 
 #include "ISerializer.h"
 #include "ObjectFactory.h"
-#include "PrfRaw.h"
+#include "DpaRaw.h"
 #include "PrfThermometer.h"
 #include "PrfLeds.h"
 #include "PlatformDep.h"
@@ -32,7 +32,7 @@ void parseRequestSimple(DpaTask& dpaTask, std::vector<std::string>& tokens);
 void encodeResponseSimple(const DpaTask & dt, std::ostream& ostr);
 void encodeTokens(const DpaTask& dpaTask, const std::string& errStr, std::ostream& ostr);
 
-class PrfRawSimple : public PrfRaw
+class PrfRawSimple : public DpaRaw
 {
 public:
   explicit PrfRawSimple(std::istream& istr);

@@ -18,7 +18,7 @@
 
 #include "ISerializer.h"
 #include "ObjectFactory.h"
-#include "PrfRaw.h"
+#include "DpaRaw.h"
 #include "PrfFrc.h"
 #include "PrfThermometer.h"
 #include "PrfIo.h"
@@ -105,7 +105,7 @@ public:
   bool m_dotNotation = false;
 };
 
-class PrfRawJson : public PrfRaw, public PrfCommonJson
+class PrfRawJson : public DpaRaw, public PrfCommonJson
 {
 public:
   explicit PrfRawJson(const rapidjson::Value& val);
@@ -114,7 +114,7 @@ public:
 private:
 };
 
-class PrfRawHdpJson : public PrfRaw, public PrfCommonJson
+class PrfRawHdpJson : public DpaRaw, public PrfCommonJson
 {
 public:
   static const std::string PRF_NAME;

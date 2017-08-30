@@ -144,7 +144,7 @@ private:
   iqrf::Level m_level;
   std::string m_iqrfInterfaceName;
   int m_dpaHandlerTimeout = 200;
-  DpaHandler::IqrfRfCommunicationMode m_communicationMode = DpaHandler::IqrfRfCommunicationMode::kStd;
+  IqrfRfCommunicationMode m_communicationMode = IqrfRfCommunicationMode::kStd;
 
   std::string m_configurationDir;
   std::string m_modeStr;

@@ -274,7 +274,7 @@ std::string PrfCommonJson::encodeResponseJsonFinal(const DpaTask& dpaTask)
     m_doc.AddMember(DPAVAL_STR, v, alloc);
   }
   if (m_has_request) {
-    encodeBinary(m_requestJ, dpaTask.getRequest().DpaPacket().Buffer, dpaTask.getRequest().Length());
+    encodeBinary(m_requestJ, dpaTask.getRequest().DpaPacket().Buffer, dpaTask.getRequest().GetLength());
     v.SetString(m_requestJ.c_str(), alloc);
     m_doc.AddMember(REQUEST_STR, v, alloc);
   }
@@ -284,7 +284,7 @@ std::string PrfCommonJson::encodeResponseJsonFinal(const DpaTask& dpaTask)
     m_doc.AddMember(REQUEST_TS_STR, v, alloc);
   }
   if (m_has_confirmation) {
-    encodeBinary(m_confirmationJ, dpaTask.getConfirmation().DpaPacket().Buffer, dpaTask.getConfirmation().Length());
+    encodeBinary(m_confirmationJ, dpaTask.getConfirmation().DpaPacket().Buffer, dpaTask.getConfirmation().GetLength());
     v.SetString(m_confirmationJ.c_str(), alloc);
     m_doc.AddMember(CONFIRMATION_STR, v, alloc);
   }
@@ -294,7 +294,7 @@ std::string PrfCommonJson::encodeResponseJsonFinal(const DpaTask& dpaTask)
     m_doc.AddMember(CONFIRMATION_TS_STR, v, alloc);
   }
   if (m_has_response) {
-    encodeBinary(m_responseJ, dpaTask.getResponse().DpaPacket().Buffer, dpaTask.getResponse().Length());
+    encodeBinary(m_responseJ, dpaTask.getResponse().DpaPacket().Buffer, dpaTask.getResponse().GetLength());
     v.SetString(m_responseJ.c_str(), alloc);
     m_doc.AddMember(RESPONSE_STR, v, alloc);
   }
@@ -395,7 +395,7 @@ std::string PrfRawHdpJson::encodeResponse(const std::string& errStr)
   m_has_response = true; //mandatory here
   
   //TODO data
-  int datalen = getResponse().Length() - sizeof(TDpaIFaceHeader) - 2; //DpaValue ResponseCode
+  int datalen = getResponse().GetLength() - sizeof(TDpaIFaceHeader) - 2; //DpaValue ResponseCode
   if (datalen > 0) {
     std::string res_data;
     if (m_dotNotation) {
@@ -692,7 +692,7 @@ JsonSerializer::JsonSerializer(const std::string& name)
 
 void JsonSerializer::init()
 {
-  registerClass<PrfRawJson>(PrfRaw::PRF_NAME);
+  registerClass<PrfRawJson>(DpaRaw::PRF_NAME);
   registerClass<PrfRawHdpJson>(PrfRawHdpJson::PRF_NAME);
   registerClass<PrfThermometerJson>(PrfThermometer::PRF_NAME);
   registerClass<PrfLedGJson>(PrfLedG::PRF_NAME);

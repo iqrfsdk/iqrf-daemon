@@ -15,7 +15,7 @@
  */
 
 #include "LaunchUtils.h"
-#include "PrfRaw.h"
+#include "DpaRaw.h"
 #include "DpaTransactionTask.h"
 #include "UdpMessaging.h"
 #include "IDaemon.h"
@@ -31,7 +31,7 @@ INIT_COMPONENT(IMessaging, UdpMessaging)
 
 void UdpMessaging::sendDpaMessageToUdp(const DpaMessage&  dpaMessage)
 {
-  ustring message(dpaMessage.DpaPacketData(), dpaMessage.Length());
+  ustring message(dpaMessage.DpaPacketData(), dpaMessage.GetLength());
   TRC_DBG(FORM_HEX(message.data(), message.size()));
 
   std::basic_string<unsigned char> udpMessage(IQRF_UDP_HEADER_SIZE + IQRF_UDP_CRC_SIZE, '\0');

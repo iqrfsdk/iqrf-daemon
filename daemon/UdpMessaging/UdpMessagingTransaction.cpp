@@ -51,13 +51,13 @@ void UdpMessagingTransaction::processResponseMessage(const DpaMessage& response)
   m_udpMessaging->sendDpaMessageToUdp(response);
 }
 
-void UdpMessagingTransaction::processFinish(DpaRequest::DpaRequestStatus status)
+void UdpMessagingTransaction::processFinish(DpaTransfer::DpaTransferStatus status)
 {
   if (m_forwarded) {
     m_forwarded->processFinish(status);
   }
 
-  m_success = (status == DpaRequest::DpaRequestStatus::kAborted);
+  m_success = (status == DpaTransfer::DpaTransferStatus::kAborted);
 }
 
 void UdpMessagingTransaction::setMessage(ustring message)
