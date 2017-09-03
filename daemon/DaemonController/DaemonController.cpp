@@ -372,7 +372,7 @@ void DaemonController::startDpa()
       m_dpaHandler->Timeout(m_dpaHandlerTimeout);
     }
     else {
-      // 200ms by default
+      // 400ms by default
       m_dpaHandler->Timeout(DpaHandler::DEFAULT_TIMING);
     }
     
