@@ -522,7 +522,7 @@ void DaemonController::loadServiceComponent(const ComponentDescriptor& component
   if (componentDescriptor.m_interfaceName != "IService")
     return;
 
-  typedef std::unique_ptr<IService>(*CreateClientService)(const std::string&);
+  typedef std::unique_ptr<IService>(*CreateBaseService)(const std::string&);
 
   const auto instancesMember = jutils::getMember("Instances", componentDescriptor.m_doc);
   const rapidjson::Value& instances = instancesMember->value;
@@ -545,7 +545,7 @@ void DaemonController::loadServiceComponent(const ComponentDescriptor& component
       jutils::assertIsObject("Properties{}", properties);
 
       //create instance
-      CreateClientService createService = (CreateClientService)getCreateFunction(componentDescriptor.m_componentName, true);
+      CreateBaseService createService = (CreateBaseService)getCreateFunction(componentDescriptor.m_componentName, true);
       std::unique_ptr<IService> client = createService(instanceName);
       client->setDaemon(this);
 

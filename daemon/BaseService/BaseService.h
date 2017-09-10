@@ -48,10 +48,13 @@ public:
 
 private:
   void handleMsgFromMessaging(const ustring& msg);
+  void handleAsyncDpaResponse(const ustring& msg);
 
   std::string m_name;
 
   IMessaging* m_messaging;
   IDaemon* m_daemon;
   std::vector<ISerializer*> m_serializerVect;
+
+  bool m_asyncDpaResponse = false;
 };

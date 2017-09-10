@@ -54,6 +54,7 @@ void BaseService::setMessaging(IMessaging* messaging)
 void BaseService::update(const rapidjson::Value& cfg)
 {
   TRC_ENTER("");
+  m_asyncDpaResponse = jutils::getPossibleMemberAs<bool>("AsyncDpaResponse", cfg, m_asyncDpaResponse);
   TRC_LEAVE("");
 }
 
@@ -66,7 +67,16 @@ void BaseService::start()
     handleMsgFromMessaging(msgu);
   });
 
-  TRC_INF("ClientServicePlain :" << PAR(m_name) << " started");
+  if (m_asyncDpaResponse) {
+    TRC_INF("Set AsyncDpaResponseHandler :" << PAR(m_name));
+    //TODO
+    //m_daemon->registerAsyncDpaMessageHandler([&](const std::string& msg) {
+    //  ustring msgu((unsigned char*)msg.data(), msg.size());
+    //  handleMsgFromMessaging(msgu);
+    //});
+  }
+
+  TRC_INF("BaseService :" << PAR(m_name) << " started");
 
   TRC_LEAVE("");
 }
@@ -131,4 +141,10 @@ void BaseService::handleMsgFromMessaging(const ustring& msg)
 
   ustring msgu((unsigned char*)os.str().data(), os.str().size());
   m_messaging->sendMessage(msgu);
+}
+
+void BaseService::handleAsyncDpaResponse(const ustring& msg)
+{
+  TRC_DBG("==================================" << std::endl <<
+    "Received AsyncDpaResponse: " << std::endl << FORM_HEX(msg.data(), msg.size()));
 }
