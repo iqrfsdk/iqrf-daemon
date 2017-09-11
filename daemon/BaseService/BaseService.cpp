@@ -68,18 +68,25 @@ void BaseService::start()
   });
 
   if (m_asyncDpaResponse) {
-    TRC_INF("Set AsyncDpaResponseHandler :" << PAR(m_name));
-    //TODO
-    //m_daemon->registerAsyncDpaMessageHandler([&](const std::string& msg) {
-    //  ustring msgu((unsigned char*)msg.data(), msg.size());
-    //  handleMsgFromMessaging(msgu);
-    //});
+    TRC_INF("Set AsyncDpaMessageHandler :" << PAR(m_name));
+    m_daemon->registerAsyncMessageHandler(m_name, [&](const DpaMessage& dpaMessage) {
+      handleAsyncDpaMessage(dpaMessage);
+    });
   }
 
   TRC_INF("BaseService :" << PAR(m_name) << " started");
 
   TRC_LEAVE("");
 }
+
+
+void BaseService::handleAsyncDpaMessage(const DpaMessage& dpaMessage)
+{
+  TRC_ENTER("");
+  //TRC_INF("Set AsyncDpaResponseHandler :" << PAR(m_name));
+  TRC_LEAVE("");
+}
+
 
 void BaseService::stop()
 {
@@ -141,10 +148,4 @@ void BaseService::handleMsgFromMessaging(const ustring& msg)
 
   ustring msgu((unsigned char*)os.str().data(), os.str().size());
   m_messaging->sendMessage(msgu);
-}
-
-void BaseService::handleAsyncDpaResponse(const ustring& msg)
-{
-  TRC_DBG("==================================" << std::endl <<
-    "Received AsyncDpaResponse: " << std::endl << FORM_HEX(msg.data(), msg.size()));
 }

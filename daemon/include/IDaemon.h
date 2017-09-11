@@ -17,20 +17,21 @@
 #pragma once
 
 #include "DpaTransaction.h"
-#include "IMessaging.h"
-#include "IService.h"
-#include <set>
 #include <string>
-#include <functional>
+
+typedef std::basic_string<unsigned char> ustring;
+typedef std::function<void(const DpaMessage& dpaMessage)> AsyncMessageHandlerFunc;
 
 class IScheduler;
+class IService;
 
 class IDaemon
 {
 public:
   virtual ~IDaemon() {};
   virtual void executeDpaTransaction(DpaTransaction& dpaTransaction) = 0;
-  virtual void registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> message_handler) = 0;
+  virtual void registerAsyncMessageHandler(const std::string& clientId, AsyncMessageHandlerFunc fun) = 0;
+  virtual void unregisterAsyncMessageHandler(const std::string& clientId) = 0;
   virtual IScheduler* getScheduler() = 0;
   virtual std::string doCommand(const std::string& cmd) = 0;
   virtual const std::string& getModuleId() = 0;

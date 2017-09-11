@@ -48,7 +48,7 @@ public:
 
 private:
   void handleMsgFromMessaging(const ustring& msg);
-  void handleAsyncDpaResponse(const ustring& msg);
+  void handleAsyncDpaMessage(const DpaMessage& dpaMessage);
 
   std::string m_name;
 
