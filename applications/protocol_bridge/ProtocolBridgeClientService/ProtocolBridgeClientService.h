@@ -145,10 +145,10 @@ private:
 
 	std::string m_name;
 
-  // how often to send frc status cmd in min
-  uint16_t m_frcPeriod = 1;
+  // how often to send frc status cmd in sec
+  uint16_t m_frcPeriod = 30;
 
-	// sleeping period is this value * HW interval (1 min)
+	// sleeping period is this value * HW interval (min)
 	uint16_t m_sleepPeriod = 1;
 
 	IMessaging* m_messaging;

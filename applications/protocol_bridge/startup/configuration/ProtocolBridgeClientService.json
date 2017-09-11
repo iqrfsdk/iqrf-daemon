@@ -8,7 +8,7 @@
         "JsonSerializer"
       ],
       "Properties": {
-        "FrcPeriod": 2,
+        "FrcPeriod": 30,
         "SleepPeriod": 10,
         "ProtocolBridges": [ 1 ],
         "DpaRequestJsonPattern": {

@@ -113,7 +113,7 @@ void ProtocolBridgeClientService::start()
 	m_daemon->getScheduler()->scheduleTaskPeriodic(
 		getClientName(),
 		SCHEDULED_GET_AND_PROCESS_DATA_TASK,
-    std::chrono::minutes(m_frcPeriod)
+    std::chrono::seconds(m_frcPeriod)
 	);
 
 	TRC_INF("ProtocolBridgeClientService :" << PAR(m_name) << " started");
