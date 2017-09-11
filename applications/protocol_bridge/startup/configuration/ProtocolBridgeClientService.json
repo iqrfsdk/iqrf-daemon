@@ -8,15 +8,15 @@
         "JsonSerializer"
       ],
       "Properties": {
-        "FrcPeriod": 5,
-        "SleepPeriod": 30,
+        "FrcPeriod": 2,
+        "SleepPeriod": 10,
         "ProtocolBridges": [ 1 ],
         "DpaRequestJsonPattern": {
           "ctype": "dpa",
           "type": "ProtocolBridge",
           "cmd": "SYSINFO",
           "hwpid": "ffff",
-          "timeout": 10000,
+          "timeout": 1000,
           "request": "",
           "request_ts": "",
           "confirmation": "",

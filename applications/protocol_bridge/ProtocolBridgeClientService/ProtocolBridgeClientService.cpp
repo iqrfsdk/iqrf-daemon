@@ -50,7 +50,8 @@ void ProtocolBridgeClientService::updateConfiguration(const rapidjson::Value& cf
 	jutils::assertIsObject("", cfg);
 
 	// read config settings
-	//m_sleepPeriod = jutils::getPossibleMemberAs<int>("SleepPeriod", cfg, m_sleepPeriod);
+	m_frcPeriod = jutils::getPossibleMemberAs<int>("FrcPeriod", cfg, m_frcPeriod);
+  m_sleepPeriod = jutils::getPossibleMemberAs<int>("SleepPeriod", cfg, m_sleepPeriod);
 
 	// update watched Protocol Bridges
 	m_watchedProtocolBridges.clear();
@@ -109,15 +110,13 @@ void ProtocolBridgeClientService::start()
 	);
 
 	// schedule periodic task of get and process data from protocol bridge
-	std::chrono::duration<int, std::ratio<60, 1> > one_minute(1);
 	m_daemon->getScheduler()->scheduleTaskPeriodic(
 		getClientName(),
 		SCHEDULED_GET_AND_PROCESS_DATA_TASK,
-		one_minute
+    std::chrono::minutes(m_frcPeriod)
 	);
 
 	TRC_INF("ProtocolBridgeClientService :" << PAR(m_name) << " started");
-
 	TRC_LEAVE("");
 }
 
@@ -510,7 +509,7 @@ void ProtocolBridgeClientService::sleepProtocolBridge(uint8_t bridgeAddress) {
 	ProtocolBridgeSchd bridgeSchedule = m_watchedProtocolBridges.at(bridgeAddress);
 	ProtocolBridge bridge = bridgeSchedule.getDpa();
 
-	bridge.commandSleepNow(m_sleepTime);
+	bridge.commandSleepNow(m_sleepPeriod);
 	bridge.setHwpid(0xFFFF);
 
 	TRC_DBG("Request: " << std::endl << FORM_HEX(bridge.getRequest().DpaPacketData(), bridge.getRequest().Length()));

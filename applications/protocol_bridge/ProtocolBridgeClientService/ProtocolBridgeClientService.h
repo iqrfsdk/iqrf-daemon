@@ -145,14 +145,15 @@ private:
 
 	std::string m_name;
 
-	// protocol bridge sleeping time
-	// sleeping time is this value * HW interval
-	uint16_t m_sleepTime = 1;
+  // how often to send frc status cmd in min
+  uint16_t m_frcPeriod = 1;
+
+	// sleeping period is this value * HW interval (1 min)
+	uint16_t m_sleepPeriod = 1;
 
 	IMessaging* m_messaging;
 	IDaemon* m_daemon;
 	ISerializer* m_serializer;
 
 	std::unordered_map<int, ProtocolBridgeSchd> m_watchedProtocolBridges;
-
 };
