@@ -5,15 +5,14 @@
 # Tested on AAEON UP, UbiLinux
 
 cnt=1
-adrdec=1
-adrhex=1
+adrdec=0
+adrhex=0
 
 echo "sending requests to pulse red led"
 
 while [ true ]
 do
-
-	for value in {1..20}
+	for value in {0..20}
 	do
 
 		echo "req n.$cnt adr n.$adrhex"
@@ -26,10 +25,10 @@ do
 		adrdec=$((adrdec+1))
 		if [ $adrdec -gt 20 ]
 		then
-			adrdec=1
+			adrdec=0
 		fi
 		adrhex=`echo "ibase=10;obase=16;$adrdec"|bc`
 	done
 
-	sleep 60
+	sleep 90
 done
