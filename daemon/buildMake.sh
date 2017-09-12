@@ -3,7 +3,7 @@
 
 set -e
 
-project=clibudp
+project=daemon
 
 #expected build dir structure
 buildexp=build/Unix_Makefiles

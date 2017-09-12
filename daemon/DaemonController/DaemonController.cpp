@@ -68,12 +68,12 @@ void DaemonController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
       }
       catch (std::exception& e) {
         CATCH_EX("Error in ExecuteDpaTransaction: ", std::exception, e);
-        dpaTransaction->processFinish(DpaRequest::kError);
+        dpaTransaction->processFinish(DpaTransfer::kError);
       }
     }
     else {
       TRC_ERR("Dpa interface is not working");
-      dpaTransaction->processFinish(DpaRequest::kError);
+      dpaTransaction->processFinish(DpaTransfer::kError);
     }
   }
   break;
@@ -87,12 +87,12 @@ void DaemonController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
       }
       catch (std::exception& e) {
         CATCH_EX("Error in ExecuteDpaTransaction: ", std::exception, e);
-        dpaTransaction->processFinish(DpaRequest::kError);
+        dpaTransaction->processFinish(DpaTransfer::kError);
       }
     }
     else {
       TRC_ERR("Dpa interface is not working");
-      dpaTransaction->processFinish(DpaRequest::kError);
+      dpaTransaction->processFinish(DpaTransfer::kError);
     }
   }
   break;
@@ -100,7 +100,7 @@ void DaemonController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
   case Mode::Service:
   {
     TRC_DBG("Dpa interface is in exclusiveMode");
-    dpaTransaction->processFinish(DpaRequest::kError);
+    dpaTransaction->processFinish(DpaTransfer::kError);
   }
   break;
 
@@ -337,11 +337,11 @@ void DaemonController::startIqrfIf()
       std::string communicationMode;
       communicationMode = jutils::getPossibleMemberAs<std::string>("CommunicationMode", fnd->second.m_doc, communicationMode);
       if (communicationMode == "LP")
-        m_communicationMode = DpaHandler::IqrfRfCommunicationMode::kLp;
+        m_communicationMode = IqrfRfCommunicationMode::kLp;
       else if (communicationMode == "STD")
-        m_communicationMode = DpaHandler::IqrfRfCommunicationMode::kStd;
+        m_communicationMode = IqrfRfCommunicationMode::kStd;
       else
-        m_communicationMode = DpaHandler::IqrfRfCommunicationMode::kStd;
+        m_communicationMode = IqrfRfCommunicationMode::kStd;
 
 
       TRC_INF(PAR(m_iqrfInterfaceName));
@@ -372,7 +372,8 @@ void DaemonController::startDpa()
       m_dpaHandler->Timeout(m_dpaHandlerTimeout);
     }
     else {
-      m_dpaHandler->Timeout(200);    // Default timeout is infinite
+      // 400ms by default
+      m_dpaHandler->Timeout(DpaHandler::DEFAULT_TIMING);
     }
     
     m_dpaHandler->SetRfCommunicationMode(m_communicationMode);

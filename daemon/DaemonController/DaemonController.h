@@ -143,8 +143,8 @@ private:
   int m_traceFileSize = 0;
   iqrf::Level m_level;
   std::string m_iqrfInterfaceName;
-  int m_dpaHandlerTimeout = 200;
-  DpaHandler::IqrfRfCommunicationMode m_communicationMode = DpaHandler::IqrfRfCommunicationMode::kStd;
+  int m_dpaHandlerTimeout = 400;
+  IqrfRfCommunicationMode m_communicationMode = IqrfRfCommunicationMode::kStd;
 
   std::string m_configurationDir;
   std::string m_modeStr;

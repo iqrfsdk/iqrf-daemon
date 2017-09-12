@@ -6,7 +6,7 @@ set -e
 project=iqrfapp
 
 #expected build dir structure
-buildexp=build/Unix_Makefiles
+buildexp=build/Eclipse_CDT4-Unix_Makefiles
 
 currentdir=$PWD
 builddir=./${buildexp}
@@ -29,7 +29,7 @@ popd
 #launch cmake to generate build environment
 pushd ${builddir}
 pwd
-cmake -G "Unix Makefiles" -Dcutils_DIR:PATH=${cutils} -Diqrfd_DIR:PATH=${iqrfd} ${currentdir} -DCMAKE_BUILD_TYPE=Debug
+cmake -G "Eclipse CDT4 - Unix Makefiles" -Dcutils_DIR:PATH=${cutils} -Diqrfd_DIR:PATH=${iqrfd} ${currentdir} -DCMAKE_BUILD_TYPE=Debug
 popd
 
 #build from generated build environment

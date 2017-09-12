@@ -98,7 +98,7 @@ void encodeTokens(const DpaTask& dpaTask, const std::string& errStr, std::ostrea
 //00 00 07 03 ff ff  LedG 0 PULSE
 
 PrfRawSimple::PrfRawSimple(std::istream& istr)
-  :PrfRaw()
+  :DpaRaw()
 {
   uint8_t bbyte;
   int val;
@@ -127,7 +127,7 @@ PrfRawSimple::PrfRawSimple(std::istream& istr)
 std::string PrfRawSimple::encodeResponse(const std::string& errStr)
 {
   std::ostringstream ostr;
-  int len = getResponse().Length();
+  int len = getResponse().GetLength();
   TRC_DBG(PAR(len));
 
   std::ostringstream os;
