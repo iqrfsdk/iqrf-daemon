@@ -5,29 +5,31 @@
 # Tested on AAEON UP, UbiLinux
 
 cnt=1
-adr=1
+adrdec=1
+adrhex=1
 
 echo "sending requests to pulse red led"
 
 while [ true ]
 do
 
-	for value in {1..5}
+	for value in {1..20}
 	do
 
-		echo "req n.$cnt adr n.$adr"
+		echo "req n.$cnt adr n.$adrhex"
 
-		mosquitto_pub -t "Iqrf/DpaRequest" -m "{\"ctype\":\"dpa\",\"type\":\"raw\",\"msgid\":\"$cnt\",\"timeout\":2000,\"request\":\"$adr.00.06.03.ff.ff\",\"request_ts\":\"\",\"confirmation\":\".\",\"confirmation_ts\":\"\",\"response\":\".\",\"response_ts\":\"\"}"
+#		mosquitto_pub -t "Iqrf/DpaRequest" -m "{\"ctype\":\"dpa\",\"type\":\"raw\",\"msgid\":\"$cnt\",\"timeout\":2000,\"request\":\"$adrhex.00.06.03.ff.ff\",\"request_ts\":\"\",\"confirmation\":\".\",\"confirmation_ts\":\"\",\"response\":\".\",\"response_ts\":\"\"}"
+		mosquitto_pub -t "Iqrf/DpaRequest" -m "{\"ctype\":\"dpa\",\"type\":\"raw\",\"msgid\":\"$cnt\",\"request\":\"$adrhex.00.06.03.ff.ff\",\"request_ts\":\"\",\"confirmation\":\".\",\"confirmation_ts\":\"\",\"response\":\".\",\"response_ts\":\"\"}"
 
 		cnt=$((cnt+1))
 
-		adr=$((adr+1))
-		if [ $adr -gt 5 ]
+		adrdec=$((adrdec+1))
+		if [ $adrdec -gt 20 ]
 		then
-			adr=1
+			adrdec=1
 		fi
-		printf -v adr "%x" "$adr"
+		adrhex=`echo "ibase=10;obase=16;$adrdec"|bc`
 	done
 
-	sleep 10
+	sleep 60
 done
