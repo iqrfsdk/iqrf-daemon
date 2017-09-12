@@ -40,6 +40,7 @@ if (WIN32)
 	spi_iqrf
 	sysfs_gpio
 	Ws2_32
+	iphlpapi
 	)
 else()
 	target_link_libraries(${PROJECT_NAME}
