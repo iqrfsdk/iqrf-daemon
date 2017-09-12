@@ -37,6 +37,7 @@ public:
   //virtual std::string parseSched(const std::string& request);
   //virtual std::string parseStat(const std::string& request);
   virtual std::string getLastError() const = 0;
+  virtual std::string encodeAsyncAsDpaRaw(const DpaMessage& dpaMessage) const = 0;
 
   virtual ~ISerializer() {}
 };

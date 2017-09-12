@@ -239,3 +239,9 @@ std::string SimpleSerializer::getLastError() const
 {
   return m_lastError;
 }
+
+std::string SimpleSerializer::encodeAsyncAsDpaRaw(const DpaMessage& dpaMessage) const
+{
+  //TODO
+  return "TODO";
+}

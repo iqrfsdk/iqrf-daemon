@@ -91,6 +91,8 @@ public:
   std::unique_ptr<DpaTask> parseRequest(const std::string& request) override;
   std::string parseConfig(const std::string& request) override;
   std::string getLastError() const override;
+  std::string encodeAsyncAsDpaRaw(const DpaMessage& dpaMessage) const override;
+
 private:
   ObjectFactory<DpaTask, std::istream> m_dpaParser;
 

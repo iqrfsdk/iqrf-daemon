@@ -17,6 +17,7 @@
 #include "LaunchUtils.h"
 #include "BaseService.h"
 #include "DpaTransactionTask.h"
+#include "DpaRaw.h"
 #include "IDaemon.h"
 #include "IqrfLogging.h"
 
@@ -79,15 +80,6 @@ void BaseService::start()
   TRC_LEAVE("");
 }
 
-
-void BaseService::handleAsyncDpaMessage(const DpaMessage& dpaMessage)
-{
-  TRC_ENTER("");
-  //TRC_INF("Set AsyncDpaResponseHandler :" << PAR(m_name));
-  TRC_LEAVE("");
-}
-
-
 void BaseService::stop()
 {
   TRC_ENTER("");
@@ -126,6 +118,12 @@ void BaseService::handleMsgFromMessaging(const ustring& msg)
         m_daemon->executeDpaTransaction(trans);
         int result = trans.waitFinish();
         os << dpaTask->encodeResponse(trans.getErrorStr());
+        //TODO
+        //just stupid hack for test async - remove it
+        ///////
+        //handleAsyncDpaMessage(dpaTask->getResponse());
+        //handleAsyncDpaMessage(dpaTask->getRequest());
+        ///////
         lastError = ser->getLastError();
         handled = true;
         break;
@@ -148,4 +146,13 @@ void BaseService::handleMsgFromMessaging(const ustring& msg)
 
   ustring msgu((unsigned char*)os.str().data(), os.str().size());
   m_messaging->sendMessage(msgu);
+}
+
+void BaseService::handleAsyncDpaMessage(const DpaMessage& dpaMessage)
+{
+  //TRC_ENTER("");
+  std::string sr = m_serializerVect[0]->encodeAsyncAsDpaRaw(dpaMessage);
+  ustring msgu((unsigned char*)sr.data(), sr.size());
+  m_messaging->sendMessage(msgu);
+  //TRC_LEAVE("");
 }

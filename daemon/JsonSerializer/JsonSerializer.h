@@ -109,6 +109,7 @@ class PrfRawJson : public DpaRaw, public PrfCommonJson
 {
 public:
   explicit PrfRawJson(const rapidjson::Value& val);
+  PrfRawJson::PrfRawJson(const DpaMessage& dpaMessage);
   virtual ~PrfRawJson() {}
   std::string encodeResponse(const std::string& errStr) override;
 private:
@@ -215,6 +216,8 @@ public:
   std::unique_ptr<DpaTask> parseRequest(const std::string& request) override;
   std::string parseConfig(const std::string& request) override;
   std::string getLastError() const override;
+  std::string encodeAsyncAsDpaRaw(const DpaMessage& dpaMessage) const override;
+
 private:
   void init();
   std::string m_lastError;

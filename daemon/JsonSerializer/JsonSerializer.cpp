@@ -340,6 +340,32 @@ std::string PrfRawJson::encodeResponse(const std::string& errStr)
   return encodeResponseJsonFinal(*this);
 }
 
+//just for Async
+PrfRawJson::PrfRawJson(const DpaMessage& dpaMessage)
+{
+  m_ctype = CAT_DPA_STR;
+  m_type = DpaRaw::PRF_NAME;
+  switch (dpaMessage.MessageDirection()) {
+  case DpaMessage::MessageType::kRequest:
+    setRequest(dpaMessage);
+    m_has_request = true;
+    m_has_response = true;
+    m_has_request_ts = true;
+    timestampRequest();
+    break;
+  case DpaMessage::MessageType::kResponse:
+    parseResponse(dpaMessage);
+    m_has_request = true;
+    m_has_response = true;
+    m_has_response_ts = true;
+    timestampResponse();
+    break;
+  default:;
+  }
+  m_has_ctype = true;
+  m_has_type = true;
+}
+
 //-------------------------------
 const std::string PrfRawHdpJson::PRF_NAME("raw-hdp");
 
@@ -765,4 +791,21 @@ std::string JsonSerializer::parseConfig(const std::string& request)
 std::string JsonSerializer::getLastError() const
 {
   return m_lastError;
+}
+
+std::string JsonSerializer::encodeAsyncAsDpaRaw(const DpaMessage& dpaMessage) const
+{
+  PrfRawJson raw(dpaMessage);
+  std::string status;
+  switch (dpaMessage.MessageDirection()) {
+  case DpaMessage::MessageType::kRequest:
+    status = "ASYNC_REQUEST";
+    break;
+  case DpaMessage::MessageType::kResponse:
+    status = "ASYNC_RESPONSE";
+    break;
+  default:
+    status = "ASYNC";
+  }
+  return raw.encodeResponse(status);
 }
