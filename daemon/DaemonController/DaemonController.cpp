@@ -112,23 +112,26 @@ void DaemonController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
 
 }
 
-void DaemonController::registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> asyncHandler)
+void DaemonController::registerAsyncMessageHandler(const std::string& serviceId, AsyncMessageHandlerFunc fun)
 {
-  m_asyncHandler = asyncHandler;
-  m_dpaHandler->RegisterAsyncMessageHandler([&](const DpaMessage& dpaMessage) {
-    if (m_asyncHandler) {
-      m_asyncHandler(dpaMessage);
-    }
-    else {
-      TRC_WAR("Unregistered asyncHandler()");
-    }
-  });
+  std::lock_guard<std::mutex> lck(m_asyncMessageHandlersMutex);
+  //TODO check success
+  m_asyncMessageHandlers.insert(make_pair(serviceId, fun));
+
 }
 
-//void DaemonController::unregisterAsyncDpaMessageHandler()
-//{
-//  m_asyncHandler = nullptr;
-//}
+void DaemonController::unregisterAsyncMessageHandler(const std::string& serviceId)
+{
+  std::lock_guard<std::mutex> lck(m_asyncMessageHandlersMutex);
+  m_asyncMessageHandlers.erase(serviceId);
+}
+
+void DaemonController::asyncDpaMessageHandler(const DpaMessage& dpaMessage)
+{
+  std::lock_guard<std::mutex> lck(m_asyncMessageHandlersMutex);
+  for (auto & hndl : m_asyncMessageHandlers)
+    hndl.second(dpaMessage);
+}
 
 DaemonController::DaemonController()
   :m_iqrfInterface(nullptr)
@@ -378,6 +381,12 @@ void DaemonController::startDpa()
     
     m_dpaHandler->SetRfCommunicationMode(m_communicationMode);
 
+    //Async msg handling
+    m_dpaHandler->RegisterAsyncMessageHandler([&](const DpaMessage& dpaMessage) {
+      asyncDpaMessageHandler(dpaMessage);
+    });
+
+
     //TR module
     PrfOs prfOs;
     prfOs.read();
@@ -522,7 +531,7 @@ void DaemonController::loadServiceComponent(const ComponentDescriptor& component
   if (componentDescriptor.m_interfaceName != "IService")
     return;
 
-  typedef std::unique_ptr<IService>(*CreateClientService)(const std::string&);
+  typedef std::unique_ptr<IService>(*CreateBaseService)(const std::string&);
 
   const auto instancesMember = jutils::getMember("Instances", componentDescriptor.m_doc);
   const rapidjson::Value& instances = instancesMember->value;
@@ -545,7 +554,7 @@ void DaemonController::loadServiceComponent(const ComponentDescriptor& component
       jutils::assertIsObject("Properties{}", properties);
 
       //create instance
-      CreateClientService createService = (CreateClientService)getCreateFunction(componentDescriptor.m_componentName, true);
+      CreateBaseService createService = (CreateBaseService)getCreateFunction(componentDescriptor.m_componentName, true);
       std::unique_ptr<IService> client = createService(instanceName);
       client->setDaemon(this);
 

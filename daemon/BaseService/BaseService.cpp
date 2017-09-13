@@ -17,6 +17,7 @@
 #include "LaunchUtils.h"
 #include "BaseService.h"
 #include "DpaTransactionTask.h"
+#include "DpaRaw.h"
 #include "IDaemon.h"
 #include "IqrfLogging.h"
 
@@ -54,6 +55,7 @@ void BaseService::setMessaging(IMessaging* messaging)
 void BaseService::update(const rapidjson::Value& cfg)
 {
   TRC_ENTER("");
+  m_asyncDpaResponse = jutils::getPossibleMemberAs<bool>("AsyncDpaResponse", cfg, m_asyncDpaResponse);
   TRC_LEAVE("");
 }
 
@@ -66,7 +68,14 @@ void BaseService::start()
     handleMsgFromMessaging(msgu);
   });
 
-  TRC_INF("ClientServicePlain :" << PAR(m_name) << " started");
+  if (m_asyncDpaResponse) {
+    TRC_INF("Set AsyncDpaMessageHandler :" << PAR(m_name));
+    m_daemon->registerAsyncMessageHandler(m_name, [&](const DpaMessage& dpaMessage) {
+      handleAsyncDpaMessage(dpaMessage);
+    });
+  }
+
+  TRC_INF("BaseService :" << PAR(m_name) << " started");
 
   TRC_LEAVE("");
 }
@@ -109,6 +118,12 @@ void BaseService::handleMsgFromMessaging(const ustring& msg)
         m_daemon->executeDpaTransaction(trans);
         int result = trans.waitFinish();
         os << dpaTask->encodeResponse(trans.getErrorStr());
+        //TODO
+        //just stupid hack for test async - remove it
+        ///////
+        //handleAsyncDpaMessage(dpaTask->getResponse());
+        //handleAsyncDpaMessage(dpaTask->getRequest());
+        ///////
         lastError = ser->getLastError();
         handled = true;
         break;
@@ -131,4 +146,13 @@ void BaseService::handleMsgFromMessaging(const ustring& msg)
 
   ustring msgu((unsigned char*)os.str().data(), os.str().size());
   m_messaging->sendMessage(msgu);
+}
+
+void BaseService::handleAsyncDpaMessage(const DpaMessage& dpaMessage)
+{
+  //TRC_ENTER("");
+  std::string sr = m_serializerVect[0]->encodeAsyncAsDpaRaw(dpaMessage);
+  ustring msgu((unsigned char*)sr.data(), sr.size());
+  m_messaging->sendMessage(msgu);
+  //TRC_LEAVE("");
 }

@@ -29,8 +29,6 @@
 #include <atomic>
 #include <vector>
 
-typedef std::basic_string<unsigned char> ustring;
-
 class IChannel;
 class IDpaMessageForwarding;
 class IDpaExclusiveAccess;
@@ -69,7 +67,8 @@ public:
 
   //from IDaemon
   void executeDpaTransaction(DpaTransaction& dpaTransaction) override;
-  void registerAsyncDpaMessageHandler(std::function<void(const DpaMessage&)> message_handler) override;
+  void registerAsyncMessageHandler(const std::string& serviceId, AsyncMessageHandlerFunc fun) override;
+  void unregisterAsyncMessageHandler(const std::string& serviceId) override;
   IScheduler* getScheduler() override { return m_scheduler; }
   std::string doCommand(const std::string& cmd) override;
   const std::string& getModuleId() override { return m_moduleId; }
@@ -87,6 +86,10 @@ public:
 private:
   std::mutex m_modeMtx;
   Mode m_mode;
+
+  std::map<std::string, AsyncMessageHandlerFunc> m_asyncMessageHandlers;
+  std::mutex m_asyncMessageHandlersMutex;
+  void asyncDpaMessageHandler(const DpaMessage& dpaMessage);
 
   DaemonController();
   virtual ~DaemonController();
@@ -123,8 +126,6 @@ private:
   IDpaExclusiveAccess* m_dpaExclusiveAccess = nullptr;
 
   IScheduler* m_scheduler = nullptr;
-
-  std::function<void(const DpaMessage&)> m_asyncHandler;
 
   //watchDog
   void watchDogPet();
