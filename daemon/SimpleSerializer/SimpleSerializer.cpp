@@ -54,8 +54,22 @@ std::vector<std::string> parseTokens(DpaTask& dpaTask, std::istream& istr)
         THROW_EX(std::logic_error, "Parse error: " << NAME_PAR(token, clientIdStr));
       }
     }
-    else
-      it++;
+    else {
+      // via mq: raw 01.00.06.03.ff.ff timeout 1000
+      std::string paramStr = *it;
+      if (paramStr == "timeout") {
+        it = vstrings.erase(it);
+        if (it != vstrings.end()) {
+          // timeout value
+          std::string nextParamStr = *it;
+          dpaTask.setTimeout(std::stoi(nextParamStr));
+          it = vstrings.erase(it);
+        }
+      }
+      else {
+        it++;
+      }
+    }
   }
 
   return vstrings;
@@ -206,8 +220,10 @@ std::unique_ptr<DpaTask> SimpleSerializer::parseRequest(const std::string& reque
   try {
     std::istringstream istr(request);
     std::string perif;
+    
     istr >> perif;
     obj = m_dpaParser.createObject(perif, istr);
+
     m_lastError = "OK";
   }
   catch (std::exception &e) {
