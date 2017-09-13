@@ -46,7 +46,7 @@ void helpAndExit()
 int parseCommand(std::string cmd) {
 
   rapidjson::Document doc;
-  int timeout = 0;
+  int timeout = -1;
 
   try {
     jutils::parseString(cmd, doc);
@@ -75,7 +75,7 @@ int main(int argc, char** argv)
 {
   TRC_START("", iqrf::Level::inf, 0);
   std::string command;
-  int defaultTimeout = 1000;
+  int defaultTimeout = 5000;
   bool cmdl = false;
 
   switch (argc) {
@@ -92,7 +92,7 @@ int main(int argc, char** argv)
     }
     else {
       int timeout = parseCommand(arg1);
-      if (timeout > 0) {
+      if (timeout >= 0) {
         defaultTimeout = timeout;
       }
       TRC_DBG("Default timeout: " << PAR(defaultTimeout));
@@ -123,9 +123,9 @@ int main(int argc, char** argv)
       helpAndExit();
     }
     else {
-      int timeout = 0;
+      int timeout = -1;
       timeout = std::stoi(arg4);
-      if (timeout > 0) {
+      if (timeout >= 0) {
         defaultTimeout = timeout;
       }
       TRC_DBG("Default timeout: " << PAR(defaultTimeout));
@@ -164,9 +164,9 @@ int main(int argc, char** argv)
       localMqName = jutils::getPossibleMemberAs<std::string>("LocalMqName", cfg, localMqName);
       remoteMqName = jutils::getPossibleMemberAs<std::string>("RemoteMqName", cfg, remoteMqName);
 
-      int timeout = 0;
+      int timeout = -1;
       timeout = jutils::getPossibleMemberAs<int>("DefaultTimeout", cfg, timeout);
-      if (timeout > 0) {
+      if (timeout >= 0) {
         defaultTimeout = timeout;
       }
     }
@@ -183,7 +183,7 @@ int main(int argc, char** argv)
 
   MqChannel* mqChannel = ant_new MqChannel(remoteMqName, localMqName, 1024);
 
-  //Received messages from IQRF channel are pushed to IQRF MessageQueueChannel
+  // received messages from IQRF channel are pushed to IQRF MessageQueueChannel
   mqChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) -> int {
     return handleMessageFromMq(msg); });
 
@@ -210,17 +210,24 @@ int main(int argc, char** argv)
       std::cerr << "send failure" << std::endl;
     }
 
-    for (int i = 0; i < defaultTimeout; i++) {
+    if (defaultTimeout != 0) {
+      for (int i = 0; i < defaultTimeout; i++) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
         // exit when we receive response
         if (exitFlag) break;
+      }
+    }
+    // defaultTimeout == 0 means waiting until there is the response
+    else {
+      while (exitFlag)
+        ;
     }
 
     if (!cmdl) {
       break;
     }
 
-    // wait a bit before exit
+    // wait a bit before exit; safety
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
