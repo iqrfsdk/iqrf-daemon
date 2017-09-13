@@ -23,26 +23,41 @@
 
 TRC_INIT()
 
+bool exitFlag = false;
+
 void helpAndExit()
 {
   std::cerr << "Usage" << std::endl;
   std::cerr << "  iqrfapp" << std::endl << std::endl;
   std::cerr << "  iqrfapp help" << std::endl << std::endl;
+  std::cerr << "  iqrfapp raw <DpaBytesSeparatedByDots> timeout <ValueInMs>" << std::endl << std::endl;
+  std::cerr << "  iqrfapp conf [operational|forwarding|service]" << std::endl << std::endl;
   std::cerr << "  iqrfapp <JsonDpaRequest>" << std::endl << std::endl;
-  std::cerr << "  iqrfapp <perif> <num> <command>" << std::endl << std::endl;
-  std::cerr << "  iqrfapp raw <buffer>" << std::endl << std::endl;
-  std::cerr << "  iqrfapp conf [Operational|Forwarding|Service]" << std::endl << std::endl;
   std::cerr << "Example" << std::endl;
   std::cerr << "  iqrfapp" << std::endl;
   std::cerr << "  iqrfapp help" << std::endl;
-  std::cerr << "  iqrfapp \"{\\\"type\\\":\\\"raw\\\", \\\"request\\\":\\\"01.00.06.03.ff.ff\\\"}\"" << std::endl;
-  std::cerr << "  iqrfapp raw 01 00 06 03 ff ff" << std::endl;
-  std::cerr << "  iqrfapp raw 01.00.06.03.ff.ff" << std::endl;
-  std::cerr << "  iqrfapp std-per-thermometer 1 READ" << std::endl;
-  std::cerr << "  iqrfapp std-per-ledg 0 PULSE" << std::endl;
-  std::cerr << "  iqrfapp std-per-ledr 1 PULSE" << std::endl;
-  std::cerr << "  iqrfapp conf Operational" << std::endl;
+  std::cerr << "  iqrfapp raw 01.00.06.03.ff.ff timeout 1000" << std::endl;
+  std::cerr << "  iqrfapp conf operational" << std::endl;
+  std::cerr << "  iqrfapp \"{\\\"ctype\\\":\\\"dpa\\\",\\\"type\\\":\\\"raw\\\",\\\"request\\\":\\\"01.00.06.03.ff.ff\\\",\\\"timeout\\\":1000}\"" << std::endl;
+                  /*"{\"ctype\":\"dpa\",\"type\":\"raw\",\"request\":\"01.00.06.03.ff.ff\",\"timeout\":1000}"*/
   exit(-1);
+}
+
+int parseCommand(std::string cmd) {
+
+  rapidjson::Document doc;
+  int timeout = 0;
+
+  try {
+    jutils::parseString(cmd, doc);
+    jutils::assertIsObject("", doc);
+    timeout = jutils::getMemberAs<int>("timeout", doc);
+  }
+  catch (std::exception &e) {
+    CATCH_EX("Cannot parse command: ", std::logic_error, e);
+  }
+
+  return timeout;
 }
 
 int handleMessageFromMq(const ustring& message)
@@ -50,6 +65,8 @@ int handleMessageFromMq(const ustring& message)
   TRC_DBG("Received from MQ: " << std::endl << FORM_HEX(message.data(), message.size()));
   std::string msg((char*)message.data(), message.size());
   std::cout << msg << std::endl;
+
+  exitFlag = true;
   return 0;
 }
 
@@ -58,6 +75,7 @@ int main(int argc, char** argv)
 {
   TRC_START("", iqrf::Level::inf, 0);
   std::string command;
+  int defaultTimeout = 1000;
   bool cmdl = false;
 
   switch (argc) {
@@ -72,17 +90,45 @@ int main(int argc, char** argv)
     if (arg1 == "help") {
       helpAndExit();
     }
+    else {
+      int timeout = parseCommand(arg1);
+      if (timeout > 0) {
+        defaultTimeout = timeout;
+      }
+      TRC_DBG("Default timeout: " << PAR(defaultTimeout));
+    }
     break;
   }
   case 3:
   {
     std::string arg1 = argv[1];
     std::string arg2 = argv[2];
-    if (arg1 == "conf" && arg2 != "Operational" && arg2 != "Forwarding" && arg2 != "Service") {
+    if (arg1 == "conf" && arg2 != "operational" && arg2 != "forwarding" && arg2 != "service") {
       helpAndExit();
     }
     if (arg1 != "raw") {
       helpAndExit();
+    }
+    break;
+  }
+  // raw with timeout
+  case 5:
+  {
+    std::string arg1 = argv[1];
+    std::string arg2 = argv[2];
+    std::string arg3 = argv[3];
+    std::string arg4 = argv[4];
+
+    if (arg1 != "raw" && arg3 != "timeout") {
+      helpAndExit();
+    }
+    else {
+      int timeout = 0;
+      timeout = std::stoi(arg4);
+      if (timeout > 0) {
+        defaultTimeout = timeout;
+      }
+      TRC_DBG("Default timeout: " << PAR(defaultTimeout));
     }
     break;
   }
@@ -117,6 +163,12 @@ int main(int argc, char** argv)
 
       localMqName = jutils::getPossibleMemberAs<std::string>("LocalMqName", cfg, localMqName);
       remoteMqName = jutils::getPossibleMemberAs<std::string>("RemoteMqName", cfg, remoteMqName);
+
+      int timeout = 0;
+      timeout = jutils::getPossibleMemberAs<int>("DefaultTimeout", cfg, timeout);
+      if (timeout > 0) {
+        defaultTimeout = timeout;
+      }
     }
     catch (std::logic_error &e) {
       CATCH_EX("Cannot read configuration file: " << PAR(cfgFileName), std::logic_error, e);
@@ -158,11 +210,18 @@ int main(int argc, char** argv)
       std::cerr << "send failure" << std::endl;
     }
 
-    //TODO wait timeout
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    for (int i = 0; i < defaultTimeout; i++) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        // exit when we receive response
+        if (exitFlag) break;
+    }
+
     if (!cmdl) {
       break;
     }
+
+    // wait a bit before exit
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
 //TODO solve blocking dtor on WIN
