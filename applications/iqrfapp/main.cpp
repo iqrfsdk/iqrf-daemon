@@ -24,22 +24,26 @@
 TRC_INIT()
 
 bool exitFlag = false;
+bool sentFlag = false;
 
 void helpAndExit()
 {
   std::cerr << "Usage" << std::endl;
-  std::cerr << "  iqrfapp" << std::endl << std::endl;
-  std::cerr << "  iqrfapp help" << std::endl << std::endl;
-  std::cerr << "  iqrfapp raw <DpaBytesSeparatedByDots> timeout <ValueInMs>" << std::endl << std::endl;
-  std::cerr << "  iqrfapp conf [operational|forwarding|service]" << std::endl << std::endl;
-  std::cerr << "  iqrfapp <JsonDpaRequest>" << std::endl << std::endl;
-  std::cerr << "Example" << std::endl;
+  std::cerr << "  iqrfapp" << std::endl;
+  std::cerr << "  iqrfapp help" << std::endl;
+  std::cerr << "  iqrfapp raw <DpaBytesSeparatedByDots> timeout <ValueInMs>" << std::endl;
+  std::cerr << "  iqrfapp conf [operational|forwarding|service]" << std::endl;
+  std::cerr << "  iqrfapp <JsonDpaRequest>" << std::endl;
+  std::cerr << "Examples" << std::endl;
   std::cerr << "  iqrfapp" << std::endl;
   std::cerr << "  iqrfapp help" << std::endl;
   std::cerr << "  iqrfapp raw 01.00.06.03.ff.ff timeout 1000" << std::endl;
   std::cerr << "  iqrfapp conf operational" << std::endl;
-  std::cerr << "  iqrfapp \"{\\\"ctype\\\":\\\"dpa\\\",\\\"type\\\":\\\"raw\\\",\\\"request\\\":\\\"01.00.06.03.ff.ff\\\",\\\"timeout\\\":1000}\"" << std::endl;
-                  /*"{\"ctype\":\"dpa\",\"type\":\"raw\",\"request\":\"01.00.06.03.ff.ff\",\"timeout\":1000}"*/
+  std::cerr << "  iqrfapp \"{\\\"ctype\\\":\\\"dpa\\\",\\\"type\\\":\\\"raw\\\",\\\"timeout\\\":1000,\\\"request\\\":\\\"01.00.06.03.ff.ff\\\"}\"" << std::endl;
+                  /*"{\"ctype\":\"dpa\",\"type\":\"raw\",\"timeout\":1000,\"request\":\"01.00.06.03.ff.ff\"}"*/
+  std::cerr << "Tips" << std::endl;
+  std::cerr << "  Adjust default timeout in iqrfapp.json to the needs of the application using iqrfapp tool or define timeout as cmd param." << std::endl;
+  std::cerr << "  Default timeout in iqrfapp.json is 5000 ms." << std::endl;
   exit(-1);
 }
 
@@ -64,9 +68,13 @@ int handleMessageFromMq(const ustring& message)
 {
   TRC_DBG("Received from MQ: " << std::endl << FORM_HEX(message.data(), message.size()));
   std::string msg((char*)message.data(), message.size());
-  std::cout << msg << std::endl;
+  
+  if (sentFlag) {
+    std::cout << msg << std::endl;
+    exitFlag = true;
+    sentFlag = false;
+  }
 
-  exitFlag = true;
   return 0;
 }
 
@@ -75,8 +83,13 @@ int main(int argc, char** argv)
 {
   TRC_START("", iqrf::Level::inf, 0);
   std::string command;
-  int defaultTimeout = 5000;
+  std::string rawTimeout;
+  
   bool cmdl = false;
+  bool json = false;
+  bool raw = false;
+
+  int defaultTimeout = 5000;
 
   switch (argc) {
   case 1:
@@ -91,11 +104,7 @@ int main(int argc, char** argv)
       helpAndExit();
     }
     else {
-      int timeout = parseCommand(arg1);
-      if (timeout >= 0) {
-        defaultTimeout = timeout;
-      }
-      TRC_DBG("Default timeout: " << PAR(defaultTimeout));
+      json = true;
     }
     break;
   }
@@ -123,12 +132,8 @@ int main(int argc, char** argv)
       helpAndExit();
     }
     else {
-      int timeout = -1;
-      timeout = std::stoi(arg4);
-      if (timeout >= 0) {
-        defaultTimeout = timeout;
-      }
-      TRC_DBG("Default timeout: " << PAR(defaultTimeout));
+      raw = true;
+      rawTimeout = arg4;
     }
     break;
   }
@@ -179,6 +184,23 @@ int main(int argc, char** argv)
     TRC_DBG("Using default params");
   }
 
+  if (json) {
+    int timeout = parseCommand(command);
+    if (timeout >= 0) {
+      defaultTimeout = timeout;
+    }
+    TRC_DBG("New timeout: " << PAR(defaultTimeout));
+  }
+
+  if (raw) {
+    int timeout = -1;
+    timeout = std::stoi(rawTimeout);
+    if (timeout >= 0) {
+      defaultTimeout = timeout;
+    }
+    TRC_DBG("New timeout: " << PAR(defaultTimeout));
+  }
+
   TRC_DBG(PAR(remoteMqName) << PAR(localMqName));
 
   MqChannel* mqChannel = ant_new MqChannel(remoteMqName, localMqName, 1024);
@@ -204,6 +226,7 @@ int main(int argc, char** argv)
 
     try {
       mqChannel->sendTo(msgu);
+      sentFlag = true;
     }
     catch (std::exception& e) {
       TRC_DBG("sendTo failed: " << e.what());
@@ -226,14 +249,11 @@ int main(int argc, char** argv)
     if (!cmdl) {
       break;
     }
-
-    // wait a bit before exit; safety
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
 //TODO solve blocking dtor on WIN
 #ifndef WIN
-  delete mqChannel; 
+  delete mqChannel;
 #endif
 
   return 0;
