@@ -5,7 +5,15 @@
 # Tested on AAEON UP, UbiLinux
 
 #how long to wait for the discovery result in ms
-timeout=10000
+if [ ! -z $1 ]
+then
+# user timeout
+	timeout=$1
+else
+# infinite timeout
+	timeout=0
 
-echo "Sending dpa request to discover iqrf network"
+fi
+
+echo "Sending dpa request to discover iqrf network with txpower 6"
 mosquitto_pub -t "Iqrf/DpaRequest" -m "{\"ctype\":\"dpa\",\"type\":\"raw\",\"msgid\":\"1\",\"timeout\":$timeout,\"request\":\"00.00.00.07.ff.ff.06.00\"}"
