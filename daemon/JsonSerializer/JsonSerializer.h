@@ -47,7 +47,7 @@ protected:
 
 public:
   int parseBinary(uint8_t* to, const std::string& from, int maxlen);
-  
+
   template<typename T>
   void parseHexaNum(T& to, const std::string& from)
   {
@@ -109,7 +109,7 @@ class PrfRawJson : public DpaRaw, public PrfCommonJson
 {
 public:
   explicit PrfRawJson(const rapidjson::Value& val);
-  PrfRawJson::PrfRawJson(const DpaMessage& dpaMessage);
+  explicit PrfRawJson(const DpaMessage& dpaMessage);
   virtual ~PrfRawJson() {}
   std::string encodeResponse(const std::string& errStr) override;
 private:
