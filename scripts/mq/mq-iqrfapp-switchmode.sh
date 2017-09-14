@@ -7,7 +7,26 @@
 #operational ... MQ and MQTT channels are enabled
 #service ... UDP channel is enabled (IQRF IDE can be used)
 #forwarding ... trafic via MQ and MQTT channels is forwarded to UDP channel
-cmd=$1
+if [ ! -z $1 ]
+then
+# user selected mode
+	if [ $1 == "operational" ]
+	then
+		cmd=$1
+	elif [ $1 == "service" ]
+	then
+		cmd=$1
+	elif [ $1 == "forwarding" ]
+	then
+		cmd=$1
+	else
+		cmd="operational"
+	fi
+else
+# mode operational by default
+	cmd="operational"
+
+fi
 
 echo "Sending conf request to change gw mode to $cmd"
 sudo iqrfapp "{\"ctype\":\"conf\",\"type\":\"mode\",\"cmd\":\"$cmd\"}"

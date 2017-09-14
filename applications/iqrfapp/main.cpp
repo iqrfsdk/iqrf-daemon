@@ -31,6 +31,7 @@ void helpAndExit()
   std::cerr << "Usage" << std::endl;
   std::cerr << "  iqrfapp" << std::endl;
   std::cerr << "  iqrfapp help" << std::endl;
+  std::cerr << "  iqrfapp readonly" << std::endl;
   std::cerr << "  iqrfapp raw <DpaBytesSeparatedByDots> timeout <ValueInMs>" << std::endl;
   std::cerr << "  iqrfapp conf [operational|forwarding|service]" << std::endl;
   std::cerr << "  iqrfapp <JsonDpaRequest>" << std::endl;
@@ -68,7 +69,7 @@ int handleMessageFromMq(const ustring& message)
 {
   TRC_DBG("Received from MQ: " << std::endl << FORM_HEX(message.data(), message.size()));
   std::string msg((char*)message.data(), message.size());
-  
+
   if (sentFlag) {
     std::cout << msg << std::endl;
     exitFlag = true;
@@ -84,10 +85,11 @@ int main(int argc, char** argv)
   TRC_START("", iqrf::Level::inf, 0);
   std::string command;
   std::string rawTimeout;
-  
+
   bool cmdl = false;
   bool json = false;
   bool raw = false;
+  bool readonly = false;
 
   int defaultTimeout = 5000;
 
@@ -102,6 +104,9 @@ int main(int argc, char** argv)
     std::string arg1 = argv[1];
     if (arg1 == "help") {
       helpAndExit();
+    }
+    else if (arg1 == "readonly") {
+      readonly = true;
     }
     else {
       json = true;
@@ -151,13 +156,13 @@ int main(int argc, char** argv)
   std::ifstream f;
 
   f.open(cfgFileName);
-  
+
   if (!f.is_open()) {
     std::string pth = "/etc/iqrf-daemon/";
     cfgFileName = pth + cfgFileName;
     f.open(cfgFileName);
   }
-  
+
   if (f.is_open()) {
     TRC_DBG("Reading cfg from: " << PAR(cfgFileName));
 
@@ -210,7 +215,7 @@ int main(int argc, char** argv)
     return handleMessageFromMq(msg); });
 
   bool run = true;
-  
+
   if (cmdl) {
     std::cout << std::endl << "iqrfapp " << PAR(IQRFAPP_VERSION) << PAR(BUILD_TIMESTAMP) << std::endl;
   }
@@ -224,13 +229,18 @@ int main(int argc, char** argv)
 
     ustring msgu((unsigned char*)command.data(), command.size());
 
-    try {
-      mqChannel->sendTo(msgu);
-      sentFlag = true;
+    if(!readonly) {
+      try {
+        mqChannel->sendTo(msgu);
+        sentFlag = true;
+      }
+      catch (std::exception& e) {
+        TRC_DBG("SendTo failed: " << e.what());
+        std::cerr << "Send failure" << std::endl;
+      }
     }
-    catch (std::exception& e) {
-      TRC_DBG("sendTo failed: " << e.what());
-      std::cerr << "send failure" << std::endl;
+    else {
+      std::cout << "Listening for asynchronous messages, timeout: " << defaultTimeout << std::endl;
     }
 
     if (defaultTimeout != 0) {
@@ -242,7 +252,7 @@ int main(int argc, char** argv)
     }
     // defaultTimeout == 0 means waiting until there is the response
     else {
-      while (exitFlag)
+      while (!exitFlag)
         ;
     }
 
