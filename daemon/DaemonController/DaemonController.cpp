@@ -386,6 +386,17 @@ void DaemonController::startDpa()
       asyncDpaMessageHandler(dpaMessage);
     });
 
+    //wait for iqrfInterface ready
+    int att = 10;
+    IChannel::State st = m_iqrfInterface->getState();
+    
+    while (IChannel::State::Ready != m_iqrfInterface->getState()) {
+      watchDogPet();
+      if (--att >= 0)
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      else
+        break;
+    }
 
     //TR module
     PrfOs prfOs;
