@@ -38,13 +38,6 @@ cd scripts/
 ./build-raspbian.sh
 ```
 
-## Update iqrf-daemon and iqrfapp
-
-```Bash
-cd scripts/
-./update.sh
-```
-
 ## Check possible changes in configuration files
 
 ```Bash
@@ -52,8 +45,9 @@ cd ../daemon/iqrf_startup/configuration
 ```
 Compare main and each component's JSON file with files in /etc/iqrf-daemon.
 
-## Restart the daemon
+## Update iqrf-daemon and iqrfapp
 
 ```Bash
-sudo systemctl restart iqrf-daemon.service
+cd scripts/
+./update.sh
 ```
