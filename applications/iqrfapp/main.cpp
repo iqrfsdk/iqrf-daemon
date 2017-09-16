@@ -170,7 +170,7 @@ Iqrfapp::~Iqrfapp()
   delete m_msgQueue;
   //TODO solve blocking dtor on WIN
 #ifndef WIN
-  delete mqChannel;
+  delete m_mqChannel;
 #endif
 }
 
