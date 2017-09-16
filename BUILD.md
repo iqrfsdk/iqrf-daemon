@@ -2,7 +2,11 @@
 
 [![Build Status](https://travis-ci.org/iqrfsdk/iqrf-daemon.svg?branch=master)](https://travis-ci.org/iqrfsdk/iqrf-daemon)
 
-## How to download the daemon
+## Install the daemon from the repository
+
+Follow the instalation [guide](https://github.com/iqrfsdk/iqrf-daemon/blob/master/README.md)
+
+## Download the daemon from the github
 
 ```Bash
 mkdir iqrf
@@ -11,7 +15,7 @@ git clone https://github.com/iqrfsdk/iqrf-daemon.git
 cd iqrf-daemon
 ```
 
-## How to compile the daemon for AAEON UP board
+## Compile the daemon for AAEON UP board
 
 ### Ubilinux
 
@@ -27,36 +31,29 @@ cd scripts/
 ./build-ubuntu.sh
 ```
 
-## How to compile the daemon for Raspberry PI
+## Compile the daemon for Raspberry PI
 
 ```Bash
 cd scripts/
 ./build-raspbian.sh
 ```
 
-## How to install the daemon to /usr/local/bin
+## Update iqrf-daemon and iqrfapp
 
 ```Bash
 cd scripts/
-./install.sh
+./update.sh
 ```
 
-## How to configure the daemon
+## Check possible changes in configuration files
 
 ```Bash
-cd /usr/local/bin/configuration/
+cd ../daemon/iqrf_startup/configuration
 ```
-Configure main and each component's JSON file.
+Compare main and each component's JSON file with files in /etc/iqrf-daemon.
 
-## How to install the daemon as a systemd service
-
-```Bash
-cd scripts/
-sudo ./install-systemd.sh
-```
-
-## How to start/stop/restart/status the daemon
+## Restart the daemon
 
 ```Bash
-sudo systemctl start/stop/restart/status IQRF
+sudo systemctl restart iqrf-daemon.service
 ```
