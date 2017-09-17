@@ -39,6 +39,7 @@ private:
   const std::string CMD_CONF = "conf";
   const std::string CMD_JSON = "json";
   const std::string CMD_EXIT = "exit";
+  const unsigned IQRF_MQ_BUFFER_SIZE = 64 * 1024;
 
   int runCmd(const std::vector<std::string>& params);
   void handleMessageReceived(const ustring& message);
@@ -153,7 +154,7 @@ Iqrfapp::Iqrfapp()
   });
 
   //instantiate MQ channel
-  m_mqChannel = ant_new MqChannel(remoteMqName, localMqName, 1024);
+  m_mqChannel = ant_new MqChannel(remoteMqName, localMqName, IQRF_MQ_BUFFER_SIZE);
 
   //register message handler for messages received from MQ channel
   m_mqChannel->registerReceiveFromHandler([&](const std::basic_string<unsigned char>& msg) -> int {
