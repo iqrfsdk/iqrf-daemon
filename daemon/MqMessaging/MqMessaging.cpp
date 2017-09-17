@@ -22,7 +22,7 @@
 
 INIT_COMPONENT(IMessaging, MqMessaging)
 
-const unsigned IQRF_MQ_BUFFER_SIZE = 1024;
+const unsigned IQRF_MQ_BUFFER_SIZE = 64*1024;
 
 MqMessaging::MqMessaging(const std::string& name)
   : m_mqChannel(nullptr)
