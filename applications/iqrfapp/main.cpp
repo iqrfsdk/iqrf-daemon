@@ -457,7 +457,7 @@ void Iqrfapp::rawCmd(const std::vector<std::string>& params)
   setTimeout(timeout);
   sendParamsAsMessage(params);
 
-  bool res = waitForMessageReceived(500);
+  bool res = waitForMessageReceived(2000);
   showWaitForMessageReceivedResult(res);
 
   TRC_LEAVE("");
