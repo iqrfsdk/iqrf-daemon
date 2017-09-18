@@ -27,7 +27,7 @@
     },
     {
       "ComponentName": "Scheduler",
-      "Enabled":  true
+      "Enabled":  false
     },
     {
       "ComponentName": "SimpleSerializer",

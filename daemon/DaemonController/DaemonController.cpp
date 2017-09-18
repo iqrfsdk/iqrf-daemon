@@ -361,10 +361,28 @@ void DaemonController::startIqrfIf()
     }
   }
 
+  // wait for iqrfInterface ready
+  int att = 10;
+  IChannel::State st = m_iqrfInterface->getState();
+
+  while (IChannel::State::Ready != st)
+  {
+    watchDogPet();
+
+    if (--att >= 0) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    else {
+      TRC_ERR("IQRF interface is not ready ...");
+      break;
+    }
+
+    st = m_iqrfInterface->getState();
+  }
+
   m_dpaTransactionQueue = ant_new TaskQueue<DpaTransaction*>([&](DpaTransaction* trans) {
     executeDpaTransactionFunc(trans);
   });
-
 }
 
 void DaemonController::startDpa()
@@ -385,18 +403,6 @@ void DaemonController::startDpa()
     m_dpaHandler->RegisterAsyncMessageHandler([&](const DpaMessage& dpaMessage) {
       asyncDpaMessageHandler(dpaMessage);
     });
-
-    //wait for iqrfInterface ready
-    int att = 10;
-    IChannel::State st = m_iqrfInterface->getState();
-    
-    while (IChannel::State::Ready != m_iqrfInterface->getState()) {
-      watchDogPet();
-      if (--att >= 0)
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-      else
-        break;
-    }
 
     //TR module
     PrfOs prfOs;
