@@ -23,6 +23,7 @@
 #include <string>
 #include <fstream>
 #include <stdexcept>
+#include <thread>
 
 class Iqrfapp
 {
@@ -182,11 +183,27 @@ int Iqrfapp::run(const std::vector<std::string>& params)
 
   int retval = 0;
 
-  if (0 == params.size()) {
-    interactiveCmd();
+  int waitCnt = 30;
+  while (m_mqChannel->getState() != IChannel::State::Ready) {
+	  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	  if (--waitCnt < 0)
+		  break;
+  }
+
+  if (m_mqChannel->getState() == IChannel::State::Ready) {
+
+	TRC_DBG("IChannel::State::Ready")
+
+    if (0 == params.size()) {
+      interactiveCmd();
+    }
+    else {
+      retval = runCmd(params);
+    }
   }
   else {
-    retval = runCmd(params);
+	std::cout << "cannot initialize reading from iqrf-daemon" << std::endl;
+	retval = -1;
   }
 
   TRC_LEAVE(PAR(retval));
