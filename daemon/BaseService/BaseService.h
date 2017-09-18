@@ -56,5 +56,5 @@ private:
   IDaemon* m_daemon;
   std::vector<ISerializer*> m_serializerVect;
 
-  bool m_asyncDpaResponse = false;
+  bool m_asyncDpaMessage = false;
 };

@@ -55,7 +55,7 @@ void BaseService::setMessaging(IMessaging* messaging)
 void BaseService::update(const rapidjson::Value& cfg)
 {
   TRC_ENTER("");
-  m_asyncDpaResponse = jutils::getPossibleMemberAs<bool>("AsyncDpaResponse", cfg, m_asyncDpaResponse);
+  m_asyncDpaMessage = jutils::getPossibleMemberAs<bool>("AsyncDpaMessage", cfg, m_asyncDpaMessage);
   TRC_LEAVE("");
 }
 
@@ -68,7 +68,7 @@ void BaseService::start()
     handleMsgFromMessaging(msgu);
   });
 
-  if (m_asyncDpaResponse) {
+  if (m_asyncDpaMessage) {
     TRC_INF("Set AsyncDpaMessageHandler :" << PAR(m_name));
     m_daemon->registerAsyncMessageHandler(m_name, [&](const DpaMessage& dpaMessage) {
       handleAsyncDpaMessage(dpaMessage);

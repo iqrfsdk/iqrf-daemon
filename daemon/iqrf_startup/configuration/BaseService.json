@@ -5,10 +5,11 @@
       "Name": "BaseServiceForMQ",
       "Messaging": "MqMessaging",
       "Serializers": [
-        "SimpleSerializer",
-        "JsonSerializer"
+        "JsonSerializer",
+        "SimpleSerializer"
       ],
       "Properties": {
+        "AsyncDpaMessage": true
       }
     },
     {
@@ -18,7 +19,7 @@
         "JsonSerializer"
       ],
       "Properties": {
-        "AsyncDpaResponse": true
+        "AsyncDpaMessage": true
       }
     },
     {
@@ -28,6 +29,7 @@
         "JsonSerializer"
       ],
       "Properties": {
+        "AsyncDpaMessage": false
       }
     }
   ]
