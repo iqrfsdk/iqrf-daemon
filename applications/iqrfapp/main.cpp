@@ -69,6 +69,7 @@ private:
   bool m_flagMessageReceived = false;
   ustring m_messageReceived;
   int m_actualTimeout = 5000;
+  int m_extraTime = 1000;
 
   bool exitFlag = false;
   bool sentFlag = false;
@@ -457,7 +458,7 @@ void Iqrfapp::rawCmd(const std::vector<std::string>& params)
   setTimeout(timeout);
   sendParamsAsMessage(params);
 
-  bool res = waitForMessageReceived(2000);
+  bool res = waitForMessageReceived(m_extraTime);
   showWaitForMessageReceivedResult(res);
 
   TRC_LEAVE("");
@@ -479,7 +480,7 @@ void Iqrfapp::confCmd(const std::vector<std::string>& params)
 
   sendParamsAsMessage(params);
 
-  bool res = waitForMessageReceived(500);
+  bool res = waitForMessageReceived(m_extraTime);
   showWaitForMessageReceivedResult(res);
 
   TRC_LEAVE("");
@@ -517,7 +518,7 @@ void Iqrfapp::jsonCmd(const std::vector<std::string>& params)
   setTimeout(timeout);
   sendParamsAsMessage(params);
 
-  bool res = waitForMessageReceived(500);
+  bool res = waitForMessageReceived(m_extraTime);
   showWaitForMessageReceivedResult(res);
 
   TRC_LEAVE("");
