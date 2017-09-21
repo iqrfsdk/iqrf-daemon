@@ -250,6 +250,7 @@ void DaemonController::setMode(Mode mode)
     if (nullptr != m_dpaExclusiveAccess) {
       if (m_mode == Mode::Service) {
         m_dpaExclusiveAccess->resetExclusive();
+        m_mode = mode;
         startDpa();
       }
     }
@@ -263,6 +264,7 @@ void DaemonController::setMode(Mode mode)
     if (nullptr != m_dpaExclusiveAccess) {
       if (m_mode == Mode::Service) {
         m_dpaExclusiveAccess->resetExclusive();
+        m_mode = mode;
         startDpa();
       }
       TRC_INF("Set mode " << MODE_FORWARDING);
