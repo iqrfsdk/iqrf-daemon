@@ -113,7 +113,7 @@ Iqrfapp::Iqrfapp()
   if (!f.is_open()) {
     std::string pth = "/etc/iqrf-daemon/";
     m_cfgFileName = pth + m_cfgFileName;
-    
+
     //open in default path
     f.open(m_cfgFileName);
   }
@@ -143,9 +143,9 @@ Iqrfapp::Iqrfapp()
   else {
     TRC_DBG("Using default params");
   }
-  
+
   f.close();
-  
+
   //we work with these params
   TRC_DBG(PAR(remoteMqName) << PAR(localMqName) << PAR(m_defaultTimeout));
 
@@ -184,14 +184,14 @@ int Iqrfapp::run(const std::vector<std::string>& params)
 
   int waitCnt = 30;
   while (m_mqChannel->getState() != IChannel::State::Ready) {
-	  std::this_thread::sleep_for(std::chrono::milliseconds(100));
-	  if (--waitCnt < 0)
-		  break;
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    if (--waitCnt < 0)
+      break;
   }
 
   if (m_mqChannel->getState() == IChannel::State::Ready) {
 
-	TRC_DBG("IChannel::State::Ready")
+    TRC_DBG("IChannel::State::Ready");
 
     if (0 == params.size()) {
       interactiveCmd();
@@ -201,8 +201,8 @@ int Iqrfapp::run(const std::vector<std::string>& params)
     }
   }
   else {
-	std::cout << "cannot initialize reading from iqrf-daemon" << std::endl;
-	retval = -1;
+    std::cout << "cannot initialize reading from iqrf-daemon" << std::endl;
+    retval = -1;
   }
 
   TRC_LEAVE(PAR(retval));
@@ -222,7 +222,10 @@ int Iqrfapp::runCmd(const std::vector<std::string>& params)
     const std::string& cmd = params[0];
 
     try {
-      if (cmd == CMD_HELP) {
+      if (cmd.empty()) {
+        retval = 0;
+      }
+      else if (cmd == CMD_HELP) {
         helpCmd();
       }
       else if (cmd == CMD_READO) {
@@ -326,7 +329,7 @@ void Iqrfapp::setTimeout(int timeout)
   }
   else {
     m_actualTimeout = m_defaultTimeout;
-    TRC_WAR(PAR(timeout) << "is invalid keep " <<  PAR(m_defaultTimeout));
+    TRC_WAR(PAR(timeout) << "is invalid keep " << PAR(m_defaultTimeout));
 
   }
   TRC_LEAVE("");
@@ -338,7 +341,7 @@ void Iqrfapp::sendParamsAsMessage(const std::vector<std::string>& params)
   std::ostringstream os;
   for (const auto & par : params)
     os << par << " ";
-  
+
   std::string msg = os.str();
   ustring msgu((unsigned char*)msg.data(), msg.size());
 
