@@ -55,7 +55,7 @@ void DaemonController::executeDpaTransaction(DpaTransaction& dpaTransaction)
 //called from task queue thread passed by lambda in task queue ctor
 void DaemonController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
 {
-  std::lock_guard<std::mutex> lck(m_modeMtx);
+  bool locked = m_modeMtx.try_lock();
 
   switch (m_mode) {
 
@@ -106,6 +106,9 @@ void DaemonController::executeDpaTransactionFunc(DpaTransaction* dpaTransaction)
 
   default:;
   }
+
+  if (locked)
+    m_modeMtx.unlock();
 
   //Pet WatchDog
   watchDogPet();
@@ -362,22 +365,24 @@ void DaemonController::startIqrfIf()
   }
 
   // wait for iqrfInterface ready
-  int att = 10;
-  IChannel::State st = m_iqrfInterface->getState();
+  if (nullptr != m_iqrfInterface) {
+    int att = 10;
+    IChannel::State st = m_iqrfInterface->getState();
 
-  while (IChannel::State::Ready != st)
-  {
-    watchDogPet();
+    while (IChannel::State::Ready != st)
+    {
+      watchDogPet();
 
-    if (--att >= 0) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      if (--att >= 0) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      }
+      else {
+        TRC_ERR("IQRF interface is not ready ...");
+        break;
+      }
+
+      st = m_iqrfInterface->getState();
     }
-    else {
-      TRC_ERR("IQRF interface is not ready ...");
-      break;
-    }
-
-    st = m_iqrfInterface->getState();
   }
 
   m_dpaTransactionQueue = ant_new TaskQueue<DpaTransaction*>([&](DpaTransaction* trans) {

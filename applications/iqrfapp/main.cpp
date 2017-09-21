@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include "PlatformDep.h"
+
 #include "TaskQueue.h"
 #include "MqChannel.h"
 #include "PlatformDep.h"
@@ -71,9 +73,6 @@ private:
   ustring m_messageReceived;
   int m_actualTimeout = 5000;
   int m_extraTime = 1000;
-
-  bool exitFlag = false;
-  bool sentFlag = false;
 };
 
 TRC_INIT()
