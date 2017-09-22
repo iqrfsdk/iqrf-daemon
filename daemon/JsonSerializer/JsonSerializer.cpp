@@ -736,14 +736,12 @@ std::string JsonSerializer::parseCategory(const std::string& request)
     jutils::parseString(request, doc);
 
     jutils::assertIsObject("", doc);
-    //ctype = jutils::getPossibleMemberAs<std::string>("ctype", doc, ctype);
     ctype = jutils::getMemberAs<std::string>("ctype", doc);
   }
   catch (std::exception &e) {
     m_lastError = e.what();
   }
   return ctype;
-  //return CAT_DPA_STR;
 }
 
 std::unique_ptr<DpaTask> JsonSerializer::parseRequest(const std::string& request)
@@ -775,9 +773,6 @@ std::string JsonSerializer::parseConfig(const std::string& request)
 
     std::string type = jutils::getMemberAs<std::string>("type", doc);
 
-    //TODO factory
-    //obj = createObject(type, doc);
-
     if (type == "mode") {
       cmd = jutils::getMemberAs<std::string>("cmd", doc);
     }
@@ -786,6 +781,31 @@ std::string JsonSerializer::parseConfig(const std::string& request)
     m_lastError = e.what();
   }
   return cmd;
+}
+
+std::string JsonSerializer::encodeConfig(const std::string& request, const std::string& response)
+{
+  std::string res;
+  try {
+    Document doc;
+
+    jutils::parseString(request, doc);
+    jutils::assertIsObject("", doc);
+
+    Document::AllocatorType& alloc = doc.GetAllocator();
+    rapidjson::Value v;
+    v.SetString(response.c_str(), alloc);
+    doc.AddMember("status", v, alloc);
+  
+    StringBuffer buffer;
+    PrettyWriter<StringBuffer> writer(buffer);
+    doc.Accept(writer);
+    res = buffer.GetString();
+  }
+  catch (std::exception &e) {
+    m_lastError = e.what();
+  }
+  return res;
 }
 
 std::string JsonSerializer::getLastError() const

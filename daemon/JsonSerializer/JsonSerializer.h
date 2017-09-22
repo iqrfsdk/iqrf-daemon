@@ -215,6 +215,7 @@ public:
   std::string parseCategory(const std::string& request) override;
   std::unique_ptr<DpaTask> parseRequest(const std::string& request) override;
   std::string parseConfig(const std::string& request) override;
+  std::string encodeConfig(const std::string& request, const std::string& response) override;
   std::string getLastError() const override;
   std::string encodeAsyncAsDpaRaw(const DpaMessage& dpaMessage) const override;
 

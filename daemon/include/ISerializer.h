@@ -34,6 +34,7 @@ public:
   virtual std::string parseCategory(const std::string& request) = 0;
   virtual std::unique_ptr<DpaTask> parseRequest(const std::string& request) = 0;
   virtual std::string parseConfig(const std::string& request) = 0;
+  virtual std::string encodeConfig(const std::string& request, const std::string& response) = 0;
   //virtual std::string parseSched(const std::string& request);
   //virtual std::string parseStat(const std::string& request);
   virtual std::string getLastError() const = 0;

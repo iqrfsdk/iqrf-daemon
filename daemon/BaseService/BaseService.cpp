@@ -132,8 +132,9 @@ void BaseService::handleMsgFromMessaging(const ustring& msg)
     else if (ctype == CAT_CONF_STR) {
       command = ser->parseConfig(msgs);
       if (!command.empty()) {
-        os << m_daemon->doCommand(command);
+        std::string response = m_daemon->doCommand(command);
         lastError = ser->getLastError();
+        os << ser->encodeConfig(msgs, response);
         handled = true;
         break;
       }

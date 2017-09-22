@@ -792,30 +792,25 @@ void DaemonController::exit()
 
 std::string DaemonController::doCommand(const std::string& cmd)
 {
-  std::ostringstream ostr;
+  std::string res = "ERROR_UNKNOWN";
   if (m_iqrfInterface != nullptr) {
     if (cmd == MODE_OPERATIONAL) {
       setMode(Mode::Operational);
-      ostr << PAR(cmd) << " done";
-      return ostr.str();
+      res = "OK";
     }
     if (cmd == MODE_SERVICE) {
       setMode(Mode::Service);
-      ostr << PAR(cmd) << " done";
-      return ostr.str();
+      res = "OK";
     }
     if (cmd == MODE_FORWARDING) {
       setMode(Mode::Forwarding);
-      ostr << PAR(cmd) << " done";
-      return ostr.str();
+      res = "OK";
     }
-    ostr << PAR(cmd) << " unknown";
-    TRC_LEAVE("");
   }
   else {
-    ostr << "iqrf interface is out of order";
+    res = "ERROR_IFACE";
   }
-  return ostr.str();
+  return res;
 }
 
 //////////////// Launch

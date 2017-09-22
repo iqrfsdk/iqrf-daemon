@@ -251,6 +251,13 @@ std::string SimpleSerializer::parseConfig(const std::string& request)
   }
 }
 
+std::string SimpleSerializer::encodeConfig(const std::string& request, const std::string& response)
+{
+  std::ostringstream ostr;
+  ostr << request << " " << response;
+  return ostr.str();
+}
+
 std::string SimpleSerializer::getLastError() const
 {
   return m_lastError;
@@ -259,5 +266,5 @@ std::string SimpleSerializer::getLastError() const
 std::string SimpleSerializer::encodeAsyncAsDpaRaw(const DpaMessage& dpaMessage) const
 {
   //TODO
-  return "TODO";
+  return "";
 }
