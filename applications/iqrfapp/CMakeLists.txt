@@ -2,7 +2,7 @@ project(iqrfapp)
 
 cmake_minimum_required(VERSION 3.0)
 
-set(DEFAULT_IQRFAPP_VERSION v0.7.0)
+set(DEFAULT_IQRFAPP_VERSION v0.8.0)
 string(TIMESTAMP DEFAULT_BUILD_TIMESTAMP)
 
 if(DEFINED IQRFAPP_VERSION)
@@ -73,9 +73,9 @@ endif()
 
 # do the copying
 set (in_file ${CMAKE_CURRENT_SOURCE_DIR}/iqrfapp.json)
-set (out_file ${_CONFIG_DEST}/iqrfapp.json)    
+set (out_file ${_CONFIG_DEST}/iqrfapp.json)
 
-if(${in_file} IS_NEWER_THAN ${out_file})    
+if(${in_file} IS_NEWER_THAN ${out_file})
 add_custom_command(
     TARGET ${PROJECT_NAME}
     POST_BUILD

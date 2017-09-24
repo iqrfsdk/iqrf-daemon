@@ -2,7 +2,7 @@ project (daemon)
 
 cmake_minimum_required(VERSION 2.8.10)
 
-set(DEFAULT_DAEMON_VERSION v0.7.0)
+set(DEFAULT_DAEMON_VERSION v0.8.0)
 string(TIMESTAMP DEFAULT_BUILD_TIMESTAMP)
 
 enable_language(CXX)

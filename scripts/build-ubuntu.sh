@@ -15,6 +15,8 @@ LIBCDC_DIRECTORY=clibcdc
 LIBSPI_DIRECTORY=clibspi
 PAHO_DIRECTORY=paho.mqtt.c
 
+DEBUG="Debug"
+
 export JAVA_HOME="/usr/lib/jvm/java-8-oracle"
 #echo "JAVA_HOME=\"/usr/lib/jvm/java-8-oracle\"" >> ${HOME}/.profile
 
@@ -51,7 +53,7 @@ if [ -d "${LIBSPI_DIRECTORY}" ]; then
         	fi
         fi
 	sudo apt-get install oracle-java8-installer
-	bash buildMake.sh
+	bash buildMake.sh ${DEBUG}
 	cd ..
 fi
 
@@ -60,7 +62,7 @@ for repository in ${LIBCDC_DIRECTORY} ${UTILS_DIRECTORY} ${LIBDPA_DIRECTORY}; do
 	if [ -d "${repository}" ]; then
 		echo "Building ${repository} ..."
 		cd ${repository}
-		bash buildMake.sh
+		bash buildMake.sh ${DEBUG}
 		cd ..
 	fi
 done
@@ -68,9 +70,9 @@ done
 # building daemon
 echo "Building daemon ..."
 cd ${DAEMON_DIRECTORY}
-bash buildMake.sh ${LIB_DIRECTORY}
+bash buildMake.sh ${LIB_DIRECTORY} ${DEBUG}
 
 # building iqrfapp
 echo "Building iqrfapp ..."
 cd ${IQRFAPP_DIRECTORY}
-bash buildMake.sh ../${LIB_DIRECTORY}
+bash buildMake.sh ../${LIB_DIRECTORY} ${DEBUG}

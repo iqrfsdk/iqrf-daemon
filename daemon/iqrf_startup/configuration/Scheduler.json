@@ -3,42 +3,5 @@
   ],
 
   "TasksJson": [
-    {
-      "time": "*/5 * * * * * *",
-      "service": "BaseServiceForMQTT1",
-      "message": {
-        "ctype":"dpa",
-        "type":"raw",
-        "msgid":"1",
-        "timeout":1000,
-        "request":"00.00.06.03.ff.ff",
-        "request_ts":"",
-        "confirmation":".",
-        "confirmation_ts":"",
-        "response":".",
-        "response_ts":""
-      }
-    },
-    {
-      "time": "*/5 * * * * * *",
-      "service": "BaseServiceForMQTT1",
-      "message": {
-        "ctype":"dpa",
-        "type":"raw-hdp",
-        "msgid":"1",
-        "timeout":1000,
-        "nadr":"01",
-        "pnum":"06",
-        "pcmd":"03",
-        "hwpid":"ffff",
-        "req_data":"",
-        "request":".",
-        "request_ts":"",
-        "confirmation":".",
-        "confirmation_ts":"",
-        "response":".",
-        "response_ts":""
-      }
-    }
   ]
 }

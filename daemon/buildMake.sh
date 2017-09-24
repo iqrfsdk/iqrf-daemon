@@ -2,7 +2,6 @@
 # Script for building IQRF daemon on Linux machine
 
 set -e
-
 project=daemon
 
 #expected build dir structure
@@ -13,6 +12,22 @@ currentdir=$PWD
 builddir=./${buildexp}
 
 mkdir -p ${builddir}
+
+#debug
+if [ ! -z $2 ]
+then
+# user selected
+        if [ $2 == "Debug" ]
+        then
+                debug=-DCMAKE_BUILD_TYPE=$2
+        else
+                debug=-DCMAKE_BUILD_TYPE="Debug"
+        fi
+else
+# release by default
+        debug=""
+fi
+echo ${debug}
 
 #get path to clibcdc libs
 clibcdc=${LIB_DIRECTORY}/clibcdc/${buildexp}
@@ -41,7 +56,7 @@ popd
 #launch cmake to generate build environment
 pushd ${builddir}
 pwd
-cmake -G "Unix Makefiles" -Dclibcdc_DIR:PATH=${clibcdc} -Dclibspi_DIR:PATH=${clibspi} -Dclibdpa_DIR:PATH=${clibdpa} -Dcutils_DIR:PATH=${cutils} ${currentdir} -DCMAKE_BUILD_TYPE=Debug
+cmake -G "Unix Makefiles" -Dclibcdc_DIR:PATH=${clibcdc} -Dclibspi_DIR:PATH=${clibspi} -Dclibdpa_DIR:PATH=${clibdpa} -Dcutils_DIR:PATH=${cutils} ${currentdir} ${debug}
 popd
 
 #build from generated build environment

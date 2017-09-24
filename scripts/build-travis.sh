@@ -13,6 +13,8 @@ LIBCDC_DIRECTORY=clibcdc
 LIBSPI_DIRECTORY=clibspi
 PAHO_DIRECTORY=paho.mqtt.c
 
+DEBUG="Debug"
+
 bash download-dependencies.sh ${LIB_DIRECTORY}
 
 cd ${LIB_DIRECTORY}
@@ -33,7 +35,7 @@ for repository in ${LIBSPI_DIRECTORY} ${LIBCDC_DIRECTORY} ${UTILS_DIRECTORY} ${L
 	if [ -d "${repository}" ]; then
 		echo "Building ${repository} ..."
 		cd ${repository}
-		bash buildMake.sh
+		bash buildMake.sh ${DEBUG}
 		cd ..
 	fi
 done
@@ -41,4 +43,4 @@ done
 # building daemon
 echo "Building daemon ..."
 cd ${DAEMON_DIRECTORY}
-bash buildMake.sh ${LIB_DIRECTORY}
+bash buildMake.sh ${LIB_DIRECTORY} ${DEBUG}

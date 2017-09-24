@@ -2,7 +2,6 @@
 # Script for building IQRF application on Linux machine
 
 set -e
-
 project=iqrfapp
 
 #expected build dir structure
@@ -13,6 +12,22 @@ builddir=./${buildexp}
 LIB_DIRECTORY=${1:-../../..}
 
 mkdir -p ${builddir}
+
+#debug
+if [ ! -z $2 ]
+then
+# user selected
+        if [ $2 == "Debug" ]
+        then
+                debug=-DCMAKE_BUILD_TYPE=$2
+        else
+                debug=-DCMAKE_BUILD_TYPE="Debug"
+        fi
+else
+# release by default
+        debug=""
+fi
+echo ${debug}
 
 #get path to iqrfd libs
 iqrfd=../../daemon/${buildexp}
@@ -29,7 +44,7 @@ popd
 #launch cmake to generate build environment
 pushd ${builddir}
 pwd
-cmake -G "Unix Makefiles" -Dcutils_DIR:PATH=${cutils} -Diqrfd_DIR:PATH=${iqrfd} ${currentdir} -DCMAKE_BUILD_TYPE=Debug
+cmake -G "Unix Makefiles" -Dcutils_DIR:PATH=${cutils} -Diqrfd_DIR:PATH=${iqrfd} ${currentdir} ${debug}
 popd
 
 #build from generated build environment

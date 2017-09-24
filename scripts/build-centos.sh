@@ -13,6 +13,8 @@ LIBCDC_DIRECTORY=clibcdc
 LIBSPI_DIRECTORY=clibspi
 PAHO_DIRECTORY=paho.mqtt.c
 
+DEBUG="Debug"
+
 export JAVA_HOME=/usr/java/jdk1.8.0_121
 export JAVA_INCLUDE_PATH=${JAVA_HOME}/include
 export JAVA_INCLUDE_PATH2=${JAVA_INCLUDE_PATH}/linux
@@ -49,7 +51,7 @@ fi
 if [ -d "${LIBSPI_DIRECTORY}" ]; then
         echo "Building libspi ..."
         cd ${LIBSPI_DIRECTORY}
-        bash buildMake.sh
+        bash buildMake.sh ${DEBUG}
         cd ..
 fi
 
@@ -58,7 +60,7 @@ for repository in ${LIBCDC_DIRECTORY} ${UTILS_DIRECTORY} ${LIBDPA_DIRECTORY}; do
         if [ -d "${repository}" ]; then
                 echo "Building ${repository} ..."
                 cd ${repository}
-                bash buildMake.sh
+                bash buildMake.sh ${DEBUG}
                 cd ..
         fi
 done
@@ -66,4 +68,4 @@ done
 # building daemon
 echo "Building daemon ..."
 cd ${DAEMON_DIRECTORY}
-bash buildMake.sh ${LIB_DIRECTORY}
+bash buildMake.sh ${LIB_DIRECTORY} ${DEBUG}
