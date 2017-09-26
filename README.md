@@ -12,8 +12,8 @@ IQRF GW daemon with the multiple communication channels - UDP/MQ/MQTT.
 
 [http://repos.iqrfsdk.org/](http://repos.iqrfsdk.org/)
 
--   iqrf-daemon_0.7.0-1_amd64.deb
--   iqrf-daemon_0.7.0-1_armhf.deb
+-   iqrf-daemon_0.8.0-1_amd64.deb
+-   iqrf-daemon_0.8.0-1_armhf.deb
 -   libpaho.mqtt.c_1.2.0-1_amd64.deb
 -   libpaho.mqtt.c_1.2.0-1_armhf.deb
 
@@ -32,6 +32,11 @@ echo "deb http://repos.iqrfsdk.org/debian jessie testing" | sudo tee -a /etc/apt
 sudo apt-get update
 ```
 
+```Bash
+echo "deb http://repos.iqrfsdk.org/debian stretch testing" | sudo tee -a /etc/apt/sources.list
+sudo apt-get update
+```
+
 -	For Ubuntu (amd64)
 
 ```Bash
@@ -43,6 +48,11 @@ sudo apt-get update
 
 ```Bash
 echo "deb http://repos.iqrfsdk.org/raspbian jessie testing" | sudo tee -a /etc/apt/sources.list
+sudo apt-get update
+```
+
+```Bash
+echo "deb http://repos.iqrfsdk.org/raspbian stretch testing" | sudo tee -a /etc/apt/sources.list
 sudo apt-get update
 ```
 
@@ -72,8 +82,8 @@ sudo systemctl status iqrf-daemon.service
 
 ### Set your configuration 
 
-*CK-USB-04a or GW-USB-06 devices must be switched to USB CDC IQRF mode using IDE*
-*menu: tools/USB classes/Switch to CDC IQRF*
+CK-USB-04a or GW-USB-06 devices must be switched to USB CDC IQRF mode using IDE
+menu: tools/USB classes/Switch to CDC IQRF
 
 Follow the guidance [here](https://github.com/iqrfsdk/iqrf-daemon/wiki/Configuration)
 
@@ -92,7 +102,11 @@ and restart the service:
 sudo systemctl restart iqrf-daemon.service
 ```
 
-### Content of iqrf-daemon (v0.7.0) package
+### Changes for iqrf-daemon
+
+See the news and fixes [here](NEWS.md)
+
+### Content of iqrf-daemon (v0.8.0) package
 
 ```Bash
 dpkg -L iqrf-daemon
@@ -126,32 +140,6 @@ dpkg -L iqrf-daemon
 /etc/iqrf-daemon/BaseService.json
 ```
 
-### Changes for iqrf-daemon
-
-0.6.0 -> 0.7.0
-
-News:
-- us resolution in the log
-- flush the log straight away
-- selection of the running mode added into config.json
-
-Fixes:
-- pending transaction in DpaHandler
-- mutex deadlock
-
-0.5.1 -> 0.6.0
-
-News:
-- json dpa structure according to the description in [wiki](https://github.com/iqrfsdk/iqrf-daemon/wiki/JsonStructureDpa-v1)
-(Only type raw and raw-hdp are fully implemented!)
-
-0.5.0 -> 0.5.1
-
-Fixes:
-- iqrfapp cmdline parser
-- json dpa response timestamps 
-- json dpa response fields order
-
 ### Content of libpaho.mqtt.c (v1.2.0) package
 
 ```Bash
@@ -173,10 +161,12 @@ dpkg -L libpaho.mqtt.c
 /usr/share/doc/libpaho.mqtt.c/changelog.gz
 ```
 
-## How to build iqrf-daemon from the source code
+## Optional
+
+### How to build iqrf-daemon from the source code
 
 See the guidelines [here](BUILD.md)
 
-## How to run iqrf-daemon in Docker container
+### How to run iqrf-daemon in Docker container
 
 See the guidelines [here](DOCKER.md)
