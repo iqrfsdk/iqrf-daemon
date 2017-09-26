@@ -12,10 +12,10 @@ IQRF GW daemon with the multiple communication channels - UDP/MQ/MQTT.
 
 [http://repos.iqrfsdk.org/](http://repos.iqrfsdk.org/)
 
--   iqrf-daemon_0.8.0-1_amd64.deb
--   iqrf-daemon_0.8.0-1_armhf.deb
--   libpaho.mqtt.c_1.2.0-1_amd64.deb
--   libpaho.mqtt.c_1.2.0-1_armhf.deb
+-   iqrf-daemon_0.8.0-x-x_amd64.deb
+-   iqrf-daemon_0.8.0-x-x_armhf.deb
+-   libpaho.mqtt.c_1.2.0-x-x_amd64.deb
+-   libpaho.mqtt.c_1.2.0-x-x_armhf.deb
 
 ### Download public key to verify the packages from the repository
 
