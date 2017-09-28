@@ -52,6 +52,7 @@ void ProtocolBridgeClientService::updateConfiguration(const rapidjson::Value& cf
 	// read config settings
 	m_frcPeriod = jutils::getPossibleMemberAs<int>("FrcPeriod", cfg, m_frcPeriod);
   m_sleepPeriod = jutils::getPossibleMemberAs<int>("SleepPeriod", cfg, m_sleepPeriod);
+  m_wmPeriod = jutils::getPossibleMemberAs<int>("WmPeriod", cfg, m_wmPeriod);
 
 	// update watched Protocol Bridges
 	m_watchedProtocolBridges.clear();
@@ -523,6 +524,25 @@ void ProtocolBridgeClientService::sleepProtocolBridge(uint8_t bridgeAddress) {
 	TRC_LEAVE("");
 }
 
+// timeout for wmbus module, module is on for this time
+void ProtocolBridgeClientService::timeoutWMBProtocolBridge(uint8_t bridgeAddress) {
+  TRC_ENTER("");
+  ProtocolBridgeSchd bridgeSchedule = m_watchedProtocolBridges.at(bridgeAddress);
+  ProtocolBridge bridge = bridgeSchedule.getDpa();
+
+  bridge.commandSetWmTimeout(m_wmPeriod);
+  bridge.setHwpid(0xFFFF);
+
+  TRC_DBG("Request: " << std::endl << FORM_HEX(bridge.getRequest().DpaPacketData(), bridge.getRequest().GetLength()));
+
+  DpaTransactionTask trans(bridge);
+  m_daemon->executeDpaTransaction(trans);
+  int result = trans.waitFinish();
+
+  TRC_DBG("Transaction status: " << NAME_PAR(STATUS, trans.getErrorStr()));
+  TRC_DBG("Response: " << std::endl << FORM_HEX(bridge.getResponse().DpaPacketData(), bridge.getResponse().GetLength()));
+  TRC_LEAVE("");
+}
 
 // gets data from meters, processes them and sends them into Azure
 void ProtocolBridgeClientService::getAndProcessDataFromMeters(const std::string& task)
@@ -554,6 +574,8 @@ void ProtocolBridgeClientService::getAndProcessDataFromMeters(const std::string&
 			newVisibleMetersIndexes = getNewVisibleMetersIndexes(it->first);
 			// confirmation of visiblemeters
 			confirmVisibleMeters(it->first, newVisibleMetersIndexes);
+      // set wm module timeout
+      timeoutWMBProtocolBridge(it->first);
 		}
 
 		if (it->second.isNewInvisible) {

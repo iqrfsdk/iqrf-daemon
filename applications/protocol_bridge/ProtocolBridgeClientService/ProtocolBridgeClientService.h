@@ -140,6 +140,7 @@ private:
 	PacketHeader parseFullPacketResponse(ProtocolBridge::FullPacketResponse fullPacketResponse);
 	void sendDataIntoAzure(PacketHeader packetHeader, uint8_t data[], int dataLen);
 	void sleepProtocolBridge(uint8_t bridgeAddress);
+  void timeoutWMBProtocolBridge(uint8_t bridgeAddress);
 
 	void getAndProcessDataFromMeters(const std::string& task);
 
@@ -148,8 +149,11 @@ private:
   // how often to send frc status cmd in sec
   uint16_t m_frcPeriod = 30;
 
-	// sleeping period is this value * HW interval (min)
-	uint16_t m_sleepPeriod = 1;
+	// sleeping period is this value * HW interval (sec)
+	uint16_t m_sleepPeriod = 10;
+
+  // timeout for wmbus module, module is on for this time
+  uint16_t m_wmPeriod = 60;
 
 	IMessaging* m_messaging;
 	IDaemon* m_daemon;

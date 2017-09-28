@@ -10,6 +10,7 @@
       "Properties": {
         "FrcPeriod": 30,
         "SleepPeriod": 10,
+        "WmPeriod": 60,
         "ProtocolBridges": [ 1 ],
         "DpaRequestJsonPattern": {
           "ctype": "dpa",
