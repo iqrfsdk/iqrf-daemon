@@ -816,16 +816,21 @@ std::string JsonSerializer::getLastError() const
 std::string JsonSerializer::encodeAsyncAsDpaRaw(const DpaMessage& dpaMessage) const
 {
   PrfRawJson raw(dpaMessage);
+  raw.m_dotNotation = true;
   std::string status;
   switch (dpaMessage.MessageDirection()) {
   case DpaMessage::MessageType::kRequest:
+    raw.m_has_request = true;
+    raw.m_has_response = false;
     status = "ASYNC_REQUEST";
     break;
   case DpaMessage::MessageType::kResponse:
+    raw.m_has_request = false;
+    raw.m_has_response = true;
     status = "ASYNC_RESPONSE";
     break;
   default:
-    status = "ASYNC";
+    status = "ASYNC_MESSAGE";
   }
   return raw.encodeResponse(status);
 }
