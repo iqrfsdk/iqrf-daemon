@@ -1,0 +1,30 @@
+{
+  "Implements": "IService",
+  "Instances": [
+    {
+      "Name": "ServiceExample",
+      "Messaging": "MqttMessaging",
+      "Serializers": [
+        "JsonSerializer"
+      ],
+      "Properties": {
+        "FrcPeriod": 5,
+        "SleepPeriod": 30,
+        "Thermometers": [ 1, 2 ],
+        "DpaRequestJsonPattern": {
+          "ctype": "dpa",
+          "type": "std-per-thermometer",
+          "cmd": "read",
+          "hwpid": "ffff",
+          "timeout": 10000,
+          "request": "",
+          "request_ts": "",
+          "confirmation": "",
+          "confirmation_ts": "",
+          "response": "",
+          "response_ts": ""
+        }
+      }
+    }
+  ]
+}
