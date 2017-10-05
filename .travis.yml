@@ -10,7 +10,6 @@ env:
   - BUILD_SPI_JAVASTUB=0 BUILD_APPS=0
   - BUILD_SPI_JAVASTUB=1 BUILD_APPS=0
   - BUILD_SPI_JAVASTUB=0 BUILD_APPS=1
-  - BUILD_SPI_JAVASTUB=1 BUILD_APPS=1
 matrix:
   allow_failures:
     - compiler: clang
@@ -27,5 +26,6 @@ script:
   - if [[ "$BUILD_APPS" == 1 ]]; then docker exec -ti travis-ci bash -c "cd /iqrfsdk/applications/iqrfapp && CC=${CC} CXX=${CXX} bash buildMake.sh ../../libs"; fi
   - if [[ "$BUILD_APPS" == 1 ]]; then docker exec -ti travis-ci bash -c "cd /iqrfsdk/applications/iqrf_ide_dummy && CC=${CC} CXX=${CXX} bash buildMake.sh ../../libs"; fi
   - if [[ "$BUILD_APPS" == 1 ]]; then docker exec -ti travis-ci bash -c "cd /iqrfsdk/applications/iqrf_startup_pm && CC=${CC} CXX=${CXX} bash buildMake.sh ../../libs"; fi
+  - if [[ "$BUILD_APPS" == 1 ]]; then docker exec -ti travis-ci bash -c "cd /iqrfsdk/applications/iqrf_startup_example && CC=${CC} CXX=${CXX} bash buildMake.sh ../../libs"; fi
 after_script:
   - docker stop travis-ci
