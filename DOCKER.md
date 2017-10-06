@@ -73,6 +73,11 @@ sudo usermod $(whoami) -aG docker
 
 Terminal logout & login is necessary to update settings.
 
+### Docker Machine && Compose
+
+https://docs.docker.com/machine/install-machine/
+https://docs.docker.com/compose/install/#install-compose
+
 ### Run quick test
 
 ```Bash
