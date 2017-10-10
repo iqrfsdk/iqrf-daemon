@@ -6,7 +6,7 @@
 
 Follow the [guide](https://github.com/iqrfsdk/iqrf-daemon/blob/master/docker/INSTALL.md)
 
-## Build your own custom container
+## Build your custom container
 
 ```Bash
 git clone https://github.com/iqrfsdk/iqrf-daemon.git
@@ -14,8 +14,18 @@ cd iqrf-daemon/docker
 
 EDIT YOUR CONFIGURATION IN
 ... iqrf-daemon/docker/configuration/*.json ...
+```
 
+### UP board
+
+```Bash
 docker build -t iqrf-daemon -f Dockerfile.amd64 .
+```
+
+### RPI board
+
+```Bash
+docker build -t iqrf-daemon -f Dockerfile.rpi .
 ```
 
 ## Run your custom container
