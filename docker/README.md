@@ -63,6 +63,49 @@ docker container run -d --name iqrf1daemon --device /dev/spidev2.0:/dev/spidev2.
 --privileged --net bridge01 --ip 10.1.1.2 --restart=always iqrf-daemon
 ```
 
+### IQRF daemon app
+
+#### Build it for UP board
+
+```Bash
+cd iqrf-daemon/docker/apps/bash
+docker build -f Dockerfile.amd64 -t iqrf-daemon-app .
+```
+
+#### Build it for RPI board
+
+```Bash
+cd iqrf-daemon/docker/apps/bash
+docker build -f Dockerfile.rpi -t iqrf-daemon-app .
+```
+
+#### Run it
+
+```Bash
+docker container run -d --name iqrf1daemon-app --net bridge01 --ip 10.1.1.3 --restart=always iqrf-daemon-app
+```
+
+### Check that all is good
+
+#### See all containers running
+
+```Bash
+ubilinux@ubilinux:~/iqrf-daemon/docker/apps/bash$ docker container ls
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                                            NAMES
+d11255a0456e        iqrf-daemon-app     "/usr/bin/entry.sh..."   6 seconds ago       Up 6 seconds                                                         iqrf1daemon-app
+91bef707acc9        iqrf-daemon         "/usr/bin/entry.sh..."   4 hours ago         Up 4 hours                                                           iqrf1daemon
+01eda0695d7f        eclipse-mosquitto   "/docker-entrypoin..."   4 hours ago         Up 4 hours          0.0.0.0:1883->1883/tcp, 0.0.0.0:9001->9001/tcp   mqtt1broker
+```
+
+#### Check the log from the app
+
+```Bash
+ubilinux@ubilinux:~/iqrf-daemon/docker$ docker container logs iqrf1daemon-app
+sending request 1 to pulse red led on node 1
+sending request 2 to pulse red led on node 1
+sending request 3 to pulse red led on node 1
+```
+
 ## Feedback
 
 Please, let us know if we miss anything!

@@ -12,8 +12,13 @@ RUN	apt-get update \
 	&& rm -rf /var/lib/apt/lists/*
 
 # copy the app script
-WORKDIR /home
+WORKDIR /usr/bin
 COPY ./mqtt-blink.sh mqtt-blink.sh
 
+# make the script exe
+RUN chmod +x mqtt-blink.sh
+
 # run the app script
+# first param is node address
+# second param is sleeping time
 CMD [ "mqtt-blink.sh", "1", "5" ]
