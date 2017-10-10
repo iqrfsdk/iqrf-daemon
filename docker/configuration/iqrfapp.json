@@ -1,0 +1,5 @@
+{
+  "LocalMqName": "iqrf-daemon-100",
+  "RemoteMqName": "iqrf-daemon-110",
+  "DefaultTimeout": 5000
+}

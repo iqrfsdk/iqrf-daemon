@@ -1,12 +1,6 @@
-# IQRF in Docker
+# Install Docker CE
 
-[https://hub.docker.com/u/iqrfsdk](https://hub.docker.com/u/iqrfsdk)
-
-Work in [progress](https://github.com/iqrfsdk/iot-starter-kit/tree/master/workshop/iqrf-docker)
-
-## Install Docker CE
-
-### Add Docker's official GPG key, add repository to the source list and install it
+## Add Docker's official GPG key, add repository to the source list and install it
 
 -	For Debian (amd64)
 
@@ -50,7 +44,7 @@ sudo apt-get update
 sudo apt-get install docker-engine
 ```
 
-### Confirm that Docker service is up and running
+## Confirm that Docker service is up and running
 
 ```Bash
 sudo systemctl status docker.service
@@ -65,7 +59,7 @@ sudo systemctl status docker.service
 ...
 ```
 
-### Add user $(whoami) to the Docker group
+## Add user $(whoami) to the Docker group
 
 ```Bash
 sudo usermod $(whoami) -aG docker
@@ -73,12 +67,12 @@ sudo usermod $(whoami) -aG docker
 
 Terminal logout & login is necessary to update settings.
 
-### Docker Machine && Compose
+## Docker Machine && Compose
 
 https://docs.docker.com/machine/install-machine/
 https://docs.docker.com/compose/install/#install-compose
 
-### Run quick test
+## Run quick test
 
 ```Bash
 docker run hello-world (amd64) or

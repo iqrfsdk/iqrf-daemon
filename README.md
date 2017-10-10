@@ -169,4 +169,4 @@ See the guidelines [here](BUILD.md)
 
 ### How to run iqrf-daemon in Docker container
 
-See the guidelines [here](DOCKER.md)
+See the guidelines [here](docker/README.md)

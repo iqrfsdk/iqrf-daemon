@@ -1,0 +1,55 @@
+{
+  "Implements": "IMessaging",
+  "Instances": [
+    {
+      "Name": "MqttMessaging1",
+      "Enabled": true,
+      "Properties": {
+        "BrokerAddr": "tcp://127.0.0.1:1883",
+        "ClientId": "IqrfDpaMessaging1",
+        "Persistence": 1,
+        "Qos": 1,
+        "TopicRequest": "Iqrf/DpaRequest",
+        "TopicResponse": "Iqrf/DpaResponse",
+        "User": "",
+        "Password": "",
+        "EnabledSSL": false,
+        "KeepAliveInterval": 20,
+        "ConnectTimeout": 5,
+        "MinReconnect": 1,
+        "MaxReconnect": 64,
+        "TrustStore": "server-ca.crt",
+        "KeyStore": "client.pem",
+        "PrivateKey": "client-privatekey.pem",
+        "PrivateKeyPassword": "",
+        "EnabledCipherSuites": "",
+        "EnableServerCertAuth": true
+      }
+    },
+    {
+      "Name": "MqttMessaging2",
+      "Enabled": false,
+      "Properties": {
+        "BrokerAddr": "tcp://iot.eclipse.org:1883",
+        "ClientId": "IqrfDpaMessaging2",
+        "Persistence": 1,
+        "Qos": 1,
+        "TopicRequest": "Iqrf/DpaRequest",
+        "TopicResponse": "Iqrf/DpaResponse",
+        "User": "",
+        "Password": "",
+        "EnabledSSL": false,
+        "KeepAliveInterval": 20,
+        "ConnectTimeout": 5,
+        "MinReconnect": 1,
+        "MaxReconnect": 64,
+        "TrustStore": "server-ca.crt",
+        "KeyStore": "client.pem",
+        "PrivateKey": "client-privatekey.pem",
+        "PrivateKeyPassword": "",
+        "EnabledCipherSuites": "",
+        "EnableServerCertAuth": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "Implements": "IMessaging",
+  "Instances": [
+    {
+      "Name": "MqMessaging",
+      "Enabled": true,
+      "Properties": {
+        "LocalMqName": "iqrf-daemon-110",
+        "RemoteMqName": "iqrf-daemon-100"
+      }
+    }
+  ]
+}

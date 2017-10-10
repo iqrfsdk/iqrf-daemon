@@ -1,0 +1,36 @@
+{
+  "Implements": "IService",
+  "Instances": [
+    {
+      "Name": "BaseServiceForMQ",
+      "Messaging": "MqMessaging",
+      "Serializers": [
+        "JsonSerializer",
+        "SimpleSerializer"
+      ],
+      "Properties": {
+        "AsyncDpaMessage": true
+      }
+    },
+    {
+      "Name": "BaseServiceForMQTT1",
+      "Messaging": "MqttMessaging1",
+      "Serializers": [
+        "JsonSerializer"
+      ],
+      "Properties": {
+        "AsyncDpaMessage": true
+      }
+    },
+    {
+      "Name": "BaseServiceForMQTT2",
+      "Messaging": "MqttMessaging2",
+      "Serializers": [
+        "JsonSerializer"
+      ],
+      "Properties": {
+        "AsyncDpaMessage": false
+      }
+    }
+  ]
+}
