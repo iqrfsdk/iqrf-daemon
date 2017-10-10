@@ -7,7 +7,7 @@
 ```Bash
 sudo apt-get install curl apt-transport-https   
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
-echo "deb https://download.docker.com/linux/debian jessie stable" | sudo tee -a /etc/apt/sources.list
+echo "deb https://download.docker.com/linux/debian stretch stable" | sudo tee -a /etc/apt/sources.list
 sudo apt-get update
 sudo apt-get install docker-ce
 ```
@@ -25,11 +25,9 @@ sudo apt-get install docker-ce
 -	For Raspbian (armhf)
 
 ```Bash
-sudo apt-get install curl apt-transport-https
-sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-echo "deb https://apt.dockerproject.org/repo raspbian-jessie main" | sudo tee -a /etc/apt/sources.list
-sudo apt-get update
-sudo apt-get install docker-engine
+curl -fsSL get.docker.com -o get-docker.sh
+chmod +x get-docker.sh
+sudo sh get-docker.sh
 ```
 
 ## Confirm that Docker service is up and running
