@@ -340,6 +340,19 @@ std::string PrfRawJson::encodeResponse(const std::string& errStr)
   return encodeResponseJsonFinal(*this);
 }
 
+std::string PrfRawJson::encodeAsyncRequest(const std::string& errStr)
+{
+  if (m_dotNotation) {
+    m_responseJ = ".";
+  }
+  m_has_response = false; //unwanted here
+  m_statusJ = errStr;
+
+  addResponseJsonPrio1Params(*this);
+  addResponseJsonPrio2Params(*this);
+  return encodeResponseJsonFinal(*this);
+}
+
 //just for Async
 PrfRawJson::PrfRawJson(const DpaMessage& dpaMessage)
 {
@@ -823,12 +836,12 @@ std::string JsonSerializer::encodeAsyncAsDpaRaw(const DpaMessage& dpaMessage) co
     raw.m_has_request = true;
     raw.m_has_response = false;
     status = "ASYNC_REQUEST";
-    break;
+    return raw.encodeAsyncRequest(status);
   case DpaMessage::MessageType::kResponse:
     raw.m_has_request = false;
     raw.m_has_response = true;
     status = "ASYNC_RESPONSE";
-    break;
+    return raw.encodeResponse(status);
   default:
     status = "ASYNC_MESSAGE";
   }

@@ -112,6 +112,7 @@ public:
   explicit PrfRawJson(const DpaMessage& dpaMessage);
   virtual ~PrfRawJson() {}
   std::string encodeResponse(const std::string& errStr) override;
+  std::string encodeAsyncRequest(const std::string& errStr);
 private:
 };
 
