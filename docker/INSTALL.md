@@ -6,13 +6,9 @@
 
 ```Bash
 sudo apt-get install curl apt-transport-https   
-
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
-
 echo "deb https://download.docker.com/linux/debian jessie stable" | sudo tee -a /etc/apt/sources.list
-
 sudo apt-get update
-
 sudo apt-get install docker-ce
 ```
 
@@ -20,13 +16,9 @@ sudo apt-get install docker-ce
 
 ```Bash
 sudo apt-get install curl apt-transport-https
-
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
-
 echo "deb https://download.docker.com/linux/ubuntu xenial stable" | sudo tee -a /etc/apt/sources.list
-
 sudo apt-get update
-
 sudo apt-get install docker-ce
 ```
 
@@ -34,13 +26,9 @@ sudo apt-get install docker-ce
 
 ```Bash
 sudo apt-get install curl apt-transport-https
-
 sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-
 echo "deb https://apt.dockerproject.org/repo raspbian-jessie main" | sudo tee -a /etc/apt/sources.list
-
 sudo apt-get update
-
 sudo apt-get install docker-engine
 ```
 
@@ -69,8 +57,12 @@ Terminal logout & login is necessary to update settings.
 
 ## Docker Machine && Compose
 
+Follow the links:
+
+```Bash
 https://docs.docker.com/machine/install-machine/
 https://docs.docker.com/compose/install/#install-compose
+```
 
 ## Run quick test
 

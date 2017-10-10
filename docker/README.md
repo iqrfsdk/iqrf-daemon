@@ -4,7 +4,7 @@
 
 ## Install your Docker environment
 
-Follow the [guide](https://github.com/iqrfsdk/iqrf-daemon/docker/INSTALL.md)
+Follow the [guide](https://github.com/iqrfsdk/iqrf-daemon/blob/master/docker/INSTALL.md)
 
 ## Build your own custom container
 
