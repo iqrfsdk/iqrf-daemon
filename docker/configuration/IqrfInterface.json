@@ -1,5 +1,5 @@
 {
-  "IqrfInterface": "/dev/ttyACM0",
+  "IqrfInterface": "/dev/spidev2.0",
   "DpaHandlerTimeout": 200,
   "CommunicationMode": "STD"
 }
