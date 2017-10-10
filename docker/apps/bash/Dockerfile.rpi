@@ -1,0 +1,19 @@
+#IQRF GW daemon image for the UP board
+
+FROM resin/rpi-raspbian:stretch
+
+MAINTAINER Rostislav Spinar "rostislav.spinar@iqrf.com"
+LABEL maintainer="rostislav.spinar@iqrf.com"
+
+# install mosquitto clients
+RUN	apt-get update \
+	&& apt-get install -y mosquitto-clients \
+	&& apt-get clean \
+	&& rm -rf /var/lib/apt/lists/*
+
+# copy the app script
+WORKDIR /home
+COPY ./mqtt-blink.sh mqtt-blink.sh
+
+# run the app script
+CMD [ "mqtt-blink.sh", "1", "5" ]
