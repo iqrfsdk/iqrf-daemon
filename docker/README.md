@@ -106,6 +106,18 @@ sending request 2 to pulse red led on node 1
 sending request 3 to pulse red led on node 1
 ```
 
+### Ready for IQRF Dashboard
+
+#### Stop IQRF daemon app
+
+```Bash
+docker container stop iqrf1daemon-app
+```
+
+#### Check IQRF Node-RED app
+
+Follow the [guide](https://github.com/iqrfsdk/iot-starter-kit/tree/master/apps)
+
 ## Feedback
 
 Please, let us know if we miss anything!
