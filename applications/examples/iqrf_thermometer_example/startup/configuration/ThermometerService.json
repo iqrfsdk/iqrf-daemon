@@ -1,0 +1,17 @@
+{
+  "Implements": "IService",
+  "Instances": [
+    {
+      "Name": "ServiceExample",
+      "Messaging": "MqttMessaging",
+      "Serializers": [
+        "JsonSerializer"
+      ],
+      "Properties": {
+        "ReadPeriod": 5,
+        "Timeout": 1000,
+        "Thermometers": [ 1, 2 ]
+      }
+    }
+  ]
+}

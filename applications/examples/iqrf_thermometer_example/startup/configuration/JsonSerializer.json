@@ -1,0 +1,11 @@
+{
+  "Implements": "ISerializer",
+  "Instances": [
+    {
+      "Name": "JsonSerializer",
+      "Properties": {
+        "TODO": "todo"
+      }
+    }
+  ]
+}
