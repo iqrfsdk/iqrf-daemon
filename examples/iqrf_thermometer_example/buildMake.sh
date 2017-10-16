@@ -3,14 +3,14 @@
 
 set -e
 
-project=iqrf_startup_te
+project=iqrf_thermometer_example
 
 #expected build dir structure
 buildexp=build/Unix_Makefiles
 
 currentdir=$PWD
 builddir=./${buildexp}
-LIB_DIRECTORY=${1:-..}
+LIB_DIRECTORY=${1:-../../}
 
 mkdir -p ${builddir}
 

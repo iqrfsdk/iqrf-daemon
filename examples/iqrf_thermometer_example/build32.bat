@@ -1,11 +1,11 @@
-set project=iqrf_startup_te
+set project=iqrf_thermometer_example
 
 rem //expected build dir structure
 set buildexp=build\\Visual_Studio_14_2015\\x86
 
 set currentdir=%cd%
 set builddir=.\\%buildexp%
-set libsdir=..\\
+set libsdir=..\\..\\
 
 mkdir %builddir%
 
