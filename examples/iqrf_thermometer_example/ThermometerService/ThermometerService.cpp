@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017 MICRORISC s.r.o.
+ * Copyright 2017 IQRF Tech s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,7 +85,7 @@ void ThermometerService::setDaemon(IDaemon* daemon)
 
 void ThermometerService::setSerializer(ISerializer* serializer)
 {
-  // nothig to do here as we don't use serializer
+  // nothing to do here as we don't use serializer
 }
 
 void ThermometerService::setMessaging(IMessaging* messaging)
@@ -196,7 +196,6 @@ void ThermometerService::handleMsgFromMessaging(const IMessaging::ustring& msg)
 
   // store updated period
   m_readPeriod = readPeriod;
-
 }
 
 void ThermometerService::scheduleReading()
@@ -255,7 +254,7 @@ void ThermometerService::processThermometersRead()
       uint16_t temp16 = response.DpaPacket().DpaResponsePacket_t.DpaMessage.PerThermometerRead_Response.SixteenthValue;
 
       int tempi;
-      if (temp16 & 0x8000) { //negative value //TODO verify SIGN handling?
+      if (temp16 & 0x8000) { // negative value
         tempi = temp16 & 0x7FFF;
         tempi = -tempi;
       }
@@ -278,7 +277,7 @@ void ThermometerService::processThermometersRead()
 
   // encode custom JSON response
   // in case we have configured two thermometers it sends:
-  // {"service":"ServiceExample", "Thermometers": ["24.5", "23.5"]]}
+  // {"service":"ThermometerService", "Thermometers": ["24.5", "23.5"]]}
   // if a thermometer doesn't responde it sends "NaN"
   Document doc;
   Document::AllocatorType& alloc = doc.GetAllocator();
@@ -306,5 +305,4 @@ void ThermometerService::processThermometersRead()
 
   // send the response
   m_messaging->sendMessage(IMessaging::ustring((uint8_t*)response.data(), response.length()));
-
 }

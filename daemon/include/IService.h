@@ -30,7 +30,7 @@ public:
   // component
   virtual void start() = 0;
   virtual void stop() = 0;
-  virtual void update(const rapidjson::Value& cfg) =0;
+  virtual void update(const rapidjson::Value& cfg) = 0;
   virtual const std::string& getClientName() const = 0;
 
   // references

@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017 MICRORISC s.r.o.
+ * Copyright 2017 IQRF Tech s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-#pragma once
+#include "initModules.h"
+#include "Startup.h"
+#include "PlatformDep.h"
 
-extern void init_JsonSerializer();
-extern void init_MqttMessaging();
-extern void init_ThermometerService();
+#if defined(WIN) && defined(_DEBUG)
+#include <crtdbg.h>
+#endif
 
-#define STATIC_INIT \
-init_JsonSerializer(); \
-init_MqttMessaging(); \
-init_ThermometerService();
+int main(int argc, char** argv)
+{
+#if defined(WIN) && defined(_DEBUG)
+  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+  STATIC_INIT
+  Startup startup;
+  startup.run(argc, argv);
+}
