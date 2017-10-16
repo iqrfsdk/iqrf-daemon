@@ -120,7 +120,7 @@ Follow the [guide](https://github.com/iqrfsdk/iot-starter-kit/tree/master/apps)
 
 ### Ready for 2 IQRF coordinators/networks on single GW
 
-![Block schema](../schema/workshop-schema-docker.png "Schema for IQRF GWs using Docker")
+![Block schema](schema/workshop-schema-docker.png "Schema for IQRF GWs using Docker")
 
 - IQRF Mesh network1 via IQRF SPI (configuration in [configuration1](configuration1) folder)
 - IQRF Mesh network2 via CDC IQRF (configuration in [configuration2](configuration2) folder)
