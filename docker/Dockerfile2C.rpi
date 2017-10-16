@@ -17,7 +17,7 @@ RUN	apt-get update \
 
 # copy custom configuration
 WORKDIR /etc/iqrf-daemon
-COPY configuration/. .
+COPY configuration2/. .
 
 # run the daemon service
 CMD [ "iqrf_startup", "/etc/iqrf-daemon/config.json" ]

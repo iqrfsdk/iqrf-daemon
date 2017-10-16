@@ -1,0 +1,23 @@
+#IQRF GW daemon image for the RPI board
+
+FROM resin/rpi-raspbian:stretch
+
+MAINTAINER Rostislav Spinar "rostislav.spinar@iqrf.com"
+LABEL maintainer="rostislav.spinar@iqrf.com"
+
+# update repos
+RUN echo "deb http://repos.iqrfsdk.org/raspbian stretch testing" | sudo tee -a /etc/apt/sources.list.d/iqrf-daemon.list \
+    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F973CFCE6B3BE25C
+
+# install daemon
+RUN	apt-get update \
+	&& apt-get install -y iqrf-daemon \
+	&& apt-get clean \
+	&& rm -rf /var/lib/apt/lists/*
+
+# copy custom configuration
+WORKDIR /etc/iqrf-daemon
+COPY configuration1/. .
+
+# run the daemon service
+CMD [ "iqrf_startup", "/etc/iqrf-daemon/config.json" ]

@@ -1,0 +1,24 @@
+#IQRF GW daemon image for the UP board
+
+FROM resin/up-board-debian:stretch
+
+MAINTAINER Rostislav Spinar "rostislav.spinar@iqrf.com"
+LABEL maintainer="rostislav.spinar@iqrf.com"
+
+# install mosquitto clients
+RUN	apt-get update \
+	&& apt-get install -y mosquitto-clients \
+	&& apt-get clean \
+	&& rm -rf /var/lib/apt/lists/*
+
+# copy the app script
+WORKDIR /usr/bin
+COPY ./mqtt-blink.sh mqtt-blink.sh
+
+# make the script exe
+RUN chmod +x mqtt-blink.sh
+
+# run the app script
+# first param is node address
+# second param is sleeping time
+CMD [ "mqtt-blink.sh", "1", "5", "1" ]

@@ -1,6 +1,6 @@
 #IQRF GW daemon image for the UP board
 
-FROM resin/up-board-debian:stretch
+FROM resin/rpi-raspbian:stretch
 
 MAINTAINER Rostislav Spinar "rostislav.spinar@iqrf.com"
 LABEL maintainer="rostislav.spinar@iqrf.com"
@@ -21,4 +21,4 @@ RUN chmod +x mqtt-blink.sh
 # run the app script
 # first param is node address
 # second param is sleeping time
-CMD [ "mqtt-blink.sh", "1", "5" ]
+CMD [ "mqtt-blink.sh", "1", "5", "2" ]

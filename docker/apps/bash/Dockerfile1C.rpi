@@ -21,4 +21,4 @@ RUN chmod +x mqtt-blink.sh
 # run the app script
 # first param is node address
 # second param is sleeping time
-CMD [ "mqtt-blink.sh", "1", "5" ]
+CMD [ "mqtt-blink.sh", "1", "5", "1" ]
