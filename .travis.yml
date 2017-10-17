@@ -7,9 +7,8 @@ compiler:
   - clang
   - gcc
 env:
-  - BUILD_SPI_JAVASTUB=0 BUILD_APPS=0
-  - BUILD_SPI_JAVASTUB=1 BUILD_APPS=0
-  - BUILD_SPI_JAVASTUB=0 BUILD_APPS=1
+  - BUILD_APPS=0
+  - BUILD_APPS=1
 matrix:
   allow_failures:
     - compiler: clang
@@ -20,12 +19,13 @@ install:
   - docker exec -ti travis-ci bash -c "apt-get update"
   - docker exec -ti travis-ci bash -c "apt-get install -y build-essential cmake linux-libc-dev git libssl-dev"
   - if [[ "$CC" == "clang" ]]; then docker exec -ti travis-ci bash -c "apt-get install -y clang"; fi
-  - if [[ "$BUILD_SPI_JAVASTUB" == 1 ]]; then docker exec -ti travis-ci bash -c "apt-get install -y default-jre default-jdk"; fi
 script:
   - docker exec -ti travis-ci bash -c "cd /iqrfsdk/scripts && CC=${CC} CXX=${CXX} bash build-travis.sh ../libs"
   - if [[ "$BUILD_APPS" == 1 ]]; then docker exec -ti travis-ci bash -c "cd /iqrfsdk/applications/iqrfapp && CC=${CC} CXX=${CXX} bash buildMake.sh ../../libs"; fi
   - if [[ "$BUILD_APPS" == 1 ]]; then docker exec -ti travis-ci bash -c "cd /iqrfsdk/applications/iqrf_ide_dummy && CC=${CC} CXX=${CXX} bash buildMake.sh ../../libs"; fi
-  - if [[ "$BUILD_APPS" == 1 ]]; then docker exec -ti travis-ci bash -c "cd /iqrfsdk/applications/iqrf_startup_pm && CC=${CC} CXX=${CXX} bash buildMake.sh ../../libs"; fi
-  - if [[ "$BUILD_APPS" == 1 ]]; then docker exec -ti travis-ci bash -c "cd /iqrfsdk/applications/iqrf_startup_example && CC=${CC} CXX=${CXX} bash buildMake.sh ../../libs"; fi
+  - if [[ "$BUILD_APPS" == 1 ]]; then docker exec -ti travis-ci bash -c "cd /iqrfsdk/applications/protocol_bridge && CC=${CC} CXX=${CXX} bash buildMake.sh ../../libs"; fi
+  - if [[ "$BUILD_APPS" == 1 ]]; then docker exec -ti travis-ci bash -c "cd /iqrfsdk/applications/pulse_meters && CC=${CC} CXX=${CXX} bash buildMake.sh ../../libs"; fi
+  - if [[ "$BUILD_APPS" == 1 ]]; then docker exec -ti travis-ci bash -c "cd /iqrfsdk/examples/iqrf_frc_example && CC=${CC} CXX=${CXX} bash buildMake.sh ../../libs"; fi
+  - if [[ "$BUILD_APPS" == 1 ]]; then docker exec -ti travis-ci bash -c "cd /iqrfsdk/examples/iqrf_thermometer_example && CC=${CC} CXX=${CXX} bash buildMake.sh ../../libs"; fi
 after_script:
   - docker stop travis-ci
