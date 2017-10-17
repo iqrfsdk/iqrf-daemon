@@ -2,8 +2,8 @@
   "Implements": "IService",
   "Instances": [
     {
-      "Name": "ServiceExample",
-      "Messaging": "MqttMessaging",
+      "Name": "ThermometerService",
+      "Messaging": "MqttMessaging1",
       "Serializers": [
         "JsonSerializer"
       ],

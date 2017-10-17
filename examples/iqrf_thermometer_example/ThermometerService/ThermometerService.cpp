@@ -196,6 +196,7 @@ void ThermometerService::handleMsgFromMessaging(const IMessaging::ustring& msg)
 
   // store updated period
   m_readPeriod = readPeriod;
+  scheduleReading();
 }
 
 void ThermometerService::scheduleReading()
@@ -218,7 +219,7 @@ void ThermometerService::processThermometersRead()
   std::unique_lock<std::mutex> lck(m_mtx);
 
   for (auto & thm : m_thermometers) {
-      
+
     // DPA message
     DpaMessage dpaRequest;
     // address
@@ -246,7 +247,7 @@ void ThermometerService::processThermometersRead()
     TRC_DBG(">>>>>>>>>>>>>>>>>> Thermometer result: " << NAME_PAR(addr,thm.first) << NAME_PAR(TransactionError, transRead.getErrorStr()));
 
     const DpaMessage & response = rawThm.getResponse();
-      
+
     switch (resultRead) {
     case 0:
     {
@@ -261,7 +262,6 @@ void ThermometerService::processThermometersRead()
       else
         tempi = temp16;
 
-      // 
       double temperature = tempi * 0.0625; // *1/16
       thm.second.value = temperature;
       thm.second.valid = true;

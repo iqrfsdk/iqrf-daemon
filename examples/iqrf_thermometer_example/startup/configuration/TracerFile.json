@@ -1,4 +1,5 @@
 {
   "TraceFileName": "",
-  "TraceFileSize": 0
+  "TraceFileSize": 0,
+  "VerbosityLevel": "dbg"
 }

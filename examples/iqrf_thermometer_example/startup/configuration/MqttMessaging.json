@@ -2,19 +2,28 @@
   "Implements": "IMessaging",
   "Instances": [
     {
-      "Name": "MqttMessaging",
+      "Name": "MqttMessaging1",
+      "Enabled": true,
       "Properties": {
-        "BrokerAddr": "tcp://192.168.1.26:1883",
-        "ClientId": "IqrfDpaMessaging",
-        "Enabled": true,
+        "BrokerAddr": "tcp://127.0.0.1:1883",
+        "ClientId": "IqrfDpaMessaging1",
         "Persistence": 1,
         "Qos": 1,
-        "Timeout:": 10000,
         "TopicRequest": "Iqrf/DpaRequest",
         "TopicResponse": "Iqrf/DpaResponse",
         "User": "",
         "Password": "",
-        "EnabledSSL": false
+        "EnabledSSL": false,
+        "KeepAliveInterval": 20,
+        "ConnectTimeout": 5,
+        "MinReconnect": 1,
+        "MaxReconnect": 64,
+        "TrustStore": "server-ca.crt",
+        "KeyStore": "client.pem",
+        "PrivateKey": "client-privatekey.pem",
+        "PrivateKeyPassword": "",
+        "EnabledCipherSuites": "",
+        "EnableServerCertAuth": true
       }
     }
   ]
