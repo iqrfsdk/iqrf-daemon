@@ -10,7 +10,7 @@ buildexp=build/Unix_Makefiles
 
 currentdir=$PWD
 builddir=./${buildexp}
-LIB_DIRECTORY=${1:-../../}
+LIB_DIRECTORY=${1:-../../../}
 
 mkdir -p ${builddir}
 
@@ -39,7 +39,7 @@ cutils=$PWD
 popd
 
 #get path to iqrfd libs
-iqrfd=../daemon/${buildexp}
+iqrfd=../../daemon/${buildexp}
 pushd ${iqrfd}
 iqrfd=${PWD}
 popd

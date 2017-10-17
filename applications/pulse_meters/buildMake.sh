@@ -3,7 +3,7 @@
 
 set -e
 
-project=iqrf_startup_pm
+project=pulse_meters
 
 #expected build dir structure
 buildexp=build/Unix_Makefiles

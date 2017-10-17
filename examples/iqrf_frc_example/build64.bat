@@ -5,7 +5,7 @@ set buildexp=build\\Visual_Studio_14_2015\\x64
 
 set currentdir=%cd%
 set builddir=.\\%buildexp%
-set libsdir=..\\..
+set libsdir=..\\..\\..
 
 mkdir %builddir%
 
@@ -34,7 +34,7 @@ set cutils=%cd%
 popd
 
 rem //get path to iqrfd libs
-set iqrfd=..\\daemon\\%buildexp%
+set iqrfd=..\\..\\daemon\\%buildexp%
 pushd %iqrfd%
 set iqrfd=%cd%
 popd

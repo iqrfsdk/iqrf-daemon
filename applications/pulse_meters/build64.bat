@@ -1,4 +1,4 @@
-set project=iqrf_startup_pm
+set project=pulse_meters
 
 rem //expected build dir structure
 set buildexp=build\\Visual_Studio_14_2015\\x64
