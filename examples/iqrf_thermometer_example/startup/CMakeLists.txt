@@ -47,7 +47,7 @@ else()
 
 	JsonSerializer
 	MqttMessaging
-	ServiceExample
+	ThermometerService
 
 	DaemonController
 	Scheduler
