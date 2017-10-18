@@ -17,7 +17,10 @@ RUN	apt-get update \
 
 # copy custom configuration
 WORKDIR /etc/iqrf-daemon
-COPY configuration2/. .
+COPY config2/. .
+
+# udp ports for iqrf ide
+EXPOSE 55000/udp 55300/udp
 
 # run the daemon service
 CMD [ "iqrf_startup", "/etc/iqrf-daemon/config.json" ]

@@ -1,0 +1,5 @@
+{
+  "IqrfInterface": "/dev/spidev2.0",
+  "DpaHandlerTimeout": 200,
+  "CommunicationMode": "STD"
+}

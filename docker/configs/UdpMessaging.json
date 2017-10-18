@@ -1,0 +1,13 @@
+{
+  "Implements": "IMessaging",
+  "Instances": [
+    {
+      "Name": "UdpMessaging",
+      "Enabled": true,
+      "Properties": {
+        "RemotePort": 55000,
+        "LocalPort": 55300
+      }
+    }
+  ]
+}

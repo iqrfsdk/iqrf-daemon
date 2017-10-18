@@ -13,8 +13,8 @@ git clone https://github.com/iqrfsdk/iqrf-daemon.git
 cd iqrf-daemon/docker
 
 EDIT YOUR CONFIGURATION IN
-iqrf-daemon/docker/configuration1/IqrfInterface.json (tip: select your IQRF interface)
-iqrf-daemon/docker/configuration1/MqttMessaging.json (tip: select your broker IP address)
+iqrf-daemon/docker/config1/IqrfInterface.json (tip: select your IQRF interface)
+iqrf-daemon/docker/config1/MqttMessaging.json (tip: select your broker IP address)
 ...
 ```
 
@@ -45,21 +45,21 @@ sudo systemctl disable iqrf-daemon.service
 ### Dedicated network for your containers
 
 ```Bash
-docker network create --subnet 10.1.0.0/16 --gateway 10.1.0.1 --ip-range=10.1.1.0/24 \ 
+docker network create --subnet 10.1.0.0/16 --gateway 10.1.0.1 --ip-range=10.1.1.0/24
 --driver=bridge --label=host1network bridge01
 ```
 
 ### MQTT broker
 
 ```Bash
-docker container run -d --name mqtt1broker -p 1883:1883 -p 9001:9001 --network=bridge01 \
+docker container run -d --name mqtt1broker -p 1883:1883 -p 9001:9001 --network=bridge01
 --ip=10.1.1.1 --restart=always eclipse-mosquitto
 ```
 
 ### IQRF daemon
 
 ```Bash
-docker container run -d --name iqrf1daemon --device /dev/spidev2.0:/dev/spidev2.0 \
+docker container run -d --name iqrf1daemon --device /dev/spidev2.0:/dev/spidev2.0
 --privileged --net bridge01 --ip 10.1.1.2 --restart=always iqrf-daemon
 ```
 
@@ -120,8 +120,8 @@ Follow the [guide](https://github.com/iqrfsdk/iot-starter-kit/tree/master/apps)
 
 ### Ready for 2 IQRF coordinators/networks on single GW
 
-- IQRF Mesh network1 via IQRF SPI (configuration in [configuration1](configuration1) folder)
-- IQRF Mesh network2 via CDC IQRF (configuration in [configuration2](configuration2) folder)
+- IQRF Mesh network1 via IQRF SPI (configuration in [config1](config1) folder)
+- IQRF Mesh network2 via CDC IQRF (configuration in [config2](config2) folder)
 
 #### Stop IQRF daemon and IQRF daemon app
 
@@ -136,11 +136,11 @@ docker container stop iqrf1daemon
 cd iqrf-daemon/docker
 
 EDIT YOUR CONFIGURATION IN
-iqrf-daemon/docker/configuration1/IqrfInterface.json (tip: select your IQRF interface)
-iqrf-daemon/docker/configuration1/MqttMessaging.json (tip: select your broker IP address)
+iqrf-daemon/docker/config1/IqrfInterface.json (tip: select your IQRF interface)
+iqrf-daemon/docker/config1/MqttMessaging.json (tip: select your broker IP address)
 ...
-iqrf-daemon/docker/configuration2/IqrfInterface.json (tip: select your IQRF interface)
-iqrf-daemon/docker/configuration2/MqttMessaging.json (tip: select your broker IP address)
+iqrf-daemon/docker/config2/IqrfInterface.json (tip: select your IQRF interface)
+iqrf-daemon/docker/config2/MqttMessaging.json (tip: select your broker IP address)
 ...
 ```
 
@@ -161,9 +161,9 @@ docker build -f Dockerfile2C.rpi -t iqrf-daemon-2c .
 #### Run IQRF daemons
 
 ```Bash
-docker container run -d --name iqrf1daemon --device /dev/spidev2.0:/dev/spidev2.0 \
+docker container run -d --name iqrf1daemon --device /dev/spidev2.0:/dev/spidev2.0
 --privileged --net bridge01 --ip 10.1.1.2 --restart=always iqrf-daemon-1c
-docker container run -d --name iqrf2daemon --device /dev/ttyACM0:/dev/ttyACM0 \
+docker container run -d --name iqrf2daemon --device /dev/ttyACM0:/dev/ttyACM0
 --privileged --net bridge01 --ip 10.1.1.3 --restart=always iqrf-daemon-2c
 ```
 
