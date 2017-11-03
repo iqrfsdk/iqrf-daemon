@@ -169,7 +169,7 @@ void PrfCommonJson::encodeTimestamp(std::string& to, std::chrono::time_point<std
     auto tm = *std::localtime(&time);
 
     char buf[80];
-    strftime(buf, sizeof(buf), "%Y-%m-%d %X", &tm);
+    strftime(buf, sizeof(buf), "%FT%T", &tm);
 
     std::ostringstream os;
     os.fill('0'); os.width(6);
