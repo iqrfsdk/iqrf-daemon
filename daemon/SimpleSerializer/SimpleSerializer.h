@@ -39,7 +39,7 @@ public:
   virtual ~PrfRawSimple() {};
   std::string encodeResponse(const std::string& errStr) override;
 private:
-  bool m_dotNotation = false;
+  bool m_dotNotation = true;
 };
 
 class PrfThermometerSimple : public PrfThermometer

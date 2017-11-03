@@ -102,7 +102,7 @@ public:
 
   rapidjson::Document m_doc;
 
-  bool m_dotNotation = false;
+  bool m_dotNotation = true;
 };
 
 class PrfRawJson : public DpaRaw, public PrfCommonJson
