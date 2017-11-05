@@ -428,12 +428,6 @@ std::string PrfRawHdpJson::encodeResponse(const std::string& errStr)
   m_has_rcode = true; //mandatory here
   m_has_dpaval = true; //mandatory here
 
-  if (m_dotNotation) {
-    m_responseJ = ".";
-  }
-  m_has_response = true; //mandatory here
-  
-  //TODO data
   int datalen = getResponse().GetLength() - sizeof(TDpaIFaceHeader) - 2; //DpaValue ResponseCode
   if (datalen > 0) {
     std::string res_data;
