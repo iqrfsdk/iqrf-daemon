@@ -116,7 +116,7 @@ docker container stop iqrf1daemon-app
 
 #### Check IQRF Node-RED app
 
-Follow the [guide](https://github.com/iqrfsdk/iot-starter-kit/tree/master/apps)
+Follow the [guide](https://github.com/iqrfsdk/iqrf-daemon-examples/tree/master/node-red)
 
 ### Ready for 2 IQRF coordinators/networks on single GW
 
