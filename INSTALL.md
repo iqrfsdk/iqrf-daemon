@@ -73,8 +73,8 @@ systemctl status iqrf-daemon.service
 
 ## Set your configuration 
 
-CK-USB-04a or GW-USB-06 devices must be switched to USB CDC IQRF mode using IDE
-menu: tools/USB classes/Switch to CDC IQRF
+CK-USB-04A or GW-USB-06 devices must be switched to USB CDC IQRF mode using IDE
+menu: Tools/USB Classes/Switch to CDC IQRF mode
 
 Follow the guidance [here](https://github.com/iqrfsdk/iqrf-daemon/wiki/Configuration)
 
