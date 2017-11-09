@@ -10,6 +10,7 @@
 ## Download public key to verify the packages from the repository
 
 ```Bash
+sudo apt-get install dirmngr
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 66CB9A85
 ```
 
@@ -60,7 +61,7 @@ sudo apt-get upgrade iqrf-daemon
 ## Check the daemon service status
 
 ```Bash
-sudo systemctl status iqrf-daemon.service
+systemctl status iqrf-daemon.service
 
 ● iqrf-daemon.service - IQRF daemon iqrf_startup
    Loaded: loaded (/lib/systemd/system/iqrf-daemon.service; enabled; vendor preset: enabled)
