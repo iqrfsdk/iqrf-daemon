@@ -384,15 +384,18 @@ const std::string PrfRawHdpJson::PRF_NAME("raw-hdp");
 
 #define PNUM_STR "pnum"
 #define PCMD_STR "pcmd"
-#define REQD_STR "req_data"
-#define RESD_STR "res_data"
+#define REQD_STR "rdata"
+#define RESD_STR "rdata"
 
 PrfRawHdpJson::PrfRawHdpJson(const rapidjson::Value& val)
 {
   parseRequestJson(val, *this);
 
+  //mandatory here
   m_pnum = jutils::getMemberAs<std::string>(PNUM_STR, val);
   m_pcmd = jutils::getMemberAs<std::string>(PCMD_STR, val);
+  m_hwpid = jutils::getMemberAs<std::string>(HWPID_STR, val);
+
   m_data = jutils::getPossibleMemberAs<std::string>(REQD_STR, val, m_data);
 
   {
@@ -407,6 +410,12 @@ PrfRawHdpJson::PrfRawHdpJson(const rapidjson::Value& val)
     m_request.DpaPacket().DpaRequestPacket_t.PCMD = pcmd;
   }
 
+  {
+    uint16_t hwpid;
+    parseHexaNum(hwpid, m_hwpid);
+    m_request.DpaPacket().DpaRequestPacket_t.HWPID = hwpid;
+  }
+
   int len = parseBinary(m_request.DpaPacket().DpaRequestPacket_t.DpaMessage.Request.PData, m_data, DPA_MAX_DATA_LENGTH);
   m_request.SetLength(sizeof(TDpaIFaceHeader) + len);
 
@@ -418,6 +427,15 @@ std::string PrfRawHdpJson::encodeResponse(const std::string& errStr)
   rapidjson::Value v;
 
   addResponseJsonPrio1Params(*this);
+
+  uint8_t pnum = getResponse().DpaPacket().DpaResponsePacket_t.PNUM;
+  uint8_t pcmd = getResponse().DpaPacket().DpaResponsePacket_t.PCMD;
+  uint16_t hwpid = getResponse().DpaPacket().DpaResponsePacket_t.HWPID;
+  m_has_hwpid = true;
+
+  encodeHexaNum(m_pnum, pnum);
+  encodeHexaNum(m_pcmd, pcmd);
+  encodeHexaNum(m_hwpid, hwpid);
 
   v.SetString(m_pnum.c_str(), alloc);
   m_doc.AddMember(PNUM_STR, v, alloc);
