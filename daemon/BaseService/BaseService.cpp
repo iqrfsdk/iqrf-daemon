@@ -124,10 +124,10 @@ void BaseService::handleMsgFromMessaging(const ustring& msg)
         //handleAsyncDpaMessage(dpaTask->getResponse());
         //handleAsyncDpaMessage(dpaTask->getRequest());
         ///////
-        lastError = ser->getLastError();
         handled = true;
-        break;
       }
+      lastError = ser->getLastError();
+      break;
     }
     else if (ctype == CAT_CONF_STR) {
       command = ser->parseConfig(msgs);
@@ -136,8 +136,9 @@ void BaseService::handleMsgFromMessaging(const ustring& msg)
         lastError = ser->getLastError();
         os << ser->encodeConfig(msgs, response);
         handled = true;
-        break;
       }
+      lastError = ser->getLastError();
+      break;
     }
   }
 
