@@ -1,6 +1,6 @@
 # Install Docker CE
 
-## Add Docker's official GPG key, add repository to the source list and install it
+## Step 1: Add Docker's official GPG key, add repository to the source list and install it
 
 -	For Debian (amd64)
 
@@ -30,10 +30,11 @@ chmod +x get-docker.sh
 sudo sh get-docker.sh
 ```
 
-## Confirm that Docker service is up and running
+## Step 2: Confirm that Docker service is up and running
 
 ```Bash
 sudo systemctl status docker.service
+
 â docker.service - Docker Application Container Engine
    Loaded: loaded (/lib/systemd/system/docker.service; enabled)
    Active: active (running) since Tue 2017-04-25 22:21:28 CEST; 1min 6s ago
@@ -45,15 +46,15 @@ sudo systemctl status docker.service
 ...
 ```
 
-## Add user $(whoami) to the Docker group
+## Step 3: Add user $(whoami) to the Docker group
 
 ```Bash
 sudo usermod $(whoami) -aG docker
 ```
 
-Terminal logout & login is necessary to update settings.
+**Terminal logout & login is necessary to update settings.**
 
-## Docker Machine && Compose
+## Optional: Docker Machine && Compose
 
 Follow the links:
 
@@ -62,7 +63,7 @@ https://docs.docker.com/machine/install-machine/
 https://docs.docker.com/compose/install/#install-compose
 ```
 
-## Run quick test
+## Optional: Run quick test
 
 ```Bash
 docker run hello-world (amd64) or
