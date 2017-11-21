@@ -20,9 +20,20 @@
 
 class DpaTransaction;
 
+/// \class IDpaMessageForwarding
+/// \brief IDpaMessageForwarding interface
+/// \details
+/// Provides interface for forwarding DPA transaction.
+/// All DPA messages handled by the transactions are forwarded according implementation
 class IDpaMessageForwarding
 {
 public:
+  /// \brief Get DPA transaction forwarding object
+  /// \param [in] forwarded DPA transaction to be forwarded
+  /// \return Another DPA transaction wrapper
+  /// \details
+  /// The transaction to be forwarded is wrapped to another transaction object implementing forwrding of flowing message
   virtual std::unique_ptr<DpaTransaction> getDpaTransactionForward(DpaTransaction* forwarded) = 0;
+
   inline virtual ~IDpaMessageForwarding() {};
 };

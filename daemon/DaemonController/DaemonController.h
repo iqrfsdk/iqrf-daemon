@@ -97,12 +97,12 @@ private:
   void startTrace();
   void startIqrfIf();
   void startDpa();
-  void startClients();
+  void startServices();
   void startScheduler();
 
   void stopIqrfIf();
   void stopDpa();
-  void stopClients();
+  void stopServices();
   void stopTrace();
 
   void start();
@@ -119,7 +119,7 @@ private:
   TaskQueue<DpaTransaction*> *m_dpaTransactionQueue;
 
   std::map<std::string, std::unique_ptr<ISerializer>> m_serializers;
-  std::map<std::string, std::unique_ptr<IService>> m_clients;
+  std::map<std::string, std::unique_ptr<IService>> m_services;
   std::map<std::string, std::unique_ptr<IMessaging>> m_messagings;
 
   IDpaMessageForwarding* m_dpaMessageForwarding = nullptr;

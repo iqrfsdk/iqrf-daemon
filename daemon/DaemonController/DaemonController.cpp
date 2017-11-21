@@ -579,14 +579,14 @@ void DaemonController::loadServiceComponent(const ComponentDescriptor& component
 
       //create instance
       CreateBaseService createService = (CreateBaseService)getCreateFunction(componentDescriptor.m_componentName, true);
-      std::unique_ptr<IService> client = createService(instanceName);
-      client->setDaemon(this);
+      std::unique_ptr<IService> service = createService(instanceName);
+      service->setDaemon(this);
 
       //get messaging
       {
         auto found = m_messagings.find(messagingName);
         if (found != m_messagings.end()) {
-          client->setMessaging(found->second.get());
+          service->setMessaging(found->second.get());
         }
         else
           THROW_EX(std::logic_error, "Cannot find: " << PAR(messagingName));
@@ -596,18 +596,18 @@ void DaemonController::loadServiceComponent(const ComponentDescriptor& component
       for (auto & serializerName : serializersVector) {
         auto ss = m_serializers.find(serializerName);
         if (ss != m_serializers.end())
-          client->setSerializer(ss->second.get());
+          service->setSerializer(ss->second.get());
         else
           THROW_EX(std::logic_error, "Cannot find: " << PAR(serializerName));
       }
 
       //get properties
-      client->update(properties);
+      service->update(properties);
 
       //register instance
-      auto ret = m_clients.insert(std::make_pair(client->getClientName(), std::move(client)));
+      auto ret = m_services.insert(std::make_pair(service->getName(), std::move(service)));
       if (!ret.second) {
-        THROW_EX(std::logic_error, "Duplicit ClientService configuration: " << NAME_PAR(name, ret.first->first));
+        THROW_EX(std::logic_error, "Duplicit Service configuration: " << NAME_PAR(name, ret.first->first));
       }
     }
     catch (std::logic_error &e) {
@@ -616,7 +616,7 @@ void DaemonController::loadServiceComponent(const ComponentDescriptor& component
   }
 }
 
-void DaemonController::startClients()
+void DaemonController::startServices()
 {
   TRC_ENTER("");
 
@@ -644,7 +644,7 @@ void DaemonController::startClients()
     }
   }
 
-  //load client components
+  //load service components
   for (const auto & mc : m_componentMap) {
     if (mc.second.m_enabled) {
       try {
@@ -656,13 +656,13 @@ void DaemonController::startClients()
     }
   }
 
-  //start clients
-  for (auto & cli : m_clients) {
+  //start services
+  for (auto & cli : m_services) {
     try {
       cli.second->start();
     }
     catch (std::exception &e) {
-      CATCH_EX("Cannot start " << NAME_PAR(client, cli.second->getClientName()), std::exception, e);
+      CATCH_EX("Cannot start " << NAME_PAR(service, cli.second->getName()), std::exception, e);
     }
   }
 
@@ -690,7 +690,7 @@ void DaemonController::start()
   startIqrfIf();
   startDpa();
   startScheduler();
-  startClients();
+  startServices();
 
   if (MODE_OPERATIONAL != m_modeStr) {
     doCommand(m_modeStr);
@@ -728,14 +728,14 @@ void DaemonController::stopDpa()
   TRC_LEAVE("");
 }
 
-void DaemonController::stopClients()
+void DaemonController::stopServices()
 {
   TRC_ENTER("");
-  TRC_DBG("Stopping: " << PAR(m_clients.size()));
-  for (auto & cli : m_clients) {
+  TRC_DBG("Stopping: " << PAR(m_services.size()));
+  for (auto & cli : m_services) {
     cli.second->stop();
   }
-  m_clients.clear();
+  m_services.clear();
 
   TRC_DBG("Stopping: " << PAR(m_messagings.size()));
   for (auto & ms : m_messagings) {
@@ -766,7 +766,7 @@ void DaemonController::stop()
     m_dpaHandler->KillDpaTransaction();
   }
 
-  stopClients();
+  stopServices();
   TRC_DBG("daemon: before stopDpa");
   stopDpa();
   stopIqrfIf();

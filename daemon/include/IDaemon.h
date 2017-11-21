@@ -42,7 +42,7 @@ public:
 
   /// \brief Register Asynchronous DPA message handler
   /// \param [in] clientId client identification registering handler function
-  /// \param [in] fun client identification registering handler function
+  /// \param [in] fun handler function
   /// \details
   /// Whenever an asynchronous DPA message is received its passed to the handler function. It is possible to register 
   /// more handlers for different clients distinguished via client identifications.
@@ -51,7 +51,7 @@ public:
   virtual void registerAsyncMessageHandler(const std::string& clientId, AsyncMessageHandlerFunc fun) = 0;
 
   /// \brief Unregister Asynchronous DPA message handler
-  /// \param [in] clientId client identification registering handler function
+  /// \param [in] clientId client identification
   /// \details
   /// If the handler is not required anymore, it is possible to unregister via this method.
   virtual void unregisterAsyncMessageHandler(const std::string& clientId) = 0;

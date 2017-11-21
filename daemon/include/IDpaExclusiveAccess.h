@@ -16,13 +16,20 @@
 
 #pragma once
 
-class DpaTransaction;
 class IChannel;
 
+/// \class IDpaExclusiveAccess
+/// \brief IDpaExclusiveAccess interface
+/// \details
+/// Provides interface exclusive acces via a communication channel
+/// All other channels are blocked. 
 class IDpaExclusiveAccess
 {
 public:
+  /// \brief Set exclusive access
   virtual void setExclusive(IChannel* chan) = 0;
+
+  /// \brief Reset exclusive access
   virtual void resetExclusive() = 0;
   inline virtual ~IDpaExclusiveAccess() {};
 };
