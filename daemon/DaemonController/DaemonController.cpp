@@ -354,11 +354,24 @@ void DaemonController::startIqrfIf()
 
       TRC_INF(PAR(m_iqrfInterfaceName));
 
-      size_t found = m_iqrfInterfaceName.find("spi");
-      if (found != std::string::npos)
-        m_iqrfInterface = ant_new IqrfSpiChannel(m_iqrfInterfaceName);
-      else
-        m_iqrfInterface = ant_new IqrfCdcChannel(m_iqrfInterfaceName);
+      int attempts = 1;
+      while (attempts < 3) {
+        try {
+          size_t found = m_iqrfInterfaceName.find("spi");
+          
+          if (found != std::string::npos)
+            m_iqrfInterface = ant_new IqrfSpiChannel(m_iqrfInterfaceName);
+          else
+            m_iqrfInterface = ant_new IqrfCdcChannel(m_iqrfInterfaceName);
+
+          break;
+        }
+        catch (std::exception &e) {
+          CATCH_EX(PAR(attempts) << " to create IqrfInterface failure: ", std::exception, e);
+          ++attempts;
+          std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+        }
+      }
 
     }
     catch (std::exception &e) {
