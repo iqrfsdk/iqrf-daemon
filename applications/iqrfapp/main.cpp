@@ -62,6 +62,7 @@ private:
   std::string m_cfgFileName;
   std::string m_localMqName;
   std::string m_remoteMqName;
+  iqrf::Level m_level;
   int m_defaultTimeout = 5000;
 
   TaskQueue<ustring> *m_msgQueue = nullptr;
@@ -134,6 +135,15 @@ Iqrfapp::Iqrfapp()
       if (timeout >= 0) {
         m_defaultTimeout = timeout;
       }
+
+      std::string vl = jutils::getPossibleMemberAs<std::string>("VerbosityLevel", cfg, "dbg");
+
+      if (vl == "err") m_level = iqrf::Level::err;
+      else if (vl == "war") m_level = iqrf::Level::war;
+      else if (vl == "inf") m_level = iqrf::Level::inf;
+      else m_level = iqrf::Level::dbg;
+
+      TRC_START("", m_level, 0);
     }
     catch (std::logic_error &e) {
       CATCH_EX("Cannot JSON parse configuration file: " << PAR(m_cfgFileName), std::logic_error, e);
