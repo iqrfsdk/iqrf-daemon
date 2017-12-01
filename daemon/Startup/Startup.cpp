@@ -15,6 +15,7 @@
  */
 
 #include "Startup.h"
+#include "VersionInfo.h"
 
 #include "DaemonController.h"
 #include "IqrfLogging.h"
@@ -80,6 +81,11 @@ Startup::~Startup()
 
 int Startup::run(int argc, char** argv)
 {
+  if (argc == 2 && argv[1] == std::string("version")) {
+    std::cout << DAEMON_VERSION << " " << BUILD_TIMESTAMP << std::endl;
+    return 0;
+  }
+
   std::string configFile;
 
   if (SIG_ERR == signal(SIGINT, SignalHandler)) {
@@ -110,6 +116,7 @@ int Startup::run(int argc, char** argv)
   if (argc < 2) {
     std::cerr << std::endl << "Usage" << std::endl;
     std::cerr << "  iqrf_startup <config file>" << std::endl << std::endl;
+    std::cerr << "  iqrf_startup version" << std::endl << std::endl;
     std::cerr << "Example" << std::endl;
     std::cerr << "  iqrf_startup config.json" << std::endl;
     return (-1);
@@ -123,4 +130,6 @@ int Startup::run(int argc, char** argv)
   msgCtrl.run(configFile);
 
   std::cout << std::endl << argv[0] << " finished";
+
+  return 0;
 }
