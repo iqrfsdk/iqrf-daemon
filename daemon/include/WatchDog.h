@@ -23,6 +23,11 @@
 #include <functional>
 #include <chrono>
 
+/// \class WatchDog
+/// \brief Provides watch dog feature
+/// \details
+/// It starts dedicated monitor thread and waits for calling pet(). If pet() is not called at predefined time interval
+/// it calls callback. 
 template <typename T>
 class WatchDog
 {
@@ -30,6 +35,11 @@ public:
   WatchDog() {
   };
 
+  /// \brief parametric constructor
+  /// \param [in] millis time to wait for pet()
+  /// \param [in] callback functional called when time without pet() elapsed
+  /// \details
+  /// Construc and start watching thread. If pet() is not called at predefined time it calls callback. 
   WatchDog(unsigned int millis, T callback) {
     start(millis, callback);
   }
@@ -38,6 +48,11 @@ public:
     stop();
   }
 
+  /// \brief Start watching thread
+  /// \param [in] millis time to wait for pet()
+  /// \param [in] callback functional called when time without pet() elapsed
+  /// \details
+  /// Start watching thread if not running yet. If pet() is not called at predefined time it calls callback. 
   void start(unsigned int millis, T callback) {
     std::unique_lock<std::mutex> lock(m_stopConditionMutex);
     if (!m_running) {
@@ -51,6 +66,9 @@ public:
     }
   }
 
+  /// \brief Stop watching thread
+  /// \details
+  /// Stop watching thread if running
   void stop() {
     {
       std::unique_lock<std::mutex> lock(m_stopConditionMutex);
@@ -63,12 +81,16 @@ public:
       m_thread.join();
   }
 
+  /// \brief Pet watch dog
+  /// \details
+  /// Satisfy watch dog for time interval
   void pet() {
     std::unique_lock<std::mutex> lock(m_stopConditionMutex);
     m_lastRefreshTime = std::chrono::system_clock::now();
   }
 
 private:
+  /// Watching thread
   void watch() {
     {
       std::unique_lock<std::mutex> lock(m_stopConditionMutex);
@@ -90,7 +112,6 @@ private:
   std::mutex m_stopConditionMutex;
   std::condition_variable m_stopConditionVariable;
   std::chrono::system_clock::time_point m_lastRefreshTime;
-  //unsigned int m_timeout = 100;
   std::chrono::milliseconds m_timeout;
 
 };

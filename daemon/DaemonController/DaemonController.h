@@ -33,14 +33,33 @@ class IChannel;
 class IDpaMessageForwarding;
 class IDpaExclusiveAccess;
 
+/// \class ComponentDescriptor
+/// \brief Auxiliar class for component initialization
+/// \details
+/// It is used by DaemonController to split and store components configuration from configuration file passed by cmdl
 class ComponentDescriptor {
 public:
+  
+  /// \brief parametric constructor
+  /// \param [in] componentName component name
+  /// \param [in] enabled component is enabled
+  /// \details
+  /// Configuration data for particular component
   ComponentDescriptor(const std::string& componentName, bool enabled)
     : m_componentName(componentName)
     , m_enabled(enabled)
   {}
+
+  /// \brief load JSON configuration file
+  /// \param [in] configurationDir directory with component configuration file
+  /// \details
+  /// Load and parse JSON configuration file for component.
   void loadConfiguration(const std::string configurationDir);
 
+  /// \brief get JSON configuration
+  /// \return JSON configuration data
+  /// \details
+  /// Returns JSON configuration data obtained from component configuration file
   rapidjson::Value& getConfiguration() {
     return m_doc;
   }
@@ -51,9 +70,36 @@ public:
   rapidjson::Document m_doc;
 };
 
+/// \class DaemonController
+/// \brief Create component instances
+/// \details
+/// Based on configuration file passed from cmdl it instantiate and bind all component instances.
+/// The instances together implements configured daemon functions.
+/// As this version of daemon is statically linked, the components must be linked during link time
+/// It starts watch dog to monitor comunication threads and invoke exit in case of something got stucked
+///
+/// It accepts JSON configuration:
+/// {
+///   "Configuration": "v0.0",                #configuration version
+///   "ConfigurationDir" : "configuration",   #configuration directory
+///   "WatchDogTimeoutMilis" : 10000,         #watch dog timeout
+///   "Mode" : "operational",                 #operational mode: operational | forwarding | service
+///   "Components" : [                        #components to be instantiated
+///     {
+///       "ComponentName": "BaseService",     #component name
+///       "Enabled" : true                    #if true component is instantiated else ignored
+///     },
+///     ...
+///   ]
+/// }
 class DaemonController : public IDaemon
 {
 public:
+  /// \brief operational mode
+  /// \details
+  /// Operational is used for normal work
+  /// Service the only UDP Messaging is used to communicate with IQRF IDE
+  /// Forwarding normal work but all DPA messages are forwarded to IQRF IDE to me monitored there
   enum class Mode {
     Operational,
     Service,
@@ -63,9 +109,11 @@ public:
   DaemonController(const DaemonController &) = delete;
 
   static DaemonController& getController();
+  
+  /// main loop
   void run(const std::string& cfgFileName);
 
-  //from IDaemon
+  // IDaemon override methods
   void executeDpaTransaction(DpaTransaction& dpaTransaction) override;
   void registerAsyncMessageHandler(const std::string& serviceId, AsyncMessageHandlerFunc fun) override;
   void unregisterAsyncMessageHandler(const std::string& serviceId) override;
@@ -79,8 +127,16 @@ public:
   const std::string& getDaemonVersion() override { return m_version; }
   const std::string& getDaemonVersionBuild() override { return m_versionBuild; }
 
+  /// \brief Invoke exit of this process
   void exit();
 
+  /// \brief switch operational mode
+  /// \param [in] mode operational mode to switch
+  /// \details
+  /// \details
+  /// Operational is used for normal work
+  /// Service the only UDP Messaging is used to communicate with IQRF IDE
+  /// Forwarding normal work but all DPA messages are forwarded to IQRF IDE to me monitored there
   void setMode(Mode mode);
 
 private:
@@ -127,7 +183,7 @@ private:
 
   IScheduler* m_scheduler = nullptr;
 
-  //watchDog
+  /// watchDog
   void watchDogPet();
   bool m_running = false;
   std::mutex m_stopConditionMutex;
@@ -135,7 +191,7 @@ private:
   std::chrono::system_clock::time_point m_lastRefreshTime;
   std::chrono::milliseconds m_timeout;
 
-  //configuration
+  /// configuration
   void loadConfiguration(const std::string& cfgFileName);
   rapidjson::Document m_configuration;
   std::string m_cfgFileName;
@@ -156,7 +212,7 @@ private:
   void loadMessagingComponent(const ComponentDescriptor& componentDescriptor);
   void loadServiceComponent(const ComponentDescriptor& componentDescriptor);
 
-  //TR module
+  /// TR module
   std::string m_moduleId;
   std::string m_osVersion;
   std::string m_trType;

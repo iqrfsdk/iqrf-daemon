@@ -28,20 +28,38 @@ class IDaemon;
 
 typedef std::basic_string<unsigned char> ustring;
 
+
+/// \class BaseService
+/// \brief Provides basic message handling
+/// \details
+/// Implements IService interface. It is basic implementation and works just as proxy between
+/// IQRF mesh and outside world. It uses IScheduler and it is possible to schedule DPA messages and send outsid just DPA responses
+/// It uses IDaemon to communicate via DPA messages with IQRF mesh.
+/// It registers to IMessaging to communicate via general messages with outside world.
+/// It is possible to set more ISerializer instances. It uses ISerializer instances for parsing or encoding messages
+/// received via IMessaging. It selects appropriate ISerializer instance for messages.
+/// It gets via IDaemon IScheduler to access scheduler methods.
+///
+/// It accepts JSON properties:
+/// "Properties": {
+///   "AsyncDpaMessage": true  #process asynchronous DPA message
+/// }
 class BaseService : public IService
 {
 public:
   BaseService() = delete;
+  
+  /// \brief parametric constructor
+  /// \param [in] name unique name of this instance
   BaseService(const std::string& name);
+
   virtual ~BaseService();
 
+  /// IService override methods
   void setDaemon(IDaemon* daemon) override;
   virtual void setSerializer(ISerializer* serializer) override;
   virtual void setMessaging(IMessaging* messaging) override;
-  const std::string& getName() const override {
-    return m_name;
-  }
-
+  const std::string& getName() const override { return m_name; }
   void update(const rapidjson::Value& cfg) override;
   void start() override;
   void stop() override;
@@ -51,10 +69,8 @@ private:
   void handleAsyncDpaMessage(const DpaMessage& dpaMessage);
 
   std::string m_name;
-
   IMessaging* m_messaging;
   IDaemon* m_daemon;
   std::vector<ISerializer*> m_serializerVect;
-
   bool m_asyncDpaMessage = false;
 };

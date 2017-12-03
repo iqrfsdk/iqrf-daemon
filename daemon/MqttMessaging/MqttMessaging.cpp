@@ -155,7 +155,7 @@ public:
 
     if ((retval = MQTTAsync_create(&m_client, m_mqttBrokerAddr.c_str(),
       m_mqttClientId.c_str(), m_mqttPersistence, NULL)) != MQTTASYNC_SUCCESS) {
-      THROW_EX(MqttChannelException, "MQTTClient_create() failed: " << PAR(retval));
+      THROW_EX(std::logic_error, "MQTTClient_create() failed: " << PAR(retval));
     }
 
     m_conn_opts.keepAliveInterval = m_mqttKeepAliveInterval;
@@ -180,7 +180,7 @@ public:
     }
 
     if ((retval = MQTTAsync_setCallbacks(m_client, this, s_connlost, s_msgarrvd, s_delivered)) != MQTTASYNC_SUCCESS) {
-      THROW_EX(MqttChannelException, "MQTTClient_setCallbacks() failed: " << PAR(retval));
+      THROW_EX(std::logic_error, "MQTTClient_setCallbacks() failed: " << PAR(retval));
     }
 
     connect();

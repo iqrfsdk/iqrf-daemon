@@ -24,6 +24,33 @@ class Impl;
 
 typedef std::basic_string<unsigned char> ustring;
 
+/// \class MqttMessaging
+/// \brief MQTT messaging
+/// \details
+/// Implements IMessaging interface for MQTT communication by MQTT Paho library
+///
+/// It accepts JSON properties:
+/// "Properties": {
+///   "BrokerAddr": "tcp://127.0.0.1:1883",   #broker address
+///   "ClientId": "IqrfDpaMessaging1",        #unique instance name
+///   "Persistence": 1,                       #MQTT persistence value
+///   "Qos": 1,                               #MQTT QoS value 
+///   "TopicRequest": "Iqrf/DpaRequest",      #MQTT topic expected for incoming messages
+///   "TopicResponse": "Iqrf/DpaResponse",    #MQTT topic used for outgoing messages
+///   "User": "",                             #MQTT user for authentication
+///   "Password": "",                         #MQTT password for authentication
+///   "EnabledSSL": false,                    #MQTT SSL
+///   "KeepAliveInterval": 20,                #Paho keep alive interval value
+///   "ConnectTimeout": 5,                    #Paho connect timeout value
+///   "MinReconnect": 1,                      #Paho minimal reconnect value
+///   "MaxReconnect": 64,                     #Paho maximal reconnect value
+///   "TrustStore": "server-ca.crt",          #SSL parameter
+///   "KeyStore": "client.pem",               #SSL parameter
+///   "PrivateKey": "client-privatekey.pem",  #SSL parameter
+///   "PrivateKeyPassword": "",               #SSL parameter
+///   "EnabledCipherSuites": "",              #SSL parameter
+///   "EnableServerCertAuth": true            #SSL parameter
+/// }
 class MqttMessaging : public IMessaging
 {
 public:
@@ -32,40 +59,15 @@ public:
 
   virtual ~MqttMessaging();
 
-  // component
+  /// IMessaging overriden methods
   void start() override;
   void stop() override;
   void update(const rapidjson::Value& cfg) override;
   const std::string& getName() const override;
-
-  // interface
   void registerMessageHandler(MessageHandlerFunc hndl) override;
   void unregisterMessageHandler() override;
   void sendMessage(const ustring& msg) override;
 
 private:
   Impl* m_impl;
-};
-
-class MqttChannelException : public std::exception {
-public:
-  MqttChannelException(const std::string& cause)
-    :m_cause(cause)
-  {}
-
-  //TODO ?
-#ifndef WIN32
-  virtual const char* what() const noexcept(true)
-#else
-  virtual const char* what() const
-#endif
-  {
-    return m_cause.c_str();
-  }
-
-  virtual ~MqttChannelException()
-  {}
-
-protected:
-  std::string m_cause;
 };

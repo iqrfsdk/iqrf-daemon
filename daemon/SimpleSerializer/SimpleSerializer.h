@@ -26,34 +26,62 @@
 #include <vector>
 #include <string>
 
+/// auxiliar parse/encode functions
 std::vector<std::string> parseTokens(DpaTask& dpaTask, std::istream& istr);
 void parseRequestSimple(DpaTask& dpaTask, std::vector<std::string>& tokens);
-
 void encodeResponseSimple(const DpaTask & dt, std::ostream& ostr);
 void encodeTokens(const DpaTask& dpaTask, const std::string& errStr, std::ostream& ostr);
 
+/// \class PrfRawSimple
+/// \brief Parse/encode simple message holding raw DPA message
+/// \details
+/// Class to be passed to parser as creator of DpaRaw object from incoming data.
+/// expected message e.g: "raw 01.00.06.03.ff.ff"
+/// or: "raw 01.00.06.03.ff.ff  timeout 1000"
 class PrfRawSimple : public DpaRaw
 {
 public:
+  /// \brief parametric constructor
+  /// \param [in] istr string stream to be parsed
   explicit PrfRawSimple(std::istream& istr);
   virtual ~PrfRawSimple() {};
+  
+  /// \brief DpaTask overriden method
+  /// \param [in] errStr result of DpaTask handling in IQRF mesh to be stored in message
+  /// \return encoded message
   std::string encodeResponse(const std::string& errStr) override;
 private:
   bool m_dotNotation = true;
 };
 
+/// \class PrfThermometerSimple
+/// \brief Parse/encode simple message holding PrfThermometer
+/// \details
+/// Class to be passed to parser as creator of PrfThermometer object from incoming data.
 class PrfThermometerSimple : public PrfThermometer
 {
 public:
+  /// \brief parametric constructor
+  /// \param [in] istr string stream to be parsed
   explicit PrfThermometerSimple(std::istream& istr);
   virtual ~PrfThermometerSimple() {};
+
+  /// \brief DpaTask overriden method
+  /// \param [in] errStr result of DpaTask handling in IQRF mesh to be stored in message
+  /// \return encoded message
   std::string encodeResponse(const std::string& errStr) override;
 };
 
+/// \class PrfLedSimple
+/// \brief Parse/encode simple message holding PrfLed
+/// \details
+/// Class to be passed to parser as creator of PrfLed object from incoming data.
 template <typename L>
 class PrfLedSimple : public L
 {
 public:
+  /// \brief parametric constructor
+  /// \param [in] istr string stream to be parsed
   explicit PrfLedSimple(std::istream& istr) {
     std::vector<std::string> v = parseTokens(*this, istr);
     parseRequestSimple(*this, v);
@@ -61,6 +89,9 @@ public:
 
   virtual ~PrfLedSimple() {}
 
+  /// \brief DpaTask overriden method
+  /// \param [in] errStr result of DpaTask handling in IQRF mesh to be stored in message
+  /// \return encoded message
   std::string encodeResponse(const std::string& errStr) override
   {
     std::ostringstream ostr;
@@ -73,20 +104,28 @@ public:
   }
 };
 
+/// Type for embedded Green LED
 typedef PrfLedSimple<PrfLedG> PrfLedGSimple;
+
+/// Type for embedded Red LED
 typedef PrfLedSimple<PrfLedR> PrfLedRSimple;
 
+/// \class SimpleSerializer
+/// \brief Object factory to create DpaTask objects from incoming messages
+/// \details
+/// Uses inherited ObjectFactory features to create DpaTask object from incoming simple messages.
 class SimpleSerializer : public ISerializer
 {
 public:
   SimpleSerializer();
+ 
+  /// parametric constructor
+  /// \param [in] name instance name
   SimpleSerializer(const std::string& name);
   virtual ~SimpleSerializer() {}
 
-  //component
+  /// ISerializer overriden methods
   const std::string& getName() const override { return m_name; }
-
-  //interface
   std::string parseCategory(const std::string& request) override;
   std::unique_ptr<DpaTask> parseRequest(const std::string& request) override;
   std::string parseConfig(const std::string& request) override;

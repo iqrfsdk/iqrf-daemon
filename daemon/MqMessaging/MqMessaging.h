@@ -25,6 +25,16 @@ class MqChannel;
 
 typedef std::basic_string<unsigned char> ustring;
 
+/// \class MqMessaging
+/// \brief Interprocess messaging
+/// \details
+/// Implements IMessaging interface for interprocess communication
+///
+/// It accepts JSON properties:
+/// "Properties": {
+///   "LocalMqName": "iqrf-daemon-110",    #name of local interprocess connection
+///   "RemoteMqName" : "iqrf-daemon-100"   #name of remote interprocess connection
+/// }
 class MqMessaging : public IMessaging
 {
 public:
@@ -33,13 +43,11 @@ public:
 
   virtual ~MqMessaging();
 
-  // component
+  /// IMessaging overriden methods
   void start() override;
   void stop() override;
   void update(const rapidjson::Value& cfg) override;
   const std::string& getName() const override { return m_name; }
-
-  // interface
   void registerMessageHandler(MessageHandlerFunc hndl) override;
   void unregisterMessageHandler() override;
   void sendMessage(const ustring& msg) override;
@@ -50,7 +58,6 @@ private:
   MqChannel* m_mqChannel;
   TaskQueue<ustring>* m_toMqMessageQueue;
 
-  // configuration
   std::string m_name;
   std::string m_localMqName;
   std::string m_remoteMqName;

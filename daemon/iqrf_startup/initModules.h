@@ -16,13 +16,15 @@
 
 #pragma once
 
-extern void init_SimpleSerializer();
-extern void init_JsonSerializer();
-extern void init_MqMessaging();
-extern void init_MqttMessaging();
-extern void init_UdpMessaging();
-extern void init_BaseService();
+/// Declaration of init functions of static link components
+void init_SimpleSerializer();
+void init_JsonSerializer();
+void init_MqMessaging();
+void init_MqttMessaging();
+void init_UdpMessaging();
+void init_BaseService();
 
+/// Macro to be called at the very beginning o main
 #define STATIC_INIT \
 init_SimpleSerializer(); \
 init_JsonSerializer(); \
