@@ -23,12 +23,23 @@
 #include <condition_variable>
 #include <queue>
 
+/// \class TaskQueue
+/// \brief Maintain queue of tasks and invoke sequential processing
+/// \details
+/// Provide asynchronous processing of incoming tasks of type T in dedicated worker thread.
+/// The tasks are processed in FIFO way. Processing function is passed as parameter in constructor.
 template <class T>
 class TaskQueue
 {
 public:
+  /// Processing function type
   typedef std::function<void(T)> ProcessTaskFunc;
 
+  /// \brief constructor
+  /// \param [in] processTaskFunc processing function
+  /// \details
+  /// Processing function is used in dedicated worker thread to process incoming queued tasks.
+  /// The function must be thread safe. The worker thread is started.
   TaskQueue(ProcessTaskFunc processTaskFunc)
     :m_processTaskFunc(processTaskFunc)
   {
@@ -37,6 +48,9 @@ public:
     m_workerThread = std::thread(&TaskQueue::worker, this);
   }
 
+  /// \brief destructor
+  /// \details
+  /// Stops working thread
   virtual ~TaskQueue()
   {
     {
@@ -50,6 +64,12 @@ public:
       m_workerThread.join();
   }
 
+  /// \brief Push task to queue
+  /// \param [in] task object to push to queue
+  /// \return size of queue
+  /// \details
+  /// Pushes task to queue to be processed in worker thread. The task type T has to be copyable
+  /// as the copy is pushed to queue container
   int pushToQueue(const T& task)
   {
     int retval = 0;
@@ -63,6 +83,9 @@ public:
     return retval;
   }
 
+  /// \brief Stop queue
+  /// \details
+  /// Worker thread is explicitly stopped
   void stopQueue()
   {
     {
@@ -73,6 +96,8 @@ public:
     m_conditionVariable.notify_all();
   }
 
+  /// \brief Get actual queue size
+  /// \return queue size
   size_t size()
   {
     size_t retval = 0;
@@ -84,7 +109,7 @@ public:
   }
 
 private:
-  //thread function
+  /// Worker thread function
   void worker()
   {
     std::unique_lock<std::mutex> lck(m_taskQueueMutex, std::defer_lock);

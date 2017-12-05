@@ -16,11 +16,22 @@
 
 #pragma once
 
+/// \class Startup
+/// \brief start application
+/// \details
+/// Auxiliary class wrapping application init stuff to simplify main function
 class Startup
 {
 public:
   Startup();
   Startup(const Startup&) = delete;
   virtual ~Startup();
+
+  /// \brief start application
+  /// \param [in] argc passed number from main()
+  /// \param [in] argv passed pointer from main()
+  /// \return value -1 in case of initialization error else 0
+  /// \details
+  /// Auxiliary class wrapping application init stuff to simplify main function
   int run(int argc, char** argv);
 };
