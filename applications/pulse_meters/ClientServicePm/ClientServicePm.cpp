@@ -95,7 +95,7 @@ void ClientServicePm::start()
   TRC_ENTER("");
 
   //remove all possible configured tasks
-  m_daemon->getScheduler()->removeAllMyTasks(getClientName());
+  m_daemon->getScheduler()->removeAllMyTasks(getName());
 
   //register task handler
   m_daemon->getScheduler()->registerMessageHandler(m_name, [this](const std::string& task) {
@@ -150,14 +150,14 @@ void ClientServicePm::setFrc(bool val)
 
   if (val && !m_frcActive) {
     TRC_DBG("Start FRC");
-    m_frcHandle = m_daemon->getScheduler()->scheduleTaskPeriodic(getClientName(),
+    m_frcHandle = m_daemon->getScheduler()->scheduleTaskPeriodic(getName(),
       SCHEDULED_SEND_FRC_TASK, std::chrono::seconds(m_frcPeriod));
     m_frcActive = true;
   }
 
   if (!val && m_frcActive) {
     TRC_DBG("Stop FRC");
-    m_daemon->getScheduler()->removeTask(getClientName(), m_frcHandle);
+    m_daemon->getScheduler()->removeTask(getName(), m_frcHandle);
     m_frcActive = false;
   }
 }
@@ -216,7 +216,7 @@ void ClientServicePm::processPulseMeterFromTaskQueue(PrfPulseMeterSchd& pm)
     //Schedule next read
     std::ostringstream os;
     os << SCHEDULED_SEND_PMT_TASK << ' ' << pm.getDpa().getAddress();
-    pm.scheduleTaskPeriodic(getClientName(), os.str(), std::chrono::seconds(m_sleepPeriod));
+    pm.scheduleTaskPeriodic(getName(), os.str(), std::chrono::seconds(m_sleepPeriod));
   }
 }
 
@@ -281,7 +281,7 @@ void ClientServicePm::processPulseMeterFromScheduler(const std::string& task)
     case -1: //ERROR_TIMEOUT
     {
       //we probably lost pmeter - start FRC to sync again
-      pms->removeSchedule(getClientName());
+      pms->removeSchedule(getName());
       TRC_DBG("Lost Pulsemeter");
       pms->setSync(false);
       setFrc(true);
@@ -291,14 +291,14 @@ void ClientServicePm::processPulseMeterFromScheduler(const std::string& task)
     case ERROR_PNUM:
     {
       //there isn't pmeter device in the address - stop trying
-      pms->removeSchedule(getClientName());
+      pms->removeSchedule(getName());
       TRC_DBG("Stop seeking Pulsemeter");
     }
     break;
 
     default:
     { //other error
-      pms->removeSchedule(getClientName());
+      pms->removeSchedule(getName());
       TRC_DBG("Stop seeking Pulsemeter");
     }
   }
