@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2016-2017 MICRORISC s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,7 +36,7 @@ typedef std::basic_string<unsigned char> ustring;
 ///   "LocalMqName": "iqrf-daemon-110",    #name of local interprocess connection
 ///   "RemoteMqName" : "iqrf-daemon-100"   #name of remote interprocess connection
 /// }
-///```
+/// ```
 class MqMessaging : public IMessaging
 {
 public:

@@ -75,10 +75,11 @@ public:
 /// \details
 /// Based on configuration file passed from cmdl it instantiate and bind all component instances.
 /// The instances together implements configured daemon functions.
-/// As this version of daemon is statically linked, the components must be linked during link time
+/// As this version of daemon is statically linked, the components must be linked with iqrf_startup executable.
 /// It starts watch dog to monitor comunication threads and invoke exit in case of something got stucked
 ///
-/// It accepts JSON configuration:
+/// It accepts configuration JSON file:
+/// ```json
 /// {
 ///   "Configuration": "v0.0",                #configuration version
 ///   "ConfigurationDir" : "configuration",   #configuration directory
@@ -92,6 +93,7 @@ public:
 ///     ...
 ///   ]
 /// }
+/// ```
 class DaemonController : public IDaemon
 {
 public:

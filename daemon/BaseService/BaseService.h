@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2016-2017 MICRORISC s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,11 +33,10 @@ typedef std::basic_string<unsigned char> ustring;
 /// \brief Provides basic message handling
 /// \details
 /// Implements IService interface. It is basic implementation and works just as proxy between
-/// IQRF mesh and outside world. It uses IScheduler and it is possible to schedule DPA messages and send outsid just DPA responses
-/// It uses IDaemon to communicate via DPA messages with IQRF mesh.
+/// IQRF mesh and outside world. It uses IDaemon to communicate via DPA messages with IQRF mesh.
 /// It registers to IMessaging to communicate via general messages with outside world.
-/// It is possible to set more ISerializer instances. It uses ISerializer instances for parsing or encoding messages
-/// received via IMessaging. It selects appropriate ISerializer instance for messages.
+/// It is possible to set more ISerializer instances for parsing or encoding messages
+/// received via IMessaging. It selects appropriate ISerializer instance according incoming messages types.
 /// It gets via IDaemon IScheduler to access scheduler methods.
 ///
 /// Configurable via its update() method accepting JSON properties:
@@ -57,7 +56,7 @@ public:
 
   virtual ~BaseService();
 
-  /// IService override methods
+  // IService override methods
   void setDaemon(IDaemon* daemon) override;
   virtual void setSerializer(ISerializer* serializer) override;
   virtual void setMessaging(IMessaging* messaging) override;
