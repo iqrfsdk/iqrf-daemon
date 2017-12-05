@@ -40,7 +40,7 @@ public:
   void setDaemon(IDaemon* daemon) override;
   void setSerializer(ISerializer* serializer) override;
   void setMessaging(IMessaging* messaging) override;
-  const std::string& getClientName() const override {
+  const std::string& getName() const override {
     return m_name;
   }
 

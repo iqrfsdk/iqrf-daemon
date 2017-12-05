@@ -96,7 +96,7 @@ void ServiceExample::start()
   TRC_ENTER("");
 
   //remove all possible configured tasks
-  m_daemon->getScheduler()->removeAllMyTasks(getClientName());
+  m_daemon->getScheduler()->removeAllMyTasks(getName());
 
   //register task handler
   m_daemon->getScheduler()->registerMessageHandler(m_name, [this](const std::string& task) {
@@ -151,14 +151,14 @@ void ServiceExample::setFrc(bool val)
 
   if (val && !m_frcActive) {
     TRC_DBG("Start FRC");
-    m_frcHandle = m_daemon->getScheduler()->scheduleTaskPeriodic(getClientName(),
+    m_frcHandle = m_daemon->getScheduler()->scheduleTaskPeriodic(getName(),
       SCHEDULED_SEND_FRC_TASK, std::chrono::seconds(m_frcPeriod));
     m_frcActive = true;
   }
 
   if (!val && m_frcActive) {
     TRC_DBG("Stop FRC");
-    m_daemon->getScheduler()->removeTask(getClientName(), m_frcHandle);
+    m_daemon->getScheduler()->removeTask(getName(), m_frcHandle);
     m_frcActive = false;
   }
 }
@@ -198,7 +198,7 @@ void ServiceExample::processPrfThermometerFromTaskQueue(PrfThermometerSchd& pm)
     //Schedule next read
     std::ostringstream os;
     os << SCHEDULED_SEND_THM_TASK << ' ' << pm.getDpa().getAddress();
-    pm.scheduleTaskPeriodic(getClientName(), os.str(), std::chrono::seconds(m_sleepPeriod));
+    pm.scheduleTaskPeriodic(getName(), os.str(), std::chrono::seconds(m_sleepPeriod));
   }
 }
 
@@ -261,7 +261,7 @@ void ServiceExample::processPrfThermometerFromScheduler(const std::string& task)
     case -1: //ERROR_TIMEOUT
     {
       //we probably lost pmeter - start FRC to sync again
-      prfThermometerSchd->removeSchedule(getClientName());
+      prfThermometerSchd->removeSchedule(getName());
       TRC_DBG("Lost Thermometer");
       prfThermometerSchd->setSync(false);
       setFrc(true);
@@ -271,14 +271,14 @@ void ServiceExample::processPrfThermometerFromScheduler(const std::string& task)
     case ERROR_PNUM:
     {
       //there isn't pmeter device in the address - stop trying
-      prfThermometerSchd->removeSchedule(getClientName());
+      prfThermometerSchd->removeSchedule(getName());
       TRC_DBG("Stop seeking Thermometer");
     }
     break;
 
     default:
     { //other error
-      prfThermometerSchd->removeSchedule(getClientName());
+      prfThermometerSchd->removeSchedule(getName());
       TRC_DBG("Stop seeking Thermometer");
     }
   }

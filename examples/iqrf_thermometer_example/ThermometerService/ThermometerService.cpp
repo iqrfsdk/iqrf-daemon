@@ -105,7 +105,7 @@ void ThermometerService::start()
 
   // prepare scheduler
   // remove all possible tasks if any (can be there from Scheduler.json)
-  m_daemon->getScheduler()->removeAllMyTasks(getClientName());
+  m_daemon->getScheduler()->removeAllMyTasks(getName());
 
   //register handler method for scheduled task
   m_daemon->getScheduler()->registerMessageHandler(m_name, [this](const std::string& task) {
@@ -205,10 +205,10 @@ void ThermometerService::scheduleReading()
   std::unique_lock<std::mutex> lck(m_mtx);
 
   // remove previous scheduled task
-  m_daemon->getScheduler()->removeTask(getClientName(), m_schdTaskHandle);
+  m_daemon->getScheduler()->removeTask(getName(), m_schdTaskHandle);
   //schedule with updated read period - min period is 1s else stop reading
   if (m_readPeriod >= 1) {
-    m_schdTaskHandle = m_daemon->getScheduler()->scheduleTaskPeriodic(getClientName(),
+    m_schdTaskHandle = m_daemon->getScheduler()->scheduleTaskPeriodic(getName(),
       SEND_THERMOMETERS_READ, std::chrono::seconds(m_readPeriod));
   }
 }
@@ -284,7 +284,7 @@ void ThermometerService::processThermometersRead()
   rapidjson::Value item;
 
   doc.SetObject();
-  item.SetString(getClientName().c_str(), alloc);
+  item.SetString(getName().c_str(), alloc);
   doc.AddMember("service", item, alloc);
 
   item.SetArray();
