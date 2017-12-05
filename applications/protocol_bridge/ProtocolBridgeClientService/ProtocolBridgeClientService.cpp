@@ -96,7 +96,7 @@ void ProtocolBridgeClientService::start()
 	TRC_ENTER("");
 
 	//remove all possible configured tasks
-	m_daemon->getScheduler()->removeAllMyTasks(getClientName());
+	m_daemon->getScheduler()->removeAllMyTasks(getName());
 
 	//register task handler
 	m_daemon->getScheduler()->registerMessageHandler(m_name, [this](const std::string& task) {
@@ -105,14 +105,14 @@ void ProtocolBridgeClientService::start()
 
 	// schedule task of get and process data from protocol bridges
 	m_daemon->getScheduler()->scheduleTaskAt(
-		getClientName(),
+		getName(),
 		SCHEDULED_GET_AND_PROCESS_DATA_TASK,
 		std::chrono::system_clock::now()
 	);
 
 	// schedule periodic task of get and process data from protocol bridge
 	m_daemon->getScheduler()->scheduleTaskPeriodic(
-		getClientName(),
+		getName(),
 		SCHEDULED_GET_AND_PROCESS_DATA_TASK,
     std::chrono::seconds(m_frcPeriod)
 	);

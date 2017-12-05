@@ -98,7 +98,7 @@ public:
 	void setDaemon(IDaemon* daemon) override;
 	virtual void setSerializer(ISerializer* serializer) override;
 	virtual void setMessaging(IMessaging* messaging) override;
-	const std::string& getClientName() const override {
+	const std::string& getName() const override {
 	return m_name;
 	}
 
