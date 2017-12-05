@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2016-2017 MICRORISC s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@
 #include <functional>
 #include <memory>
 
-/// \class ObjecFactory
+/// \class ObjectFactory
 /// \brief Create object based on data representation
 /// \details
 /// Allows registering object creator functions for classes created from their representations.

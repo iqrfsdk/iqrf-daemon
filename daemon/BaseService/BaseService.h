@@ -40,10 +40,12 @@ typedef std::basic_string<unsigned char> ustring;
 /// received via IMessaging. It selects appropriate ISerializer instance for messages.
 /// It gets via IDaemon IScheduler to access scheduler methods.
 ///
-/// It accepts JSON properties:
+/// Configurable via its update() method accepting JSON properties:
+/// ```json
 /// "Properties": {
 ///   "AsyncDpaMessage": true  #process asynchronous DPA message
 /// }
+/// ```
 class BaseService : public IService
 {
 public:

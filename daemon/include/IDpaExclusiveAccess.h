@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2016-2017 MICRORISC s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@ class IChannel;
 /// \class IDpaExclusiveAccess
 /// \brief IDpaExclusiveAccess interface
 /// \details
-/// Provides interface exclusive acces via a communication channel
+/// Provides interface exclusive acces via a communication channel.
 /// All other channels are blocked. 
 class IDpaExclusiveAccess
 {

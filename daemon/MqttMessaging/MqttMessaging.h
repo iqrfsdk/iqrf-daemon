@@ -29,7 +29,8 @@ typedef std::basic_string<unsigned char> ustring;
 /// \details
 /// Implements IMessaging interface for MQTT communication by MQTT Paho library
 ///
-/// It accepts JSON properties:
+/// Configurable via its update() method accepting JSON properties:
+/// ```json
 /// "Properties": {
 ///   "BrokerAddr": "tcp://127.0.0.1:1883",   #broker address
 ///   "ClientId": "IqrfDpaMessaging1",        #unique instance name
@@ -51,6 +52,7 @@ typedef std::basic_string<unsigned char> ustring;
 ///   "EnabledCipherSuites": "",              #SSL parameter
 ///   "EnableServerCertAuth": true            #SSL parameter
 /// }
+/// ```
 class MqttMessaging : public IMessaging
 {
 public:

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2016-2017 MICRORISC s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,7 +31,6 @@ class IScheduler;
 class IDaemon
 {
 public:
-  /// \brief Destructor
   virtual ~IDaemon() {};
 
   /// \brief Execute DPA transaction
@@ -55,7 +54,7 @@ public:
   /// \details
   /// If the handler is not required anymore, it is possible to unregister via this method.
   virtual void unregisterAsyncMessageHandler(const std::string& clientId) = 0;
-  
+
   /// \brief Get IScheduler implementation
   /// \return IScheduler implementation
   /// \details

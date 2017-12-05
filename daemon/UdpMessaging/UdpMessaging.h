@@ -35,11 +35,13 @@ class DaemonController;
 /// It behaves as IService, ISerializer and IMessaging together because of legacy reason.
 /// It shall be changed in next version to keep architecture consistency with other components
 ///
-/// It accepts JSON properties:
+/// Configurable via its update() method accepting JSON properties:
+/// ```json
 /// "Properties": {
 ///   "RemotePort": 55000,  #set remote port to send messages
 ///   "LocalPort" : 55300   #set local port to receive messages
 /// }
+/// ```
 class UdpMessaging : public IMessaging, public IDpaMessageForwarding, public IDpaExclusiveAccess
 {
 public:
@@ -68,10 +70,10 @@ public:
   void unregisterMessageHandler() override;
   void sendMessage(const ustring& msg) override;
 
-  /// IDpaMessageForwarding overriden methods
+  // IDpaMessageForwarding overriden methods
   std::unique_ptr<DpaTransaction> getDpaTransactionForward(DpaTransaction* forwarded) override;
 
-  /// IDpaExclusiveAccess overriden methods
+  // IDpaExclusiveAccess overriden methods
   void setExclusive(IChannel* chan) override;
   void resetExclusive() override;
 

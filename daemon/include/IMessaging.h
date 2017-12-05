@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2016-2017 MICRORISC s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,7 +44,7 @@ public:
   /// \details
   /// Configuration data are taken from passed cfg and the instance is configured accordingly
   virtual void update(const rapidjson::Value& cfg) = 0;
-  
+
   /// \brief Get name of the instance
   /// \return The instance name
   /// \details

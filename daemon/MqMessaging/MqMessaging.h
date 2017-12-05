@@ -30,11 +30,13 @@ typedef std::basic_string<unsigned char> ustring;
 /// \details
 /// Implements IMessaging interface for interprocess communication
 ///
-/// It accepts JSON properties:
+/// Configurable via its update() method accepting JSON properties:
+/// ```json
 /// "Properties": {
 ///   "LocalMqName": "iqrf-daemon-110",    #name of local interprocess connection
 ///   "RemoteMqName" : "iqrf-daemon-100"   #name of remote interprocess connection
 /// }
+///```
 class MqMessaging : public IMessaging
 {
 public:

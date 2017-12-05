@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2016-2017 MICRORISC s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@
 #include <memory>
 #include <string>
 
-/// Configuration category identification sting
+/// Configuration category identification string
 static const std::string CAT_CONF_STR("conf");
 /// DPA category identification sting
 static const std::string CAT_DPA_STR("dpa");
@@ -80,6 +80,5 @@ public:
   /// Passed asynchronous DPA message is serialized in an appropriate form.
   virtual std::string encodeAsyncAsDpaRaw(const DpaMessage& dpaMessage) const = 0;
 
-  /// \brief Destructor
   virtual ~ISerializer() {}
 };
