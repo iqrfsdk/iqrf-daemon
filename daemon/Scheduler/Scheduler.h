@@ -26,6 +26,64 @@
 
 class ScheduleRecord;
 
+/// \class Scheduler
+/// \brief Tasks scheduler
+/// \details
+/// Scheduled tasks are set according a configuration file or during runtime via IScheduler interface.
+/// The tasks are scheduled periodically or according a time pattern as defined by Cron syntax.
+/// The tasks are stored as std::string and delivered to clients via registered callbacks.
+/// It is up to the client to parse content of delivered std::string and handle it approproiatelly.
+/// Handling must not block as it is done in the scheduler tasks queue and would block handling of other fired tasks.
+/// The client shall create its own handling thread in case of blocking processing.
+///
+/// Runtime scheduling is possible via methods scheduleTaskAt() for task firing at exact time point in future or scheduleTaskPeriodic()
+/// for periodic firing with period in soconds.
+///
+/// Scheduling via configuration file allows scheduling according time pattern similar to unix Cron.
+/// See for details e.g: https://en.wikipedia.org/wiki/Cron link.
+/// Time pattern consist of seven tokens. Unlike Cron it has the token for seconds: 
+/// "sec min hour day mon year wday".
+/// The tokens are accepted in these Cron forms, e.g:
+///
+/// Token | meaning
+/// ----- | -------
+/// * | every
+/// 3 | 3rd 
+/// 1,2,3 | 1st, 2nd, 3rd
+/// 5/* | every divisible by 5
+///
+/// It is possible to use Cron nicknames for time pattern.
+/// - "@reboot": Run once after reboot.
+/// - "@yearly": Run once a year, ie.  "0 0 0 0 1 1 *".
+/// - "@annually": Run once a year, ie.  "0 0 0 0 1 1 *".
+/// - "@monthly": Run once a month, ie. "0 0 0 0 1 * *".
+/// - "@weekly": Run once a week, ie.  "0 0 0 * * * 0".
+/// - "@daily": Run once a day, ie.   "0 0 0 * * * *".
+/// - "@hourly": Run once an hour, ie. "0 0 * * * * *".
+/// - "@minutely": Run once a minute, ie. "0 * * * * * *".
+///
+/// Configuration file is accepted in this JSON format:
+/// ```json
+/// {
+///  "TasksJson" : [                        #tasks array
+///   {
+///     "time": "*/5 6 * * * * *",          #time pattern
+///     "service" : "BaseServiceForMQTT1",  #id of callback registrator
+///     "message" : {                       #task (passed as std::string)
+///       "ctype": "dpa",
+///       "type" : "raw",
+///       "msgid" : "1",
+///       "timeout" : 1000,
+///       "request" : "00.00.06.03.ff.ff",
+///       "request_ts" : "",
+///       "confirmation" : ".",
+///       "confirmation_ts" : "",
+///       "response" : ".",
+///       "response_ts" : ""
+///   }
+///  ]
+/// }
+/// ```
 class Scheduler : public IScheduler
 {
 public:
@@ -36,8 +94,6 @@ public:
 
   void start() override;
   void stop() override;
-
-  void updateConfiguration(const rapidjson::Value& cfg);
 
   void registerMessageHandler(const std::string& clientId, TaskHandlerFunc fun) override;
   void unregisterMessageHandler(const std::string& clientId) override;
@@ -52,6 +108,12 @@ public:
   void removeAllMyTasks(const std::string& clientId) override;
   void removeTask(const std::string& clientId, TaskHandle hndl) override;
   void removeTasks(const std::string& clientId, std::vector<TaskHandle> hndls) override;
+
+  /// \brief Update configuration
+  /// \param [in] cfg configuration data
+  /// \details
+  /// Configuration data are taken from passed cfg and the instance is configured accordingly
+  void updateConfiguration(const rapidjson::Value& cfg);
 
 private:
   int handleScheduledRecord(const ScheduleRecord& record);
@@ -88,6 +150,8 @@ private:
 
 };
 
+/// \class SchedulerRecord
+/// \brief Auxiliary class to handle scheduled tasks.
 class ScheduleRecord {
 public:
   ScheduleRecord() = delete;
