@@ -27,7 +27,7 @@
 
 INIT_COMPONENT(IMessaging, MqttMessaging)
 
-class Impl {
+class MqttMessagingImpl {
 
 private:
   //configuration
@@ -91,7 +91,7 @@ private:
 
 public:
   //------------------------
-  Impl(const std::string& name)
+  MqttMessagingImpl(const std::string& name)
     : m_toMqttMessageQueue(nullptr)
     , m_name(name)
   {
@@ -99,7 +99,7 @@ public:
   }
 
   //------------------------
-  ~Impl()
+  ~MqttMessagingImpl()
   {}
 
   //------------------------
@@ -183,9 +183,9 @@ public:
       THROW_EX(std::logic_error, "MQTTClient_setCallbacks() failed: " << PAR(retval));
     }
 
-    connect();
+    TRC_INF("daemon-MQTT-protocol started - trying to connect broker: " << m_mqttBrokerAddr);
 
-    std::cout << "daemon-MQTT-protocol started" << std::endl;
+    connect();
 
     TRC_LEAVE("");
   }
@@ -194,9 +194,8 @@ public:
   void stop()
   {
     TRC_ENTER("");
-    //if (m_enabled) {
 
-      ///stop possibly running connect thread
+    ///stop possibly running connect thread
     m_stopAutoConnect = true;
     onConnectFailure(nullptr);
     if (m_connectThread.joinable())
@@ -218,8 +217,9 @@ public:
 
     MQTTAsync_destroy(&m_client);
     delete m_toMqttMessageQueue;
-    std::cout << "daemon-MQTT-protocol stopped" << std::endl;
-    //}
+
+    TRC_INF("daemon-MQTT-protocol stopped");
+
     TRC_LEAVE("");
   }
 
@@ -329,7 +329,7 @@ public:
 
   //////////////////
   static void s_onConnect(void* context, MQTTAsync_successData* response) {
-    ((Impl*)context)->onConnect(response);
+    ((MqttMessagingImpl*)context)->onConnect(response);
   }
   void onConnect(MQTTAsync_successData* response) {
     TRC_INF("Connect succeded: " << PAR(m_mqttBrokerAddr) << PAR(m_mqttClientId));
@@ -349,7 +349,7 @@ public:
 
   //------------------------
   static void s_onConnectFailure(void* context, MQTTAsync_failureData* response) {
-    ((Impl*)context)->onConnectFailure(response);
+    ((MqttMessagingImpl*)context)->onConnectFailure(response);
   }
   void onConnectFailure(MQTTAsync_failureData* response) {
     TRC_ENTER("");
@@ -367,7 +367,7 @@ public:
 
   //------------------------
   static void s_onSubscribe(void* context, MQTTAsync_successData* response) {
-    ((Impl*)context)->onSubscribe(response);
+    ((MqttMessagingImpl*)context)->onSubscribe(response);
   }
   void onSubscribe(MQTTAsync_successData* response) {
     TRC_INF("Subscribe succeded: " << PAR(m_mqttTopicRequest) << PAR(m_mqttQos));
@@ -376,7 +376,7 @@ public:
 
   //------------------------
   static void s_onSubscribeFailure(void* context, MQTTAsync_failureData* response) {
-    ((Impl*)context)->onSubscribeFailure(response);
+    ((MqttMessagingImpl*)context)->onSubscribeFailure(response);
   }
   void onSubscribeFailure(MQTTAsync_failureData* response) {
     TRC_WAR("Subscribe failed: " << PAR(m_mqttTopicRequest) << PAR(m_mqttQos));
@@ -385,7 +385,7 @@ public:
 
   //------------------------
   static void s_delivered(void *context, MQTTAsync_token dt) {
-    ((Impl*)context)->delivered(dt);
+    ((MqttMessagingImpl*)context)->delivered(dt);
   }
   void delivered(MQTTAsync_token dt) {
     TRC_DBG("Message delivery confirmed" << PAR(dt));
@@ -394,7 +394,7 @@ public:
 
   //------------------------
   static int s_msgarrvd(void *context, char *topicName, int topicLen, MQTTAsync_message *message) {
-    return ((Impl*)context)->msgarrvd(topicName, topicLen, message);
+    return ((MqttMessagingImpl*)context)->msgarrvd(topicName, topicLen, message);
   }
   int msgarrvd(char *topicName, int topicLen, MQTTAsync_message *message) {
     ustring msg((unsigned char*)message->payload, message->payloadlen);
@@ -419,7 +419,7 @@ public:
 
   //------------------------
   static void s_onSend(void* context, MQTTAsync_successData* response) {
-    ((Impl*)context)->onSend(response);
+    ((MqttMessagingImpl*)context)->onSend(response);
   }
   void onSend(MQTTAsync_successData* response) {
     TRC_DBG("Message sent successfuly");
@@ -427,7 +427,7 @@ public:
 
   //------------------------
   static void s_onSendFailure(void* context, MQTTAsync_failureData* response) {
-    ((Impl*)context)->onSendFailure(response);
+    ((MqttMessagingImpl*)context)->onSendFailure(response);
   }
   void onSendFailure(MQTTAsync_failureData* response) {
     TRC_WAR("Message sent failure: " << PAR(response->code));
@@ -436,7 +436,7 @@ public:
 
   //------------------------
   static void s_connlost(void *context, char *cause) {
-    ((Impl*)context)->connlost(cause);
+    ((MqttMessagingImpl*)context)->connlost(cause);
   }
   void connlost(char *cause) {
     TRC_WAR("Connection lost: " << NAME_PAR(cause, (cause ? cause : "nullptr")));
@@ -445,7 +445,7 @@ public:
 
   //------------------------
   static void s_onDisconnect(void* context, MQTTAsync_successData* response) {
-    ((Impl*)context)->onDisconnect(response);
+    ((MqttMessagingImpl*)context)->onDisconnect(response);
   }
   void onDisconnect(MQTTAsync_successData* response) {
     m_disconnect_promise.set_value(true);
@@ -456,7 +456,7 @@ public:
 //////////////////
 MqttMessaging::MqttMessaging(const std::string& name)
 {
-  m_impl = ant_new Impl(name);
+  m_impl = ant_new MqttMessagingImpl(name);
 }
 
 MqttMessaging::~MqttMessaging()

@@ -150,7 +150,7 @@ DaemonController::DaemonController()
 
 void DaemonController::loadConfiguration(const std::string& cfgFileName)
 {
-  std::cout << std::endl << "Loading configuration file: " << PAR(cfgFileName);
+  std::cout << "Loading configuration file: " << PAR(cfgFileName) << std::endl;
   m_cfgFileName = cfgFileName;
 
   jutils::parseJsonFile(m_cfgFileName, m_configuration);
@@ -217,7 +217,7 @@ void DaemonController::run(const std::string& cfgFileName)
     TRC_ERR("Invoking WatchDog exit");
   }
   else {
-    std::cout << std::endl << "!!!!!! normal exit." << std::endl;
+    std::cout << std::endl << "..... Normal exit." << std::endl;
     TRC_ERR("Invoking Normal exit");
   }
 
@@ -710,6 +710,9 @@ void DaemonController::start()
   }
 
   TRC_INF("daemon started");
+
+  std::cout << "IQRF Gateway Daemon started ....." << std::endl;
+
   TRC_LEAVE("");
 }
 

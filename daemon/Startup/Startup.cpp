@@ -125,7 +125,11 @@ int Startup::run(int argc, char** argv)
     configFile = argv[1];
   }
 
-  std::cout << std::endl << argv[0] << " started";
+  std::cout << std::endl << argv[0] << std::endl;
+  std::cout << 
+    "============================================================================" << std::endl <<
+    PAR(DAEMON_VERSION) << PAR(BUILD_TIMESTAMP) << std::endl <<
+    "============================================================================" << std::endl;
 
   msgCtrl.run(configFile);
 

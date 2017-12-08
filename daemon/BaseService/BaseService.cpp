@@ -92,8 +92,8 @@ void BaseService::stop()
 
 void BaseService::handleMsgFromMessaging(const ustring& msg)
 {
-  TRC_DBG("==================================" << std::endl <<
-    "Received from MESSAGING: " << std::endl << FORM_HEX(msg.data(), msg.size()));
+  TRC_INF(std::endl << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl <<
+    "Message to process: " << std::endl << FORM_HEX(msg.data(), msg.size()));
 
   //to encode output message
   std::ostringstream os;
@@ -146,15 +146,21 @@ void BaseService::handleMsgFromMessaging(const ustring& msg)
     os << "PARSE ERROR: " << PAR(ctype) << PAR(lastError);
   }
 
+  TRC_INF("Response to send: " << std::endl << FORM_HEX(msg.data(), msg.size()) << std::endl <<
+    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl);
+
   ustring msgu((unsigned char*)os.str().data(), os.str().size());
   m_messaging->sendMessage(msgu);
 }
 
 void BaseService::handleAsyncDpaMessage(const DpaMessage& dpaMessage)
 {
-  //TRC_ENTER("");
+  TRC_ENTER("");
   std::string sr = m_serializerVect[0]->encodeAsyncAsDpaRaw(dpaMessage);
+  TRC_INF(std::endl << "<<<<< ASYNCHRONOUS <<<<<<<<<<<<<<<" << std::endl <<
+    "Asynchronous message to send: " << std::endl << FORM_HEX(sr.data(), sr.size()) << std::endl <<
+    ">>>>> ASYNCHRONOUS >>>>>>>>>>>>>>>" << std::endl);
   ustring msgu((unsigned char*)sr.data(), sr.size());
   m_messaging->sendMessage(msgu);
-  //TRC_LEAVE("");
+  TRC_LEAVE("");
 }

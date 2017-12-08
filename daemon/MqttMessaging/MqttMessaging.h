@@ -20,7 +20,7 @@
 #include "IMessaging.h"
 #include <string>
 
-class Impl;
+class MqttMessagingImpl;
 
 typedef std::basic_string<unsigned char> ustring;
 
@@ -71,5 +71,5 @@ public:
   void sendMessage(const ustring& msg) override;
 
 private:
-  Impl* m_impl;
+  MqttMessagingImpl* m_impl;
 };
