@@ -197,7 +197,7 @@ private:
   void loadConfiguration(const std::string& cfgFileName);
   rapidjson::Document m_configuration;
   std::string m_cfgFileName;
-  const std::string m_cfgVersion = "v0.0";
+  const std::string m_cfgVersion = "v1.0";
   std::string m_traceFileName;
   int m_traceFileSize = 0;
   iqrf::Level m_level;
