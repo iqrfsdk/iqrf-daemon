@@ -36,5 +36,5 @@ if [ ! -d "${PAHO_DIRECTORY}" ]; then
 else
 	cd ${PAHO_DIRECTORY}
 	echo "Pulling paho ..."
-	git pull origin
+	git pull origin master
 fi
