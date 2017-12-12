@@ -1,10 +1,11 @@
-# IQRF GW daemon
+# IQRF Gateway Daemon
 
 [![Build Status](https://travis-ci.org/iqrfsdk/iqrf-daemon.svg?branch=master)](https://travis-ci.org/iqrfsdk/iqrf-daemon)
 
-IQRF GW daemon with the multiple communication channels - UDP/MQ/MQTT.
+IQRF Gateway Daemon with the multiple communication channels - UDP/MQ/MQTT.
 
-<a href="https://github.com/iqrfsdk/iqrf-daemon/blob/master/doc/iqrf-linux-gw.png" target="_blank">See the daemon architecture</a><br/>
+![IQRF Gateway Daemon architecture](https://github.com/iqrfsdk/iqrf-daemon/blob/master/doc/iqrf-linux-gw.png)
+
 <a href="https://github.com/iqrfsdk/iqrf-daemon/blob/master/doc/iqrf-daemon-component-model.png" target="_blank">See the daemon component model</a><br/>
 <a href="https://github.com/iqrfsdk/iqrf-daemon/blob/master/doc/iqrf-daemon-component-instances.png" target="_blank">See the daemon component instances</a><br/>
 
