@@ -2,16 +2,16 @@
 
 [http://repos.iqrfsdk.org/](http://repos.iqrfsdk.org/)
 
--   iqrf-daemon_0.8.0-x-x_amd64.deb
--   iqrf-daemon_0.8.0-x-x_armhf.deb
--   libpaho.mqtt.c_1.2.0-x-x_amd64.deb
--   libpaho.mqtt.c_1.2.0-x-x_armhf.deb
+-   iqrf-daemon_1.0.0-x_amd64.deb
+-   iqrf-daemon_1.0.0-x_armhf.deb
+-   libpaho.mqtt.c_1.2.0-x_amd64.deb
+-   libpaho.mqtt.c_1.2.0-x_armhf.deb
 
 ## Download public key to verify the packages from the repository
 
 ```Bash
 sudo apt-get install dirmngr
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 66CB9A85
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9C076FCC7AB8F2E43C2AB0E73241B9B7B4BD8F8E
 ```
 
 ## Add repository to the source list
@@ -19,31 +19,21 @@ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 66CB9A85
 -	For Debian (amd64)
 
 ```Bash
-echo "deb http://repos.iqrfsdk.org/debian jessie testing" | sudo tee -a /etc/apt/sources.list
-sudo apt-get update
-```
-
-```Bash
-echo "deb http://repos.iqrfsdk.org/debian stretch testing" | sudo tee -a /etc/apt/sources.list
+echo "deb http://repos.iqrfsdk.org/debian stretch stable" | sudo tee -a /etc/apt/sources.list
 sudo apt-get update
 ```
 
 -	For Ubuntu (amd64)
 
 ```Bash
-echo "deb http://repos.iqrfsdk.org/ubuntu xenial testing" | sudo tee -a /etc/apt/sources.list
+echo "deb http://repos.iqrfsdk.org/ubuntu xenial stable" | sudo tee -a /etc/apt/sources.list
 sudo apt-get update
 ```
 
 -	For Raspbian (armhf)
 
 ```Bash
-echo "deb http://repos.iqrfsdk.org/raspbian jessie testing" | sudo tee -a /etc/apt/sources.list
-sudo apt-get update
-```
-
-```Bash
-echo "deb http://repos.iqrfsdk.org/raspbian stretch testing" | sudo tee -a /etc/apt/sources.list
+echo "deb http://repos.iqrfsdk.org/raspbian stretch stable" | sudo tee -a /etc/apt/sources.list
 sudo apt-get update
 ```
 
@@ -53,9 +43,10 @@ sudo apt-get update
 sudo apt-get install iqrf-daemon
 ```
 or
+
 ```Bash
 sudo apt-get update
-sudo apt-get upgrade iqrf-daemon
+sudo apt-get install --only-upgrade iqrf-daemon
 ```
 
 ## Check the daemon service status
@@ -93,7 +84,7 @@ and restart the service:
 sudo systemctl restart iqrf-daemon.service
 ```
 
-## Content of iqrf-daemon (v0.8.0) package
+## Content of iqrf-daemon (v1.0.0) package
 
 ```Bash
 dpkg -L iqrf-daemon
