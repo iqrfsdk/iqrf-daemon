@@ -222,6 +222,11 @@ void PrfCommonJson::addResponseJsonPrio1Params(const DpaTask& dpaTask)
 {
   Document::AllocatorType& alloc = m_doc.GetAllocator();
   rapidjson::Value v;
+
+  bool responded = true;
+  if (0 >= dpaTask.getResponse().GetLength())
+    responded = false;
+
   if (m_has_ctype) {
     v.SetString(m_ctype.c_str(), alloc);
     m_doc.AddMember(CTYPE_STR, v, alloc);
@@ -239,6 +244,8 @@ void PrfCommonJson::addResponseJsonPrio1Params(const DpaTask& dpaTask)
     m_doc.AddMember(TIMEOUT_STR, v, alloc);
   }
   if (m_has_nadr) {
+    if (!responded)
+      m_nadr.clear();
     v.SetString(m_nadr.c_str(), alloc);
     m_doc.AddMember(NADR_STR, v, alloc);
   }
@@ -248,11 +255,20 @@ void PrfCommonJson::addResponseJsonPrio2Params(const DpaTask& dpaTask)
 {
   Document::AllocatorType& alloc = m_doc.GetAllocator();
   rapidjson::Value v;
+
+  bool responded = true;
+  if (0 >= dpaTask.getResponse().GetLength())
+    responded = false;
+
   if (m_has_cmd) {
+    if (!responded)
+      m_cmdJ.clear();
     v.SetString(m_cmdJ.c_str(), alloc);
     m_doc.AddMember(CMD_STR, v, alloc);
   }
   if (m_has_hwpid) {
+    if (!responded)
+      m_hwpid.clear();
     v.SetString(m_hwpid.c_str(), alloc);
     m_doc.AddMember(HWPID_STR, v, alloc);
   }
@@ -263,13 +279,23 @@ std::string PrfCommonJson::encodeResponseJsonFinal(const DpaTask& dpaTask)
   Document::AllocatorType& alloc = m_doc.GetAllocator();
   rapidjson::Value v;
 
+  bool responded = true;
+  if (0 >= dpaTask.getResponse().GetLength())
+    responded = false;
+
   if (m_has_rcode) {
-    encodeHexaNum(m_rcodeJ, dpaTask.getResponse().DpaPacket().DpaResponsePacket_t.ResponseCode);
+    if (responded)
+      encodeHexaNum(m_rcodeJ, dpaTask.getResponse().DpaPacket().DpaResponsePacket_t.ResponseCode);
+    else
+      m_rcodeJ.clear();
     v.SetString(m_rcodeJ.c_str(), alloc);
     m_doc.AddMember(RCODE_STR, v, alloc);
   }
   if (m_has_dpaval) {
-    encodeHexaNum(m_dpavalJ, dpaTask.getResponse().DpaPacket().DpaResponsePacket_t.DpaValue);
+    if (responded)
+      encodeHexaNum(m_dpavalJ, dpaTask.getResponse().DpaPacket().DpaResponsePacket_t.DpaValue);
+    else
+      m_dpavalJ.clear();
     v.SetString(m_dpavalJ.c_str(), alloc);
     m_doc.AddMember(DPAVAL_STR, v, alloc);
   }
@@ -428,14 +454,25 @@ std::string PrfRawHdpJson::encodeResponse(const std::string& errStr)
 
   addResponseJsonPrio1Params(*this);
 
+  bool responded = true;
+  if (0 >= getResponse().GetLength())
+    responded = false;
+
   uint8_t pnum = getResponse().DpaPacket().DpaResponsePacket_t.PNUM;
   uint8_t pcmd = getResponse().DpaPacket().DpaResponsePacket_t.PCMD;
   uint16_t hwpid = getResponse().DpaPacket().DpaResponsePacket_t.HWPID;
   m_has_hwpid = true;
 
-  encodeHexaNum(m_pnum, pnum);
-  encodeHexaNum(m_pcmd, pcmd);
-  encodeHexaNum(m_hwpid, hwpid);
+  if (responded) {
+    encodeHexaNum(m_pnum, pnum);
+    encodeHexaNum(m_pcmd, pcmd);
+    encodeHexaNum(m_hwpid, hwpid);
+  }
+  else {
+    m_pnum.clear();
+    m_pcmd.clear();
+    m_hwpid.clear();
+  }
 
   v.SetString(m_pnum.c_str(), alloc);
   m_doc.AddMember(PNUM_STR, v, alloc);
