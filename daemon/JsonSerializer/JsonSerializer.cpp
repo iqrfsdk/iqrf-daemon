@@ -49,6 +49,7 @@ INIT_COMPONENT(ISerializer, JsonSerializer)
 #define CONFIRMATION_TS_STR "confirmation_ts"
 #define CMD_STR "cmd"
 #define RCODE_STR "rcode"
+#define RESD_STR "rdata"
 #define DPAVAL_STR "dpaval"
 #define STATUS_STR "status"
 
@@ -291,6 +292,20 @@ std::string PrfCommonJson::encodeResponseJsonFinal(const DpaTask& dpaTask)
     v.SetString(m_rcodeJ.c_str(), alloc);
     m_doc.AddMember(RCODE_STR, v, alloc);
   }
+
+  if (m_has_rdata) {
+    if (responded) {
+      int datalen = dpaTask.getResponse().GetLength() - sizeof(TDpaIFaceHeader) - 2; //DpaValue ResponseCode
+      if (datalen > 0) {
+        encodeBinary(m_rdataJ, dpaTask.getResponse().DpaPacket().DpaResponsePacket_t.DpaMessage.Response.PData, datalen);
+      }
+    }
+    else
+      m_rdataJ.clear();
+    v.SetString(m_rdataJ.c_str(), alloc);
+    m_doc.AddMember(RESD_STR, v, alloc);
+  }
+
   if (m_has_dpaval) {
     if (responded)
       encodeHexaNum(m_dpavalJ, dpaTask.getResponse().DpaPacket().DpaResponsePacket_t.DpaValue);
@@ -411,7 +426,6 @@ const std::string PrfRawHdpJson::PRF_NAME("raw-hdp");
 #define PNUM_STR "pnum"
 #define PCMD_STR "pcmd"
 #define REQD_STR "rdata"
-#define RESD_STR "rdata"
 
 PrfRawHdpJson::PrfRawHdpJson(const rapidjson::Value& val)
 {
@@ -480,20 +494,11 @@ std::string PrfRawHdpJson::encodeResponse(const std::string& errStr)
   v.SetString(m_pcmd.c_str(), alloc);
   m_doc.AddMember(PCMD_STR, v, alloc);
 
-  m_has_rcode = true; //mandatory here
-  m_has_dpaval = true; //mandatory here
+  //mandatory here
+  m_has_rcode = true;
+  m_has_rdata = true;
+  m_has_dpaval = true;
 
-  int datalen = getResponse().GetLength() - sizeof(TDpaIFaceHeader) - 2; //DpaValue ResponseCode
-  if (datalen > 0) {
-    std::string res_data;
-    if (m_dotNotation) {
-      res_data = ".";
-    }
-    encodeBinary(res_data, getResponse().DpaPacket().DpaResponsePacket_t.DpaMessage.Response.PData, datalen);
-    v.SetString(res_data.c_str(), alloc);
-    m_doc.AddMember(RESD_STR, v, alloc);
-  }
-  
   m_statusJ = errStr;
   
   addResponseJsonPrio2Params(*this);

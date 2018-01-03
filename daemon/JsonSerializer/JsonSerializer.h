@@ -140,6 +140,7 @@ public:
   bool m_has_confirmation_ts = false;
   bool m_has_cmd = false;
   bool m_has_rcode = false;
+  bool m_has_rdata = false;
   bool m_has_dpaval = false;
 
   /// various flags to store members of DPA request to be used in DPA response
@@ -158,6 +159,7 @@ public:
   std::string m_cmdJ;
   std::string m_statusJ;
   std::string m_rcodeJ;
+  std::string m_rdataJ;
   std::string m_dpavalJ;
 
   rapidjson::Document m_doc;
