@@ -14,7 +14,8 @@ LIBCDC_DIRECTORY=clibcdc
 LIBSPI_DIRECTORY=clibspi
 PAHO_DIRECTORY=paho.mqtt.c
 
-DEBUG="Debug"
+#DEBUG="Debug"
+DEBUG=""
 
 export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 export JAVA_INCLUDE_PATH=${JAVA_HOME}/include

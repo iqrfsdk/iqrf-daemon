@@ -14,7 +14,8 @@ LIBCDC_DIRECTORY=clibcdc
 LIBSPI_DIRECTORY=clibspi
 PAHO_DIRECTORY=paho.mqtt.c
 
-DEBUG="Debug"
+#DEBUG="Debug"
+DEBUG=""
 
 export JAVA_HOME=/usr/lib/jvm/jdk-8-oracle-arm32-vfp-hflt
 export JAVA_INCLUDE_PATH=${JAVA_HOME}/include

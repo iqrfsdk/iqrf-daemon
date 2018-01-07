@@ -13,7 +13,8 @@ LIBCDC_DIRECTORY=clibcdc
 LIBSPI_DIRECTORY=clibspi
 PAHO_DIRECTORY=paho.mqtt.c
 
-DEBUG="Debug"
+#DEBUG="Debug"
+DEBUG=""
 
 bash download-dependencies.sh ${LIB_DIRECTORY}
 

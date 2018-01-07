@@ -33,8 +33,7 @@ done
 if [ ! -d "${PAHO_DIRECTORY}" ]; then
 	echo "Cloning paho ..."
 	git clone https://github.com/eclipse/${PAHO_DIRECTORY}.git
-else
 	cd ${PAHO_DIRECTORY}
-	echo "Pulling paho ..."
-	git pull origin master
+	git checkout v1.2.0
+	cd ..
 fi

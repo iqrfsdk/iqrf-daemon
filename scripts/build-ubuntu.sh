@@ -15,7 +15,8 @@ LIBCDC_DIRECTORY=clibcdc
 LIBSPI_DIRECTORY=clibspi
 PAHO_DIRECTORY=paho.mqtt.c
 
-DEBUG="Debug"
+#DEBUG="Debug"
+DEBUG=""
 
 export JAVA_HOME="/usr/lib/jvm/java-8-oracle"
 #echo "JAVA_HOME=\"/usr/lib/jvm/java-8-oracle\"" >> ${HOME}/.profile

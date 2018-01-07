@@ -13,7 +13,8 @@ LIBCDC_DIRECTORY=clibcdc
 LIBSPI_DIRECTORY=clibspi
 PAHO_DIRECTORY=paho.mqtt.c
 
-DEBUG="Debug"
+#DEBUG="Debug"
+DEBUG=""
 
 export JAVA_HOME=/usr/java/jdk1.8.0_121
 export JAVA_INCLUDE_PATH=${JAVA_HOME}/include
