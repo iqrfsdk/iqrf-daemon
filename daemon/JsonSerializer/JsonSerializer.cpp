@@ -293,6 +293,15 @@ std::string PrfCommonJson::encodeResponseJsonFinal(const DpaTask& dpaTask)
     m_doc.AddMember(RCODE_STR, v, alloc);
   }
 
+  if (m_has_dpaval) {
+    if (responded)
+      encodeHexaNum(m_dpavalJ, dpaTask.getResponse().DpaPacket().DpaResponsePacket_t.DpaValue);
+    else
+      m_dpavalJ.clear();
+    v.SetString(m_dpavalJ.c_str(), alloc);
+    m_doc.AddMember(DPAVAL_STR, v, alloc);
+  }
+
   if (m_has_rdata) {
     if (responded) {
       int datalen = dpaTask.getResponse().GetLength() - sizeof(TDpaIFaceHeader) - 2; //DpaValue ResponseCode
@@ -306,14 +315,6 @@ std::string PrfCommonJson::encodeResponseJsonFinal(const DpaTask& dpaTask)
     m_doc.AddMember(RESD_STR, v, alloc);
   }
 
-  if (m_has_dpaval) {
-    if (responded)
-      encodeHexaNum(m_dpavalJ, dpaTask.getResponse().DpaPacket().DpaResponsePacket_t.DpaValue);
-    else
-      m_dpavalJ.clear();
-    v.SetString(m_dpavalJ.c_str(), alloc);
-    m_doc.AddMember(DPAVAL_STR, v, alloc);
-  }
   if (m_has_request) {
     encodeBinary(m_requestJ, dpaTask.getRequest().DpaPacket().Buffer, dpaTask.getRequest().GetLength());
     v.SetString(m_requestJ.c_str(), alloc);
