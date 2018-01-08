@@ -2,8 +2,8 @@
 
 [http://repos.iqrfsdk.org/](http://repos.iqrfsdk.org/)
 
--   iqrf-daemon_1.0.0-x_amd64.deb
--   iqrf-daemon_1.0.0-x_armhf.deb
+-   iqrf-daemon_1.0.1-x_amd64.deb
+-   iqrf-daemon_1.0.1-x_armhf.deb
 -   libpaho.mqtt.c_1.2.0-x_amd64.deb
 -   libpaho.mqtt.c_1.2.0-x_armhf.deb
 
@@ -71,9 +71,9 @@ Follow the guidance [here](https://github.com/iqrfsdk/iqrf-daemon/wiki/Configura
 
 Configure/check mainly following components: 
 
-- config.json 			(tip: enable/disable daemon components)
+- config.json           (tip: enable/disable daemon components)
 - IqrfInterface.json    (tip: configure your IQRF interface - SPI/CDC)
-- TracerFile.json 		(tip: check your logging)
+- TracerFile.json       (tip: check your logging)
 - MqttMessaging.json    (tip: configure your MQTT brokers - you can enable second mqtt instance)
 - BaseService.json      (tip: see names of running instances of basic service - needed for scheduler)
 - Scheduler.json        (tip: configure your regural DPA tasks if any)
@@ -84,7 +84,7 @@ and restart the service:
 sudo systemctl restart iqrf-daemon.service
 ```
 
-## Content of iqrf-daemon (v1.0.0) package
+## Content of iqrf-daemon package
 
 ```Bash
 dpkg -L iqrf-daemon
@@ -118,7 +118,7 @@ dpkg -L iqrf-daemon
 /etc/iqrf-daemon/BaseService.json
 ```
 
-## Content of libpaho.mqtt.c (v1.2.0) package
+## Content of libpaho.mqtt.c package
 
 ```Bash
 dpkg -L libpaho.mqtt.c

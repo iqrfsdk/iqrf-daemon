@@ -1,3 +1,9 @@
+## IQRF Gateway Daemon version 1.0.1
+
+**Fixed:**
+
+- dpa raw-hdp response parsing
+
 ## IQRF Gateway Daemon version 1.0.0
 
 **Added:**
