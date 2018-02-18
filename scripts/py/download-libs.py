@@ -25,10 +25,10 @@ import errno
 import datetime
 
 ARGS = argparse.ArgumentParser(description="Cross-platform dependency downloader.")
-ARGS.add_argument("-l", "--libs", action="store", dest="lpath",
+ARGS.add_argument("-l", "--lpath", action="store", dest="lpath",
                   required=True, type=str, help="Dependency downloader.")
 
-IQRF_LIBS = ["clibspi", "clibcdc", "clibdpa", "cutils", "paho.mqtt.c"]
+IQRF_LIBS = ["clibspi", "clibcdc", "cutils", "clibdpa", "paho.mqtt.c"]
 
 
 def main():
@@ -64,7 +64,7 @@ def get_lib(lib):
     @param lib directory
     """
     if not os.path.exists(lib):
-        if lib != "paho.mqtt.c":
+        if not lib == "paho.mqtt.c":
             send_command("git clone https://github.com/iqrfsdk/" + lib + ".git")
         else:
             send_command("git clone https://github.com/eclipse/" + lib + ".git")

@@ -21,7 +21,6 @@ import argparse
 import sys
 import subprocess
 import os
-import datetime
 
 ARGS = argparse.ArgumentParser(description="Cross-platform daemon builder.")
 ARGS.add_argument("-g", "--gen", action="store", dest="gen",
@@ -31,8 +30,7 @@ ARGS.add_argument("-l", "--lpath", action="store", dest="lpath",
 ARGS.add_argument("-d", "--debug", action="store", dest="debug",
                   default="no", type=str, help="Debug level.")
 
-D_VER = "v1.0.1"
-D_BUILD = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+DEP_PATH = os.path.join("..", "..")
 
 VS_GEN = "Visual Studio 14 2015"
 WIN64 = "Win64"
@@ -56,31 +54,25 @@ def main():
 
     if gen == "vs14":
         BUILD_DIR = os.path.join("build", "Visual_Studio_14_2015", "x64")
-        
-        DEP_CDC = os.path.join(libs_dir, "clibcdc", BUILD_DIR)
-        DEP_SPI = os.path.join(libs_dir, "clibspi", BUILD_DIR)
-        DEP_UTIL = os.path.join(libs_dir, "cutils", BUILD_DIR)
-        DEP_DPA = os.path.join(libs_dir, "clibdpa", BUILD_DIR)
 
-        build(VS_GEN + " " + WIN64, BUILD_DIR, DEBUG_STR, DEP_CDC, DEP_SPI, DEP_UTIL, DEP_DPA)
+        DEP_IQRFD =os.path.join(DEP_PATH, "daemon", BUILD_DIR)         
+        DEP_UTIL = os.path.join(libs_dir, "cutils", BUILD_DIR)
+
+        build(VS_GEN + " " + WIN64, BUILD_DIR, DEBUG_STR, DEP_IQRFD, DEP_UTIL)
     elif gen == "make":
         BUILD_DIR = os.path.join("build", "Unix_Makefiles")
 
-        DEP_CDC = os.path.join(libs_dir, "clibcdc", BUILD_DIR)
-        DEP_SPI = os.path.join(libs_dir, "clibspi", BUILD_DIR)
+        DEP_IQRFD =os.path.join(DEP_PATH, "daemon", BUILD_DIR)
         DEP_UTIL = os.path.join(libs_dir, "cutils", BUILD_DIR)
-        DEP_DPA = os.path.join(libs_dir, "clibdpa", BUILD_DIR)
 
-        build(UNIX_GEN, BUILD_DIR, DEBUG_STR, DEP_CDC, DEP_SPI, DEP_UTIL, DEP_DPA)
+        build(UNIX_GEN, BUILD_DIR, DEBUG_STR, DEP_IQRFD, DEP_UTIL)
     elif gen == "eclipse":
         BUILD_DIR = os.path.join("build", "Eclipse_CDT4-Unix_Makefiles")
 
-        DEP_CDC = os.path.join(libs_dir, "clibcdc", BUILD_DIR)
-        DEP_SPI = os.path.join(libs_dir, "clibspi", BUILD_DIR)
+        DEP_IQRFD =os.path.join(DEP_PATH, "daemon", BUILD_DIR)
         DEP_UTIL = os.path.join(libs_dir, "cutils", BUILD_DIR)
-        DEP_DPA = os.path.join(libs_dir, "clibdpa", BUILD_DIR)
 
-        build(ECLIPSE_GEN, BUILD_DIR, DEBUG_STR, DEP_CDC, DEP_SPI, DEP_UTIL, DEP_DPA)
+        build(ECLIPSE_GEN, BUILD_DIR, DEBUG_STR, DEP_IQRFD, DEP_UTIL)
 
 
 def send_command(cmd):
@@ -93,9 +85,9 @@ def send_command(cmd):
     return subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.read()
 
 
-def build(generator, build_dir, debug, dep_cdc, dep_spi, dep_cutils, dep_dpa):
+def build(generator, build_dir, debug, dep_iqrfd, dep_cutils):
     """
-    Building clibcdc
+    Building iqrfapp
     @param arch Platform architecture
     """
     current_dir = os.getcwd()
@@ -110,17 +102,15 @@ def build(generator, build_dir, debug, dep_cdc, dep_spi, dep_cutils, dep_dpa):
     os.chdir(build_dir)
 
     if sys.platform.startswith("win"):
-        send_command("cmake -G " + "\"" + generator + "\"" + " -Dclibcdc_DIR:PATH=" + dep_cdc 
-                                 + " -Dclibspi_DIR:PATH=" + dep_spi + " -Dcutils_DIR:PATH=" + dep_cutils 
-                                 + " -Dclibdpa_DIR:PATH=" + dep_dpa 
-                                 + " -DDAEMON_VERSION:STRING=" + D_VER + " -DBUILD_TIMESTAMP:STRING=" + "\"" + D_BUILD 
-                                 + "\" " + current_dir)
+        send_command("cmake -G " + "\"" + generator + "\""
+                                 + " -Diqrfd_DIR:PATH=" + dep_iqrfd 
+                                 + " -Dcutils_DIR:PATH=" + dep_cutils 
+                                 + " " + current_dir)
     else:
-        send_command("cmake -G " + "\"" + generator + "\"" + " -Dclibcdc_DIR:PATH=" + dep_cdc 
-                                 + " -Dclibspi_DIR:PATH=" + dep_spi + " -Dcutils_DIR:PATH=" + dep_cutils 
-                                 + " -Dclibdpa_DIR:PATH=" + dep_dpa 
-                                 + " -DDAEMON_VERSION:STRING=" + D_VER + " -DBUILD_TIMESTAMP:STRING=" + "\"" + D_BUILD
-                                 + "\" " + current_dir + " " + debug)
+        send_command("cmake -G " + "\"" + generator + "\""
+                                 + " -Diqrfd_DIR:PATH=" + dep_iqrfd
+                                 + " -Dcutils_DIR:PATH=" + dep_cutils
+                                 + " " + current_dir + " " + debug)
 
     os.chdir(current_dir)
     send_command("cmake --build " + build_dir)
