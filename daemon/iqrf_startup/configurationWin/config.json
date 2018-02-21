@@ -1,0 +1,45 @@
+{
+  "Configuration": "v1.0",
+  "ConfigurationDir": "configuration",
+  "WatchDogTimeoutMilis": 10000,
+  "Mode": "operational",
+
+  "Components": [
+    {
+      "ComponentName": "BaseService",
+      "Enabled": true
+    },
+    {
+      "ComponentName": "TracerFile",
+      "Enabled":  true
+    },
+    {
+      "ComponentName": "IqrfInterface",
+      "Enabled":  true
+    },
+    {
+      "ComponentName": "UdpMessaging",
+      "Enabled":  true
+    },
+    {
+      "ComponentName": "MqttMessaging",
+      "Enabled":  true
+    },
+    {
+      "ComponentName": "MqMessaging",
+      "Enabled":  true
+    },
+    {
+      "ComponentName": "Scheduler",
+      "Enabled":  true
+    },
+    {
+      "ComponentName": "SimpleSerializer",
+      "Enabled":  true
+    },
+    {
+      "ComponentName": "JsonSerializer",
+      "Enabled":  true
+    }
+  ]
+}

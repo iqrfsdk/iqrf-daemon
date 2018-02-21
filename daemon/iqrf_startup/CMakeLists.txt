@@ -12,12 +12,16 @@ set(iqrf_startup_INC_FILES
 file(GLOB_RECURSE _HDRFILES ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 file(GLOB_RECURSE _SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 file(GLOB_RECURSE _CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/configuration/*)
+file(GLOB_RECURSE _CONFIG_WIN ${CMAKE_CURRENT_SOURCE_DIR}/configurationWin/*)
 file(GLOB_RECURSE _CONFIG_EX ${CMAKE_CURRENT_SOURCE_DIR}/configurationExamples/*)
+file(GLOB_RECURSE _SERVICE ${CMAKE_CURRENT_SOURCE_DIR}/service/*)
 
 source_group("Header Files" FILES ${_HDRFILES})
 source_group("Source Files" FILES ${_SRCFILES})
 source_group("Config" FILES ${_CONFIG})
+source_group("ConfigWin" FILES ${_CONFIG_WIN})
 source_group("ConfigExamples" FILES ${_CONFIG_EX})
+source_group("Service" FILES ${_SERVICE})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/UdpMessaging)
@@ -25,13 +29,13 @@ include_directories(${CMAKE_SOURCE_DIR}/Scheduler)
 include_directories(${CMAKE_SOURCE_DIR}/IqrfCdcChannel)
 include_directories(${CMAKE_SOURCE_DIR}/IqrfSpiChannel)
 
-if (WIN32) 
+if (WIN32)
 	link_directories(${PAHO_LIBRARY_DIRS})
 endif()
 
-add_executable(${PROJECT_NAME} ${_HDRFILES} ${_SRCFILES} ${_CONFIG} ${_CONFIG_EX})
+add_executable(${PROJECT_NAME} ${_HDRFILES} ${_SRCFILES} ${_CONFIG} ${_CONFIG_WIN} ${_CONFIG_EX} ${_SERVICE})
 
-if (WIN32) 
+if (WIN32)
  	target_link_libraries(${PROJECT_NAME}
 	Startup
 

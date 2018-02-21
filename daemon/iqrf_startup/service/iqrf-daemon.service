@@ -1,0 +1,17 @@
+[Unit]
+Description=IQRF daemon iqrf_startup
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/usr/bin
+ExecStart=/usr/bin/iqrf_startup /etc/iqrf-daemon/config.json
+StandardOutput=syslog
+StandardError=syslog
+RestartSec=5
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
