@@ -1,4 +1,4 @@
-.PHONY: build build-debug build-daemon build-daemon-debug
+.PHONY: build build-debug build-daemon build-daemon-debug install
 
 build:
 	@echo "Downloading libs ..."
@@ -23,3 +23,7 @@ build-daemon:
 build-daemon-debug:
 	@echo "Building daemon for debug ..."
 	@python3 build-daemon.py -g make -l ../../libs -d yes
+
+install:
+	@echo "Installing daemon ..."
+	@python3 install-daemon.py
