@@ -63,7 +63,8 @@ if (WIN32)
 set (_CONFIG_DEST ${CMAKE_CURRENT_BINARY_DIR})
 
 else()
-set (_CONFIG_DEST $<TARGET_FILE_DIR:${PROJECT_NAME}>)
+#set (_CONFIG_DEST $<TARGET_FILE_DIR:${PROJECT_NAME}>)
+set (_CONFIG_DEST ${CMAKE_CURRENT_SOURCE_DIR}/../../daemon/build/Unix_Makefiles/bin )
 
 INSTALL(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION bin
@@ -73,7 +74,7 @@ endif()
 
 # do the copying
 set (in_file ${CMAKE_CURRENT_SOURCE_DIR}/iqrfapp.json)
-set (out_file ${_CONFIG_DEST}/iqrfapp.json)
+set (out_file ${_CONFIG_DEST}/configuration/iqrfapp.json)
 
 if(${in_file} IS_NEWER_THAN ${out_file})
 add_custom_command(
@@ -82,4 +83,19 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy ${in_file} ${out_file}
 )
+
+endif()
+
+# do the copying
+set (in_file $<TARGET_FILE_DIR:${PROJECT_NAME}>/iqrfapp)
+set (out_file ${_CONFIG_DEST}/iqrfapp)
+
+if(${in_file} IS_NEWER_THAN ${out_file})
+add_custom_command(
+    TARGET ${PROJECT_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -E copy ${in_file} ${out_file}
+)
+
 endif()

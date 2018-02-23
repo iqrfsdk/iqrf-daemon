@@ -44,26 +44,31 @@ def main():
     # service file is already present
     if srv:
         # stop iqrf-daemon service
-        out = stop_service("iqrf-daemon")
-        print(out)
+        run_service("stop", "iqrf-daemon")
 
         # iqrf-daemon, iqrfapp, config and service 
-        install(bin_dir)
+        install(bin_dir, srv)
 
         # restart iqrf-daemon service
-        out = restart_service("iqrf-daemon")
+        run_service("restart", "iqrf-daemon")
+        
+        # status iqrf-daemon service
+        out = run_service("status", "iqrf-daemon") 
         print(out)
+
     # service file is missing, install first
     else:
         # iqrf-daemon, iqrfapp, config and service 
-        install()
+        install(bin_dir, srv)
 
         # enable iqrf-daemon service
-        out = enable_service("iqrf-daemon")
-        print(out)
+        run_service("enable", "iqrf-daemon")
 
         # restart iqrf-daemon service
-        out = restart_service("iqrf-daemon")
+        run_service("restart", "iqrf-daemon")
+
+        # status iqrf-daemon service
+        out = run_service("status", "iqrf-daemon")
         print(out)
 
 
@@ -94,10 +99,11 @@ def ensure_srv(file):
       return False
 
 
-def install(dir):
+def install(dir, srvf):
     """
     Install the iqrf daemon
     @param bin folder
+    @param service file exists
     """
     
     os.chdir(dir)
@@ -107,8 +113,9 @@ def install(dir):
     create_folder(daemon_cfg_loc)
     send_command("cp -a configuration/. " + daemon_cfg_loc)
     
-    daemon_srv_loc = os.path.join("/", "lib", "systemd", "system")
-    send_command("cp -a service/. " + daemon_srv_loc)
+    if srvf:
+        daemon_srv_loc = os.path.join("/", "lib", "systemd", "system")
+        send_command("cp -a service/. " + daemon_srv_loc)
 
     daemon_bin_loc = os.path.join("/" + "usr", "bin")
     send_command("cp -a iqrf* " + daemon_bin_loc)
@@ -123,29 +130,13 @@ def create_folder(name):
         send_command("mkdir -p " + name)
 
 
-def stop_service(name):
+def run_service(action, name):
 	"""
 	Stop systemd service
+    @param action Service action 
 	@param name Name of service to restart
 	"""
-	return send_command("systemctl stop " + name + ".service")
-
-
-def restart_service(name):
-	"""
-	Restart systemd service
-	@param name Name of service to restart
-	"""
-	return send_command("systemctl restart " + name + ".service")
-
-
-def enable_service(name):
-	"""
-	Enable systemd service
-	@param name Name of service to restart
-	"""
-	return send_command("systemctl enable " + name + ".service")
-
+	return send_command("systemctl " + action + " " + name + ".service")
 
 def send_command(cmd):
     """

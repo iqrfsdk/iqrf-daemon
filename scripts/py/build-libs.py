@@ -80,7 +80,8 @@ def compile_lib(gen, lib, debug):
         os.chdir(lib)
 
         if lib != "paho.mqtt.c":
-            send_command("python3 build.py -g " + gen + " -d " + debug)
+            out = send_command("python3 build.py -g " + gen + " -d " + debug)
+            print(out)
         else:
             if not sys.platform.startswith("win"):
                 comp_inst_paho()

@@ -77,7 +77,8 @@ def compile(gen, dir, ldir, debug):
     if os.path.exists(dir):
         print("Directory " + dir)
         os.chdir(dir)
-        send_command("python3 build.py -g " + gen + " -l " + ldir + " -d " + debug)
+        out = send_command("python3 build.py -g " + gen + " -l " + ldir + " -d " + debug)
+        print(out)
     else:
         print("Daemon or app folder does not exists!")
         exit()
