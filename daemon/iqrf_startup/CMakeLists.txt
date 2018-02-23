@@ -101,12 +101,20 @@ INSTALL(TARGETS ${PROJECT_NAME}
 
 endif()
 
-# do the copying
+# configuration copy
 add_custom_command(
     TARGET ${PROJECT_NAME}
     POST_BUILD
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/configuration ${_CONFIG_DEST}/configuration
+)
+
+# service copy
+add_custom_command(
+    TARGET ${PROJECT_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/service ${_CONFIG_DEST}/service
 )
 
 # if (WIN32)
