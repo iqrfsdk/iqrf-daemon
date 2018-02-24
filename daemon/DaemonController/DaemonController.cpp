@@ -23,7 +23,6 @@
 #include "DaemonController.h"
 #include "IqrfCdcChannel.h"
 #include "IqrfSpiChannel.h"
-#include "machines_def.h"
 #include "DpaHandler.h"
 #include "JsonUtils.h"
 
@@ -335,7 +334,7 @@ void DaemonController::startTrace()
 
 void DaemonController::startIqrfIf()
 {
-  spi_iqrf_config_struct cfg;
+  spi_iqrf_config_struct cfg(IqrfSpiChannel::SPI_IQRF_CFG_DEFAULT);
 
   auto fnd = m_componentMap.find("IqrfInterface");
   if (fnd != m_componentMap.end() && fnd->second.m_enabled) {
@@ -348,11 +347,11 @@ void DaemonController::startIqrfIf()
       if (sz > sizeof(cfg.spiDev)) sz = sizeof(cfg.spiDev);
       std::copy(m_iqrfInterfaceName.c_str(), m_iqrfInterfaceName.c_str() + sz, cfg.spiDev);
       
-      cfg.resetGpioPin = jutils::getPossibleMemberAs<int>("resetGpioPin", fnd->second.m_doc, RESET_GPIO);
-      cfg.spiCe0GpioPin = jutils::getPossibleMemberAs<int>("spiCe0GpioPin", fnd->second.m_doc, RPIIO_PIN_CE0);
-      cfg.spiMisoGpioPin = jutils::getPossibleMemberAs<int>("spiMisoGpioPin", fnd->second.m_doc, MISO_GPIO);
-      cfg.spiMosiGpioPin = jutils::getPossibleMemberAs<int>("spiMosiGpioPin", fnd->second.m_doc, MOSI_GPIO);
-      cfg.spiClkGpioPin = jutils::getPossibleMemberAs<int>("spiClkGpioPin", fnd->second.m_doc, SCLK_GPIO);
+      cfg.resetGpioPin = jutils::getPossibleMemberAs<int>("resetGpioPin", fnd->second.m_doc, cfg.resetGpioPin);
+      cfg.spiCe0GpioPin = jutils::getPossibleMemberAs<int>("spiCe0GpioPin", fnd->second.m_doc, cfg.spiCe0GpioPin);
+      cfg.spiMisoGpioPin = jutils::getPossibleMemberAs<int>("spiMisoGpioPin", fnd->second.m_doc, cfg.spiMisoGpioPin);
+      cfg.spiMosiGpioPin = jutils::getPossibleMemberAs<int>("spiMosiGpioPin", fnd->second.m_doc, cfg.spiMosiGpioPin);
+      cfg.spiClkGpioPin = jutils::getPossibleMemberAs<int>("spiClkGpioPin", fnd->second.m_doc, cfg.spiClkGpioPin);
 
       m_dpaHandlerTimeout = jutils::getPossibleMemberAs<int>("DpaHandlerTimeout", fnd->second.m_doc, m_dpaHandlerTimeout);
 
