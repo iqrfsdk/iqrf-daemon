@@ -334,12 +334,25 @@ void DaemonController::startTrace()
 
 void DaemonController::startIqrfIf()
 {
+  spi_iqrf_config_struct cfg(IqrfSpiChannel::SPI_IQRF_CFG_DEFAULT);
 
   auto fnd = m_componentMap.find("IqrfInterface");
   if (fnd != m_componentMap.end() && fnd->second.m_enabled) {
     try {
       jutils::assertIsObject("", fnd->second.m_doc);
       m_iqrfInterfaceName = jutils::getMemberAs<std::string>("IqrfInterface", fnd->second.m_doc);
+      
+      memset(cfg.spiDev, 0, sizeof(cfg.spiDev));
+      auto sz = m_iqrfInterfaceName.size();
+      if (sz > sizeof(cfg.spiDev)) sz = sizeof(cfg.spiDev);
+      std::copy(m_iqrfInterfaceName.c_str(), m_iqrfInterfaceName.c_str() + sz, cfg.spiDev);
+      
+      cfg.resetGpioPin = jutils::getPossibleMemberAs<int>("resetGpioPin", fnd->second.m_doc, cfg.resetGpioPin);
+      cfg.spiCe0GpioPin = jutils::getPossibleMemberAs<int>("spiCe0GpioPin", fnd->second.m_doc, cfg.spiCe0GpioPin);
+      cfg.spiMisoGpioPin = jutils::getPossibleMemberAs<int>("spiMisoGpioPin", fnd->second.m_doc, cfg.spiMisoGpioPin);
+      cfg.spiMosiGpioPin = jutils::getPossibleMemberAs<int>("spiMosiGpioPin", fnd->second.m_doc, cfg.spiMosiGpioPin);
+      cfg.spiClkGpioPin = jutils::getPossibleMemberAs<int>("spiClkGpioPin", fnd->second.m_doc, cfg.spiClkGpioPin);
+
       m_dpaHandlerTimeout = jutils::getPossibleMemberAs<int>("DpaHandlerTimeout", fnd->second.m_doc, m_dpaHandlerTimeout);
 
       std::string communicationMode;
@@ -360,7 +373,7 @@ void DaemonController::startIqrfIf()
           size_t found = m_iqrfInterfaceName.find("spi");
           
           if (found != std::string::npos)
-            m_iqrfInterface = ant_new IqrfSpiChannel(m_iqrfInterfaceName);
+            m_iqrfInterface = ant_new IqrfSpiChannel(cfg);
           else
             m_iqrfInterface = ant_new IqrfCdcChannel(m_iqrfInterfaceName);
 
