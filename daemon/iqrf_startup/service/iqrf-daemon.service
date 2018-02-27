@@ -8,6 +8,7 @@ User=root
 Group=root
 WorkingDirectory=/usr/bin
 ExecStart=/usr/bin/iqrf_startup /etc/iqrf-daemon/config.json
+ExecStopPost=/usr/bin/tracefile_add_timestamp.sh
 StandardOutput=syslog
 StandardError=syslog
 RestartSec=5
