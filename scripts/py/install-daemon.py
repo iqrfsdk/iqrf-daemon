@@ -112,22 +112,25 @@ def install(dir, srvf):
     daemon_cfg_loc = os.path.join("/", "etc", "iqrf-daemon")
     create_folder(daemon_cfg_loc)
     send_command("cp -a configuration/. " + daemon_cfg_loc)
+    send_command("chmod -R 666 " + daemon_cfg_loc)
+    send_command("chmod 777 " + daemon_cfg_loc)
     
-    if srvf:
+    if not srvf:
         daemon_srv_loc = os.path.join("/", "lib", "systemd", "system")
-        send_command("cp -a service/. " + daemon_srv_loc)
+        send_command("cp -a service/*.service " + daemon_srv_loc)
 
     daemon_bin_loc = os.path.join("/" + "usr", "bin")
     send_command("cp -a iqrf* " + daemon_bin_loc)
+    send_command("cp -a service/*.sh " + daemon_bin_loc)
 
 
-def create_folder(name):
+def create_folder(directory):
     """
     Create folder
     @param name Name of folder, full path
     """
-    if not os.path.exists(name):
-        send_command("mkdir -p " + name)
+    if not os.path.exists(directory):
+        send_command("mkdir -p " + directory)
 
 
 def run_service(action, name):
@@ -137,6 +140,7 @@ def run_service(action, name):
 	@param name Name of service to restart
 	"""
 	return send_command("systemctl " + action + " " + name + ".service")
+
 
 def send_command(cmd):
     """

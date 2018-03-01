@@ -27,11 +27,11 @@ ARGS = argparse.ArgumentParser(description="Cross-platform daemon builder.")
 ARGS.add_argument("-g", "--gen", action="store", dest="gen",
                   required=True, type=str, help="Platform generator.")
 ARGS.add_argument("-l", "--lpath", action="store", dest="lpath",
-                  required=True, type=str, help="Root directory.")                  
+                  required=True, type=str, help="Root directory.")
 ARGS.add_argument("-d", "--debug", action="store", dest="debug",
                   default="no", type=str, help="Debug level.")
 
-D_VER = "v1.0.1"
+D_VER = "v1.1.0rc"
 D_BUILD = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 VS_GEN = "Visual Studio 14 2015"
@@ -56,7 +56,7 @@ def main():
 
     if gen == "vs14":
         BUILD_DIR = os.path.join("build", "Visual_Studio_14_2015", "x64")
-        
+
         DEP_CDC = os.path.join(libs_dir, "clibcdc", BUILD_DIR)
         DEP_SPI = os.path.join(libs_dir, "clibspi", BUILD_DIR)
         DEP_UTIL = os.path.join(libs_dir, "cutils", BUILD_DIR)

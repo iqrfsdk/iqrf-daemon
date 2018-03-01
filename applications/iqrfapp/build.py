@@ -26,7 +26,7 @@ ARGS = argparse.ArgumentParser(description="Cross-platform daemon builder.")
 ARGS.add_argument("-g", "--gen", action="store", dest="gen",
                   required=True, type=str, help="Platform generator.")
 ARGS.add_argument("-l", "--lpath", action="store", dest="lpath",
-                  required=True, type=str, help="Root directory.")                  
+                  required=True, type=str, help="Root directory.")
 ARGS.add_argument("-d", "--debug", action="store", dest="debug",
                   default="no", type=str, help="Debug level.")
 
@@ -55,7 +55,7 @@ def main():
     if gen == "vs14":
         BUILD_DIR = os.path.join("build", "Visual_Studio_14_2015", "x64")
 
-        DEP_IQRFD =os.path.join(DEP_PATH, "daemon", BUILD_DIR)         
+        DEP_IQRFD =os.path.join(DEP_PATH, "daemon", BUILD_DIR)
         DEP_UTIL = os.path.join(libs_dir, "cutils", BUILD_DIR)
 
         build(VS_GEN + " " + WIN64, BUILD_DIR, DEBUG_STR, DEP_IQRFD, DEP_UTIL)
@@ -103,8 +103,8 @@ def build(generator, build_dir, debug, dep_iqrfd, dep_cutils):
 
     if sys.platform.startswith("win"):
         send_command("cmake -G " + "\"" + generator + "\""
-                                 + " -Diqrfd_DIR:PATH=" + dep_iqrfd 
-                                 + " -Dcutils_DIR:PATH=" + dep_cutils 
+                                 + " -Diqrfd_DIR:PATH=" + dep_iqrfd
+                                 + " -Dcutils_DIR:PATH=" + dep_cutils
                                  + " " + current_dir)
     else:
         send_command("cmake -G " + "\"" + generator + "\""
