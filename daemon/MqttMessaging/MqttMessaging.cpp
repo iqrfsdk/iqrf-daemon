@@ -430,7 +430,12 @@ public:
     ((MqttMessagingImpl*)context)->onSendFailure(response);
   }
   void onSendFailure(MQTTAsync_failureData* response) {
-    TRC_WAR("Message sent failure: " << PAR(response->code));
+    if (response) {
+      TRC_WAR("Message sent failure: " << PAR(response->code));
+    }
+    else {
+      TRC_WAR("Message sent failure: response==nullptr");
+    }
     //connect();
   }
 
