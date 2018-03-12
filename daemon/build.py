@@ -31,7 +31,7 @@ ARGS.add_argument("-l", "--lpath", action="store", dest="lpath",
 ARGS.add_argument("-d", "--debug", action="store", dest="debug",
                   default="no", type=str, help="Debug level.")
 
-D_VER = "v1.1.0rc"
+D_VER = "v1.1.0"
 D_BUILD = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 VS_GEN = "Visual Studio 14 2015"
