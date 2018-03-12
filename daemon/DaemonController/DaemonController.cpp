@@ -347,7 +347,7 @@ void DaemonController::startIqrfIf()
       if (sz > sizeof(cfg.spiDev)) sz = sizeof(cfg.spiDev);
       std::copy(m_iqrfInterfaceName.c_str(), m_iqrfInterfaceName.c_str() + sz, cfg.spiDev);
       
-      cfg.resetGpioPin = jutils::getPossibleMemberAs<int>("resetGpioPin", fnd->second.m_doc, cfg.resetGpioPin);
+      cfg.enableGpioPin = jutils::getPossibleMemberAs<int>("enableGpioPin", fnd->second.m_doc, cfg.enableGpioPin);
       cfg.spiCe0GpioPin = jutils::getPossibleMemberAs<int>("spiCe0GpioPin", fnd->second.m_doc, cfg.spiCe0GpioPin);
       cfg.spiMisoGpioPin = jutils::getPossibleMemberAs<int>("spiMisoGpioPin", fnd->second.m_doc, cfg.spiMisoGpioPin);
       cfg.spiMosiGpioPin = jutils::getPossibleMemberAs<int>("spiMosiGpioPin", fnd->second.m_doc, cfg.spiMosiGpioPin);

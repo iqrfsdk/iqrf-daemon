@@ -1,10 +1,5 @@
 {
   "IqrfInterface": "/dev/spidev0.0",
-  "resetGpioPin": 23,
-  "spiCe0GpioPin": 8,
-  "spiMisoGpioPin": 9,
-  "spiMosiGpioPin": 10,
-  "spiClkGpioPin": 11,
   "DpaHandlerTimeout": 200,
   "CommunicationMode": "STD"
 }
