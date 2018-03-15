@@ -1,3 +1,17 @@
+## IQRF Gateway Daemon version 1.1.0
+
+**Added:**
+
+- restart tr coordinator at daemon boot
+- script to keep current log file
+- spi pins mapping via iqrf interface configuration file
+- deb package for armbian distribution
+
+**Fixed:**
+
+- spi write/read logic rewritten
+- scheduler timing
+
 ## IQRF Gateway Daemon version 1.0.1
 
 **Fixed:**

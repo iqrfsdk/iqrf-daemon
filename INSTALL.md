@@ -2,8 +2,8 @@
 
 [http://repos.iqrfsdk.org/](http://repos.iqrfsdk.org/)
 
--   iqrf-daemon_1.0.1-x_amd64.deb
--   iqrf-daemon_1.0.1-x_armhf.deb
+-   iqrf-daemon_1.1.0-x_amd64.deb
+-   iqrf-daemon_1.1.0-x_armhf.deb
 -   libpaho.mqtt.c_1.2.0-x_amd64.deb
 -   libpaho.mqtt.c_1.2.0-x_armhf.deb
 
@@ -34,6 +34,13 @@ sudo apt-get update
 
 ```Bash
 echo "deb http://repos.iqrfsdk.org/raspbian stretch stable" | sudo tee -a /etc/apt/sources.list
+sudo apt-get update
+```
+
+-	For Armbian (armhf)
+
+```Bash
+echo "deb http://repos.iqrfsdk.org/armbian stretch stable" | sudo tee -a /etc/apt/sources.list
 sudo apt-get update
 ```
 
@@ -94,6 +101,7 @@ dpkg -L iqrf-daemon
 /usr/bin
 /usr/bin/iqrfapp
 /usr/bin/iqrf_startup
+/usr/bin/tracefile_add_timestamp.sh
 /usr/share
 /usr/share/doc
 /usr/share/doc/iqrf-daemon
