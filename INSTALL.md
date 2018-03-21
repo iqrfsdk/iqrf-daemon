@@ -40,7 +40,7 @@ sudo apt-get update
 -	For Armbian (armhf)
 
 ```Bash
-echo "deb http://repos.iqrfsdk.org/armbian stretch stable" | sudo tee -a /etc/apt/sources.list
+echo "deb http://repos.iqrfsdk.org/armbian xenial stable" | sudo tee -a /etc/apt/sources.list
 sudo apt-get update
 ```
 
