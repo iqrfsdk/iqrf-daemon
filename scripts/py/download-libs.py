@@ -66,11 +66,13 @@ def get_lib(lib):
     if not os.path.exists(lib):
         if not lib == "paho.mqtt.c":
             send_command("git clone https://github.com/iqrfsdk/" + lib + ".git")
+            if lib == "clibdpa":
+                send_command("git checkout release/v1.1.0")    
         else:
             send_command("git clone https://github.com/eclipse/" + lib + ".git")
             os.chdir(lib)
             send_command("git checkout v1.2.0")
-            os.chdir("..")            
+            os.chdir("..")
     else:
         os.chdir(lib)
         send_command("git pull origin")

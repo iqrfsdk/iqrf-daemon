@@ -17,7 +17,7 @@ fi
 cd ${LIB_DIRECTORY}
 
 # getting cutils, clibdpa, clibcdc, clibspi
-for repository in ${UTILS_DIRECTORY} ${LIBDPA_DIRECTORY} ${LIBCDC_DIRECTORY} ${LIBSPI_DIRECTORY}; do
+for repository in ${LIBCDC_DIRECTORY} ${LIBSPI_DIRECTORY} ${UTILS_DIRECTORY}; do
 	if [ ! -d "${repository}" ]; then
 		echo "Cloning ${repository} ..."
 		git clone https://github.com/iqrfsdk/${repository}.git
@@ -28,6 +28,15 @@ for repository in ${UTILS_DIRECTORY} ${LIBDPA_DIRECTORY} ${LIBCDC_DIRECTORY} ${L
 		cd ..
 	fi
 done
+
+# getting clibdpa
+if [ ! -d "${LIBDPA_DIRECTORY}" ]; then
+	echo "Cloning clibdpa ..."
+	git clone https://github.com/iqrfsdk/${LIBDPA_DIRECTORY}.git
+	cd ${LIBDPA_DIRECTORY}
+	git checkout release/v1.1.0
+	cd ..
+fi	
 
 # getting paho
 if [ ! -d "${PAHO_DIRECTORY}" ]; then
