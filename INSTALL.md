@@ -26,7 +26,7 @@ sudo apt-get update
 -	For Ubuntu (amd64)
 
 ```Bash
-echo "deb http://repos.iqrfsdk.org/ubuntu xenial stable" | sudo tee -a /etc/apt/sources.list
+echo "deb http://repos.iqrfsdk.org/ubuntu/xenial xenial stable" | sudo tee -a /etc/apt/sources.list
 sudo apt-get update
 ```
 
